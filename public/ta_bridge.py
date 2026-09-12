@@ -30,8 +30,10 @@ from datetime import datetime, timezone
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+
 from pydantic import BaseModel, Field
 
 HOST = "127.0.0.1"
@@ -145,13 +147,18 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
             df = raw.tail(60)
             closes = df["Close"].tolist()
             dates = [str(d)[:10] for d in df.index.tolist()]
+            ema10 = None
+            k = 2 / (10 + 1)
             for i, (d, c) in enumerate(zip(dates, closes)):
+                c = float(c)
+                ema10 = c if ema10 is None else (c * k + ema10 * (1 - k))
                 window = closes[max(0, i - 19) : i + 1]
                 window50 = closes[max(0, i - 49) : i + 1]
                 rows.append(
                     {
                         "date": d,
-                        "close": round(float(c), 2),
+                        "close": round(c, 2),
+                        "ema10": round(ema10, 2),
                         "sma20": round(sum(window) / len(window), 2),
                         "sma50": round(sum(window50) / len(window50), 2),
                     }
@@ -159,6 +166,89 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
         return rows
     except Exception:  # pragma: no cover - charts are optional
         return []
+
+
+# --------------------------------------------------------------------------
+# Python-generated charts (Plotly + Matplotlib)
+# --------------------------------------------------------------------------
+
+def build_plotly_html(ticker: str, rows: list[dict[str, Any]]) -> str:
+    """Interactive price-trend / moving-average chart rendered with plotly.graph_objects."""
+    try:
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        dates = [r["date"] for r in rows]
+        fig.add_trace(go.Scatter(x=dates, y=[r["close"] for r in rows], name="Close",
+                                 mode="lines", line=dict(color="#1d6472", width=2.4)))
+        for key, label, colour in (
+            ("ema10", "10-EMA", "#c98a2b"),
+            ("sma20", "20-SMA", "#5b8c5a"),
+            ("sma50", "50-SMA", "#8f5aa8"),
+        ):
+            if rows and key in rows[0]:
+                fig.add_trace(go.Scatter(x=dates, y=[r.get(key) for r in rows], name=label,
+                                         mode="lines", line=dict(width=1.4, dash="dash", color=colour)))
+        fig.update_layout(
+            title=f"{ticker} — price trend and moving averages",
+            template="plotly_white",
+            margin=dict(l=48, r=24, t=56, b=40),
+            legend=dict(orientation="h", y=-0.18),
+            xaxis_title="Date",
+            yaxis_title="Price",
+        )
+        return fig.to_html(full_html=True, include_plotlyjs="cdn")
+    except Exception as exc:  # pragma: no cover
+        return f"<html><body><p>Plotly chart unavailable: {exc}</p></body></html>"
+
+
+def build_matplotlib_png(ticker: str, rows: list[dict[str, Any]]) -> bytes:
+    """Static PNG of the same chart, for reports and slide decks."""
+    try:
+        import io
+
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        dates = [r["date"] for r in rows]
+        fig, ax = plt.subplots(figsize=(9, 4.5), dpi=140)
+        ax.plot(dates, [r["close"] for r in rows], label="Close", color="#1d6472", linewidth=2.2)
+        for key, label, colour in (
+            ("ema10", "10-EMA", "#c98a2b"),
+            ("sma20", "20-SMA", "#5b8c5a"),
+            ("sma50", "50-SMA", "#8f5aa8"),
+        ):
+            if rows and key in rows[0]:
+                ax.plot(dates, [r.get(key) for r in rows], label=label, linewidth=1.2,
+                        linestyle="--", color=colour)
+        ax.set_title(f"{ticker} — price trend and moving averages")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price")
+        ax.grid(alpha=0.25)
+        ax.legend(loc="best", fontsize=8)
+        step = max(1, len(dates) // 10)
+        ax.set_xticks(dates[::step])
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
+        fig.tight_layout()
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png")
+        plt.close(fig)
+        return buf.getvalue()
+    except Exception:  # pragma: no cover
+        return b""
+
+
+def build_charts(record: dict[str, Any]) -> None:
+    rows = record.get("prices") or []
+    ticker = record["config"]["ticker"]
+    record["chartHtml"] = build_plotly_html(ticker, rows) if rows else ""
+    record["_chartPng"] = build_matplotlib_png(ticker, rows) if rows else b""
+    record["charts"] = {
+        "plotly": f"/runs/{record['id']}/chart.html" if rows else None,
+        "png": f"/runs/{record['id']}/chart.png" if rows else None,
+    }
+
 
 
 # --------------------------------------------------------------------------
@@ -317,6 +407,8 @@ def execute(run_id: str, cfg: RunConfig) -> None:
 
         record["status"] = "running"
         record["prices"] = build_prices(cfg.ticker, cfg.analysisDate)
+        build_charts(record)
+
 
         graph = TradingAgentsGraph(selected_analysts=selected, debug=False, config=config)
         init_state = graph.propagator.create_initial_state(cfg.ticker, cfg.analysisDate)
@@ -375,16 +467,41 @@ def start_run(cfg: RunConfig) -> dict[str, str]:
     return {"run_id": run_id}
 
 
+def public_view(record: dict[str, Any]) -> dict[str, Any]:
+    """JSON-safe copy: chart payloads are served by their own endpoints."""
+    return {k: v for k, v in record.items() if k not in ("chartHtml", "_chartPng")}
+
+
 @app.get("/runs")
 def list_runs() -> list[dict[str, Any]]:
-    return sorted(RUNS.values(), key=lambda r: r["startedAt"], reverse=True)
+    return [public_view(r) for r in sorted(RUNS.values(), key=lambda r: r["startedAt"], reverse=True)]
 
 
 @app.get("/runs/{run_id}")
 def get_run(run_id: str) -> dict[str, Any]:
     if run_id not in RUNS:
         raise HTTPException(status_code=404, detail="Unknown run")
-    return RUNS[run_id]
+    return public_view(RUNS[run_id])
+
+
+@app.get("/runs/{run_id}/chart.html")
+def chart_html(run_id: str) -> HTMLResponse:
+    """Interactive Plotly chart generated in Python, embedded by the dashboard."""
+    if run_id not in RUNS:
+        raise HTTPException(status_code=404, detail="Unknown run")
+    html = RUNS[run_id].get("chartHtml") or "<html><body><p>Chart not ready yet.</p></body></html>"
+    return HTMLResponse(content=html)
+
+
+@app.get("/runs/{run_id}/chart.png")
+def chart_png(run_id: str) -> Response:
+    """Static Matplotlib chart generated in Python (for reports and slides)."""
+    if run_id not in RUNS:
+        raise HTTPException(status_code=404, detail="Unknown run")
+    png = RUNS[run_id].get("_chartPng") or b""
+    if not png:
+        raise HTTPException(status_code=404, detail="Chart not ready yet")
+    return Response(content=png, media_type="image/png")
 
 
 @app.post("/runs/{run_id}/cancel")
@@ -393,6 +510,7 @@ def cancel_run(run_id: str) -> dict[str, bool]:
         raise HTTPException(status_code=404, detail="Unknown run")
     CANCELLED.add(run_id)
     return {"ok": True}
+
 
 
 if __name__ == "__main__":

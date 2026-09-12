@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Activity, BookOpen, LayoutDashboard, Plug } from "lucide-react";
+import { Activity, BookOpen, LayoutDashboard, Plug, Rows3 } from "lucide-react";
 import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
 
 const NAV = [
   { to: "/", label: "Workbench", icon: LayoutDashboard },
+  { to: "/simple", label: "Simple dashboard", icon: Rows3 },
   { to: "/setup", label: "Connect engine", icon: Plug },
   { to: "/about", label: "About the project", icon: BookOpen },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
