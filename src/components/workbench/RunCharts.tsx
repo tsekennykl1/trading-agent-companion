@@ -87,8 +87,8 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
 
 export function ConfidenceChart({ decision, stances }: { decision: Decision; stances: StancePoint[] }) {
   const counts = stances.reduce(
-    (acc, s) => ({ ...acc, [s.stance]: acc[s.stance] + 1 }),
-    { bullish: 0, bearish: 0, neutral: 0 } as Record<string, number>,
+    (acc, s) => ({ ...acc, [s.stance]: (acc[s.stance] ?? 0) + 1 }),
+    { bullish: 0, bearish: 0, neutral: 0 },
   );
 
   return (

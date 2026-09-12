@@ -116,8 +116,8 @@ export function markdownToHtml(md: string): string {
     if (heading) {
       closeList();
       closeTable();
-      const level = heading[1].length;
-      out.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+      const level = heading[1]!.length;
+      out.push(`<h${level}>${inline(heading[2] ?? "")}</h${level}>`);
       continue;
     }
     if (line.startsWith("|")) {

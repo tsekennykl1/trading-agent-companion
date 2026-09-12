@@ -13,6 +13,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ANALYST_OPTIONS, PROVIDER_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 
+const DEFAULT_MODELS = ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"];
+
 const MODELS: Record<string, string[]> = {
   DeepSeek: ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"],
   OpenAI: ["gpt-4.1-mini", "gpt-4.1", "o4-mini"],
@@ -31,7 +33,8 @@ interface Props {
 
 export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: Props) {
   const [config, setConfig] = useState<RunConfig>(defaultConfig);
-  const models = MODELS[config.provider] ?? MODELS.DeepSeek;
+  const modelsFor = (provider: string): string[] => MODELS[provider] ?? DEFAULT_MODELS;
+  const models = modelsFor(config.provider);
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
@@ -90,8 +93,8 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               setConfig((c) => ({
                 ...c,
                 provider: v,
-                quickModel: (MODELS[v] ?? MODELS.DeepSeek)[0],
-                deepModel: (MODELS[v] ?? MODELS.DeepSeek)[0],
+                quickModel: modelsFor(v)[0] ?? "",
+                deepModel: modelsFor(v)[0] ?? "",
               }))
             }
           >

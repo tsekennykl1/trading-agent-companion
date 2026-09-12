@@ -18,7 +18,7 @@ export function ReportsSection({ run }: { run: RunRecord }) {
     );
   }
 
-  const current = available.find((s) => s.key === active) ?? available[0];
+  const current = available.find((s) => s.key === active) ?? available[0]!;
 
   return (
     <section className="panel overflow-hidden">
@@ -63,7 +63,7 @@ export function ReportsSection({ run }: { run: RunRecord }) {
           className="prose-report max-h-[32rem] overflow-y-auto px-5 py-5 text-sm"
           // Content is generated locally by the user's own engine and rendered
           // through a restricted markdown subset (headings, lists, tables, emphasis).
-          dangerouslySetInnerHTML={{ __html: markdownToHtml(run.reports[current.key]) }}
+          dangerouslySetInnerHTML={{ __html: markdownToHtml(run.reports[current.key] ?? "") }}
         />
       </div>
     </section>

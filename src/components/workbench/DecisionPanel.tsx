@@ -2,7 +2,11 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { Decision } from "@/lib/trading-agents/types";
 import { cn } from "@/lib/utils";
 
-const TONE: Record<string, { cls: string; Icon: typeof Minus }> = {
+type Tone = { cls: string; Icon: typeof Minus };
+
+const FALLBACK_TONE: Tone = { cls: "bg-muted text-muted-foreground border-rule", Icon: Minus };
+
+const TONE: Record<string, Tone> = {
   Buy: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
   Overweight: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
   Hold: { cls: "bg-neutral/12 text-neutral border-neutral/30", Icon: Minus },
@@ -12,7 +16,7 @@ const TONE: Record<string, { cls: string; Icon: typeof Minus }> = {
 };
 
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
-  const tone = TONE[decision.action] ?? TONE.Review;
+  const tone = TONE[decision.action] ?? FALLBACK_TONE;
   const { Icon } = tone;
 
   return (
