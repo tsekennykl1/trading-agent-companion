@@ -405,6 +405,8 @@ def execute(run_id: str, cfg: RunConfig) -> None:
 
         record["status"] = "running"
         record["prices"] = build_prices(cfg.ticker, cfg.analysisDate)
+        build_charts(record)
+
 
         graph = TradingAgentsGraph(selected_analysts=selected, debug=False, config=config)
         init_state = graph.propagator.create_initial_state(cfg.ticker, cfg.analysisDate)
