@@ -82,7 +82,7 @@ function escapeHtml(s: string) {
 }
 
 /** Minimal markdown -> HTML for the exported standalone report. */
-function markdownToHtml(md: string): string {
+export function markdownToHtml(md: string): string {
   const out: string[] = [];
   let inList = false;
   let inTable = false;
