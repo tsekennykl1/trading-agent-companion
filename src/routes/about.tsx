@@ -43,8 +43,6 @@ const LAYERS = [
   ["Audit layer", "Run metadata: timestamp, provider/model, runtime, token counts and decision trail."],
 ];
 
-export default function noop() {}
-
 function About() {
   return (
     <AppShell>
