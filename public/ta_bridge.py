@@ -465,16 +465,41 @@ def start_run(cfg: RunConfig) -> dict[str, str]:
     return {"run_id": run_id}
 
 
+def public_view(record: dict[str, Any]) -> dict[str, Any]:
+    """JSON-safe copy: chart payloads are served by their own endpoints."""
+    return {k: v for k, v in record.items() if k not in ("chartHtml", "_chartPng")}
+
+
 @app.get("/runs")
 def list_runs() -> list[dict[str, Any]]:
-    return sorted(RUNS.values(), key=lambda r: r["startedAt"], reverse=True)
+    return [public_view(r) for r in sorted(RUNS.values(), key=lambda r: r["startedAt"], reverse=True)]
 
 
 @app.get("/runs/{run_id}")
 def get_run(run_id: str) -> dict[str, Any]:
     if run_id not in RUNS:
         raise HTTPException(status_code=404, detail="Unknown run")
-    return RUNS[run_id]
+    return public_view(RUNS[run_id])
+
+
+@app.get("/runs/{run_id}/chart.html")
+def chart_html(run_id: str) -> HTMLResponse:
+    """Interactive Plotly chart generated in Python, embedded by the dashboard."""
+    if run_id not in RUNS:
+        raise HTTPException(status_code=404, detail="Unknown run")
+    html = RUNS[run_id].get("chartHtml") or "<html><body><p>Chart not ready yet.</p></body></html>"
+    return HTMLResponse(content=html)
+
+
+@app.get("/runs/{run_id}/chart.png")
+def chart_png(run_id: str) -> Response:
+    """Static Matplotlib chart generated in Python (for reports and slides)."""
+    if run_id not in RUNS:
+        raise HTTPException(status_code=404, detail="Unknown run")
+    png = RUNS[run_id].get("_chartPng") or b""
+    if not png:
+        raise HTTPException(status_code=404, detail="Chart not ready yet")
+    return Response(content=png, media_type="image/png")
 
 
 @app.post("/runs/{run_id}/cancel")
@@ -483,6 +508,7 @@ def cancel_run(run_id: str) -> dict[str, bool]:
         raise HTTPException(status_code=404, detail="Unknown run")
     CANCELLED.add(run_id)
     return {"ok": True}
+
 
 
 if __name__ == "__main__":
