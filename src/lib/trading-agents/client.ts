@@ -204,47 +204,92 @@ export function normalizeRun(raw: unknown): RunRecord {
         : "completed") as RunRecord["agents"][number]["status"],
   }));
 
-  // Analyst stances derived from the state sections
+  // Analyst stances derived from the state sections. TradingAgents stores them
+  // as markdown strings (market_report, sentiment_report, ...); other bridges
+  // use nested objects (technical_analysis, ...). Handle both.
   const stances: RunRecord["stances"] = [];
-  const stateLabels: Record<string, string> = {
-    technical_analysis: "Market Analyst",
-    sentiment_analysis: "Sentiment Analyst",
-    fundamental_analysis: "Fundamentals Analyst",
-    risk_assessment: "Risk Assessment",
+  const stanceSources: [string[], string][] = [
+    [["market_report", "technical_analysis"], "Market Analyst"],
+    [["sentiment_report", "sentiment_analysis"], "Sentiment Analyst"],
+    [["news_report"], "News Analyst"],
+    [["fundamentals_report", "fundamental_analysis"], "Fundamentals Analyst"],
+    [["final_trade_decision", "risk_assessment"], "Risk Assessment"],
+  ];
+  const sectionText = (section: unknown): string => {
+    if (typeof section === "string") return section;
+    if (section && typeof section === "object") {
+      return Object.values(section as Record<string, unknown>)
+        .flatMap((v) => (Array.isArray(v) ? v : [v]))
+        .filter((v) => typeof v === "string")
+        .join(" ");
+    }
+    return "";
   };
-  for (const [key, label] of Object.entries(stateLabels)) {
-    const section = state[key];
-    if (!section) continue;
-    const text = Object.values(section)
-      .flatMap((v) => (Array.isArray(v) ? v : [v]))
-      .filter((v) => typeof v === "string")
-      .join(" ");
-    stances.push({ agent: label, ...stanceScore(text) });
+  for (const [keys, label] of stanceSources) {
+    const text = keys.map((k) => sectionText(state[k])).filter(Boolean).join(" ");
+    if (text) stances.push({ agent: label, ...stanceScore(text) });
   }
 
-  // Reports from state sections
+  // Reports: map TradingAgents state keys onto the dashboard's report tabs.
   const reports: Record<string, string> = {};
+  const stringReportKeys = [
+    "market_report",
+    "sentiment_report",
+    "news_report",
+    "fundamentals_report",
+    "investment_plan",
+  ];
+  for (const key of stringReportKeys) {
+    const v = state[key];
+    if (typeof v === "string" && v.trim()) reports[key] = v;
+  }
+  if (typeof state["trader_investment_plan"] === "string" && state["trader_investment_plan"]) {
+    reports["trader_plan"] = state["trader_investment_plan"] as string;
+  }
+  if (typeof state["final_trade_decision"] === "string" && state["final_trade_decision"]) {
+    reports["final_decision"] = state["final_trade_decision"] as string;
+  }
+  const debate = state["investment_debate_state"] as Record<string, unknown> | undefined;
+  if (debate) {
+    if (typeof debate["bull_history"] === "string" && debate["bull_history"]) reports["bull_report"] = debate["bull_history"];
+    if (typeof debate["bear_history"] === "string" && debate["bear_history"]) reports["bear_report"] = debate["bear_history"];
+  }
+  const riskDebate = state["risk_debate_state"] as Record<string, unknown> | undefined;
+  if (riskDebate) {
+    if (typeof riskDebate["aggressive_history"] === "string" && riskDebate["aggressive_history"])
+      reports["risk_aggressive"] = riskDebate["aggressive_history"];
+    if (typeof riskDebate["conservative_history"] === "string" && riskDebate["conservative_history"])
+      reports["risk_conservative"] = riskDebate["conservative_history"];
+    if (typeof riskDebate["neutral_history"] === "string" && riskDebate["neutral_history"])
+      reports["risk_neutral"] = riskDebate["neutral_history"];
+  }
+  // Generic fallback: any other object-valued state section becomes a report.
   for (const [key, section] of Object.entries(state)) {
-    if (section && typeof section === "object") {
-      reports[key] = Object.entries(section)
+    if (reports[key] || typeof section === "string") continue;
+    if (section && typeof section === "object" && !Array.isArray(section) && key !== "investment_debate_state" && key !== "risk_debate_state") {
+      reports[key] = Object.entries(section as Record<string, unknown>)
         .map(([k, v]) => `- **${titleCase(k)}:** ${Array.isArray(v) ? v.join(", ") : String(v)}`)
         .join("\n");
     }
   }
   if (logs.length) reports["engine_log"] = logs.map((l) => `- ${l}`).join("\n");
 
-  // Decision
-  const d = result?.decision;
+  // Decision: accept either an action word ("Hold") or a structured object.
+  const rawDecision = result?.decision;
+  const d = typeof rawDecision === "object" && rawDecision !== null ? rawDecision : undefined;
+  const decisionWord = typeof rawDecision === "string" ? rawDecision : d?.action;
+  const finalText = typeof state["final_trade_decision"] === "string" ? state["final_trade_decision"] : "";
   const confidenceRaw = typeof d?.confidence === "number" ? d.confidence : 0;
   const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
-  const riskSection = state["risk_assessment"];
+  const riskSection = state["risk_assessment"] as Record<string, unknown> | undefined;
   const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
     ? (riskSection["key_risks"] as string[])
     : [];
-  const actionText = titleCase(d?.action ?? "Review");
+  const actionText = titleCase(decisionWord ?? "Review");
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
+  const summaryText = d?.summary ?? finalText || (result?.summary ?? "");
 
   const record: RunRecord = {
     id: raw.run_id,
