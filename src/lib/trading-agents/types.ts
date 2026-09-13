@@ -69,6 +69,25 @@ export interface RunProgress {
   totalSteps: number;
 }
 
+/** Incremental data the engine publishes before the AI analysis finishes. */
+export interface RunPartial {
+  configReady?: boolean;
+  marketDataReady?: boolean;
+  chartsReady?: boolean;
+  decisionReady?: boolean;
+  stockName?: string;
+  latestPrice?: number;
+  latestRsi14?: number;
+  latestEma20?: number;
+  latestEma50?: number;
+  changePct?: number;
+  pricePoints?: number;
+  /** Absolute URLs to the engine's chart artifacts. */
+  chartHtmlUrl?: string;
+  chartPngUrl?: string;
+  warnings: string[];
+}
+
 export interface RunRecord {
   id: string;
   status: "queued" | "running" | "completed" | "error";
@@ -83,6 +102,10 @@ export interface RunRecord {
   stances: StancePoint[];
   reports: Record<string, string>;
   decision?: Decision;
+  /** Whatever the engine has produced so far (market data, charts, warnings). */
+  partial?: RunPartial;
+  /** Raw engine log lines, newest last. */
+  logs?: string[];
   stats: RunStats;
   source: "engine" | "sample";
   error?: string;
