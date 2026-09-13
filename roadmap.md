@@ -49,3 +49,10 @@
 - [x] Present agent progress and structured report fields as compact tables.
 - [x] Send analyst selections in both legacy and enhanced backend request fields.
 - [x] Verify analyst request payloads, desktop/iPhone layouts, and a clean preview build.
+
+# Report table fit and Simple dashboard results
+
+- [x] Fit structured report Field columns to their labels instead of splitting tables evenly.
+- [x] Use normalized live-run data and independent chart discovery in the Simple dashboard.
+- [x] Show recommendation summary, confidence, and report availability in the Simple dashboard.
+- [x] Verify report proportions, desktop/iPhone layouts, and a clean preview build.

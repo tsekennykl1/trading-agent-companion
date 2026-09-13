@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { ConfidenceChart } from "@/components/workbench/RunCharts";
+import { DecisionPanel } from "@/components/workbench/DecisionPanel";
+import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
+import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { Button } from "@/components/ui/button";
-import { getBridgeUrl, runConfigPayload } from "@/lib/trading-agents/client";
-import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
+import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
+import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 
 const TITLE = "Simple Dashboard — TradingAgents Workbench";
 const DESCRIPTION =
@@ -31,9 +36,7 @@ function SimpleDashboard() {
   const [runId, setRunId] = useState(null);
   const [run, setRun] = useState(null);
   const [error, setError] = useState("");
-  const [chartKind, setChartKind] = useState("plotly");
   const [busy, setBusy] = useState(false);
-  const timer = useRef(null);
 
   useEffect(() => {
     setDate(new Date().toISOString().slice(0, 10));
@@ -42,23 +45,25 @@ function SimpleDashboard() {
   // Poll the local Python engine while a run is in flight.
   useEffect(() => {
     if (!runId) return undefined;
-    const base = getBridgeUrl().replace(/\/$/, "");
+    let active = true;
+    let timer;
     const tick = async () => {
       try {
-        const res = await fetch(`${base}/runs/${runId}`);
-        if (!res.ok) throw new Error(`Engine responded ${res.status}`);
-        const data = await res.json();
+        const data = await api.getRun(runId);
+        if (!active) return;
         setRun(data);
-        if (data.status === "completed" || data.status === "error") {
-          clearInterval(timer.current);
+        if (data.status !== "completed" && data.status !== "error") {
+          timer = window.setTimeout(tick, data.pollAfterMs ?? 3000);
         }
       } catch (e) {
-        setError(e.message);
+        if (active) setError(e instanceof Error ? e.message : "Could not refresh this run");
       }
     };
-    tick();
-    timer.current = setInterval(tick, 2500);
-    return () => clearInterval(timer.current);
+    void tick();
+    return () => {
+      active = false;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [runId]);
 
   const start = async (e) => {
@@ -66,43 +71,42 @@ function SimpleDashboard() {
     setError("");
     setBusy(true);
     try {
-      const base = getBridgeUrl().replace(/\/$/, "");
-      const res = await fetch(`${base}/runs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          runConfigPayload({
-            ticker,
-            analysisDate: date,
-            provider: "DeepSeek",
-            quickModel: "",
-            deepModel: "",
-            researchDepth: depth,
-            analysts: ["Market Analyst"],
+      const data = await api.startRun({
+        ticker,
+        analysisDate: date,
+        provider: "DeepSeek",
+        quickModel: "",
+        deepModel: "",
+        researchDepth: depth,
+        analysts: ["Market Analyst"],
           language: "English",
-          })
-        ),
       });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`Engine responded ${res.status}${text ? `: ${text.slice(0, 300)}` : ""}`);
-      }
-      const data = await res.json();
       setRunId(data.run_id);
       setRun(null);
     } catch (err) {
-      const hint = /responded 4\d\d/.test(err.message)
+      const message = err instanceof Error ? err.message : "Could not start the analysis";
+      const hint = /responded 4\d\d/.test(message)
         ? "The engine rejected the run settings — see the message above for the field it expects."
         : "Start the Python bridge, then check the Connect engine page.";
-      setError(`${err.message}. ${hint}`);
+      setError(`${message}. ${hint}`);
     } finally {
       setBusy(false);
     }
   };
 
-  const base = getBridgeUrl().replace(/\/$/, "");
   const decision = run?.decision ?? null;
-  const sample = SAMPLE_RUN.decision;
+  const running = run?.status === "running" || run?.status === "queued";
+  const probedArtifacts = useRunArtifacts(run ?? undefined, Boolean(run));
+  const legacyCharts = run?.charts;
+  const artifacts = {
+    ...probedArtifacts,
+    chartHtmlUrl:
+      probedArtifacts.chartHtmlUrl ||
+      (legacyCharts?.plotly ? bridgeAssetUrl(legacyCharts.plotly) : undefined),
+    chartPngUrl:
+      probedArtifacts.chartPngUrl ||
+      (legacyCharts?.png ? bridgeAssetUrl(legacyCharts.png) : undefined),
+  };
 
   return (
     <AppShell>
@@ -160,76 +164,39 @@ function SimpleDashboard() {
           <p className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">{error}</p>
         )}
 
-        {run && (
-          <p className="text-sm text-muted-foreground">
-            Run <span className="font-mono">{run.id}</span> — status {run.status}
-            {run.error ? ` — ${run.error}` : ""}
-          </p>
-        )}
-
-        <section className="panel p-4 sm:p-5">
-          <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
-            <h2 className="text-base font-semibold">Price trend and moving averages (Python)</h2>
-            <div className="grid grid-cols-2 gap-1 text-xs">
-              {["plotly", "png"].map((k) => (
-                <Button
-                  key={k}
-                  type="button"
-                  onClick={() => setChartKind(k)}
-                  variant={chartKind === k ? "secondary" : "ghost"}
-                  size="sm"
-                  className="min-h-10 min-w-0 whitespace-normal px-2 leading-tight sm:min-h-8"
-                >
-                  {k === "plotly" ? "Interactive (Plotly)" : "Static (Matplotlib)"}
-                </Button>
-              ))}
+        {run ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-sm text-muted-foreground">
+              <p className="min-w-0 truncate">
+                Run <span className="font-mono">{run.id}</span> · {run.status}
+              </p>
+              {running && <Loader2 className="size-4 shrink-0 animate-spin text-primary motion-reduce:animate-none" aria-label="Analysis in progress" />}
             </div>
-          </div>
 
-          <div className="mt-4">
-            {runId && run?.charts?.plotly ? (
-              chartKind === "plotly" ? (
-                <iframe
-                  title="Plotly price chart"
-                  src={`${base}/runs/${runId}/chart.html`}
-                  className="h-[300px] w-full rounded-md border border-rule bg-surface sm:h-[420px]"
-                />
-              ) : (
-                <img
-                  src={`${base}/runs/${runId}/chart.png`}
-                  alt={`${run.config.ticker} price trend with 10-EMA, 20-SMA and 50-SMA, drawn with Matplotlib`}
-                  className="w-full rounded-md border border-rule"
-                />
-              )
+            <LiveSnapshot run={run} artifacts={artifacts} />
+
+            {decision ? (
+              <>
+                <DecisionPanel decision={decision} ticker={run.config.ticker} />
+                <ConfidenceChart decision={decision} stances={run.stances} />
+              </>
             ) : (
-              <p className="rounded-md border border-dashed border-rule px-4 py-10 text-center text-sm text-muted-foreground">
-                The chart is rendered by the Python engine and appears here once a run starts.
-              </p>
+              <section className="panel flex items-center gap-3 px-4 py-5" role="status">
+                <Loader2 className="size-5 shrink-0 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold">Recommendation pending</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">The report summary and confidence score will appear when the decision is ready.</p>
+                </div>
+              </section>
             )}
-          </div>
-        </section>
 
-        <section className="panel p-4 sm:p-5">
-          <h2 className="text-base font-semibold">Recommendation</h2>
-          {decision ? (
-            <div className="mt-3 space-y-2 text-sm">
-              <p className="font-display text-2xl font-semibold">{decision.action}</p>
-              <p className="text-muted-foreground">
-                Confidence {decision.confidence}% · Consensus {decision.consensus}
-              </p>
-              <p>{decision.executiveSummary}</p>
-            </div>
-          ) : (
-            <div className="mt-3 space-y-2 text-sm">
-              <p className="text-muted-foreground">
-                No live decision yet. Saved sample ({SAMPLE_RUN.config.ticker},{" "}
-                {SAMPLE_RUN.config.analysisDate}):
-              </p>
-              <p className="font-display text-2xl font-semibold">{sample?.action}</p>
-              <p>{sample?.executiveSummary}</p>
-            </div>
-          )}
-        </section>
+            <ReportsSection run={run} />
+          </div>
+        ) : (
+          <section className="panel px-4 py-10 text-center text-sm text-muted-foreground">
+            Run an analysis to display the chart, recommendation summary, confidence score, and available reports.
+          </section>
+        )}
 
         <p className="text-xs text-muted-foreground">
           Research prototype. Not financial advice and not an autonomous trading system.
