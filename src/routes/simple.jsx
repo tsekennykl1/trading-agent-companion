@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { Button } from "@/components/ui/button";
-import { getBridgeUrl } from "@/lib/trading-agents/client";
+import { getBridgeUrl, runConfigPayload } from "@/lib/trading-agents/client";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 
 const TITLE = "Simple Dashboard — TradingAgents Workbench";
@@ -70,23 +70,31 @@ function SimpleDashboard() {
       const res = await fetch(`${base}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticker,
-          analysisDate: date,
-          provider: "DeepSeek",
-          quickModel: "",
-          deepModel: "",
-          researchDepth: depth,
-          analysts: ["Market Analyst"],
+        body: JSON.stringify(
+          runConfigPayload({
+            ticker,
+            analysisDate: date,
+            provider: "DeepSeek",
+            quickModel: "",
+            deepModel: "",
+            researchDepth: depth,
+            analysts: ["Market Analyst"],
           language: "English",
-        }),
+          })
+        ),
       });
-      if (!res.ok) throw new Error(`Engine responded ${res.status}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Engine responded ${res.status}${text ? `: ${text.slice(0, 300)}` : ""}`);
+      }
       const data = await res.json();
       setRunId(data.run_id);
       setRun(null);
     } catch (err) {
-      setError(`${err.message}. Start the Python bridge, then check the Connect engine page.`);
+      const hint = /responded 4\d\d/.test(err.message)
+        ? "The engine rejected the run settings — see the message above for the field it expects."
+        : "Start the Python bridge, then check the Connect engine page.";
+      setError(`${err.message}. ${hint}`);
     } finally {
       setBusy(false);
     }

@@ -68,8 +68,10 @@ function Workbench() {
       toast.success("Analysis started on your local engine");
     },
     onError: (e: Error) =>
-      toast.error("Could not reach the engine", {
-        description: `${e.message}. Check the connection on the Connect engine page.`,
+      toast.error(/responded 4\d\d/.test(e.message) ? "The engine rejected the run settings" : "Could not reach the engine", {
+        description: /responded 4\d\d/.test(e.message)
+          ? e.message
+          : `${e.message}. Check the connection on the Connect engine page.`,
       }),
   });
 
