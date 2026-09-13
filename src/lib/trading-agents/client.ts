@@ -416,6 +416,8 @@ export function normalizeRun(raw: unknown): RunRecord {
       language: "English",
     },
     startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),
+    logs,
+    ...(readPartial(partial, raw.run_id) ? { partial: readPartial(partial, raw.run_id)! } : {}),
     agents,
     prices: [],
     stances,
