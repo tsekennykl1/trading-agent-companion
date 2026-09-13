@@ -11,17 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ANALYST_OPTIONS, PROVIDER_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
-
-const DEFAULT_MODELS = ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"];
-
-const MODELS: Record<string, string[]> = {
-  DeepSeek: ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"],
-  OpenAI: ["gpt-4.1-mini", "gpt-4.1", "o4-mini"],
-  Anthropic: ["claude-haiku-4.5", "claude-sonnet-4.5"],
-  Google: ["gemini-2.5-flash", "gemini-2.5-pro"],
-  Qwen: ["qwen-plus", "qwen-max"],
-};
+import { ANALYST_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -33,8 +23,6 @@ interface Props {
 
 export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: Props) {
   const [config, setConfig] = useState<RunConfig>(defaultConfig);
-  const modelsFor = (provider: string): string[] => MODELS[provider] ?? DEFAULT_MODELS;
-  const models = modelsFor(config.provider);
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
@@ -85,33 +73,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="label-caps">LLM provider</Label>
-          <Select
-            value={config.provider}
-            onValueChange={(v) =>
-              setConfig((c) => ({
-                ...c,
-                provider: v,
-                quickModel: modelsFor(v)[0] ?? "",
-                deepModel: modelsFor(v)[0] ?? "",
-              }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PROVIDER_OPTIONS.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 sm:col-span-2">
           <Label className="label-caps">Research depth</Label>
           <Select
             value={config.researchDepth}
@@ -124,38 +86,6 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               <SelectItem value="Shallow">Shallow — quick, few debate rounds</SelectItem>
               <SelectItem value="Medium">Medium — balanced debate</SelectItem>
               <SelectItem value="Deep">Deep — extended debate rounds</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="label-caps">Quick-thinking engine</Label>
-          <Select value={config.quickModel} onValueChange={(v) => update("quickModel", v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="label-caps">Deep-thinking engine</Label>
-          <Select value={config.deepModel} onValueChange={(v) => update("deepModel", v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>
