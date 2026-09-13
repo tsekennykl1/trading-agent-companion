@@ -30,24 +30,27 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
   const toggleAnalyst = (name: string, checked: boolean) =>
     setConfig((c) => ({
       ...c,
-      analysts: checked ? [...c.analysts, name] : c.analysts.filter((a) => a !== name),
+      analysts: checked ? Array.from(new Set([...c.analysts, name])) : c.analysts.filter((a) => a !== name),
     }));
 
   return (
     <form
-      className="panel p-4 sm:p-5"
+      className="panel overflow-hidden"
       onSubmit={(e) => {
         e.preventDefault();
         onRun(config);
       }}
     >
-      <h2 className="text-lg font-semibold">New analysis</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Sent to your local TradingAgents engine — the same inputs as the CLI prompts.
-      </p>
+      <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
+        <h2 className="text-lg font-semibold">New analysis</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose the market, date, research depth, and specialists for this run.
+        </p>
+      </header>
 
-       <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2">
-         <div className="min-w-0 space-y-1.5">
+      <div className="p-4 sm:p-5">
+        <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]">
+          <div className="min-w-0 space-y-1.5">
           <Label htmlFor="ticker" className="label-caps">
             Ticker
           </Label>
@@ -59,8 +62,8 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
             required
             className="font-mono"
           />
-        </div>
-         <div className="min-w-0 space-y-1.5">
+          </div>
+          <div className="min-w-0 space-y-1.5">
           <Label htmlFor="date" className="label-caps">
             Analysis date
           </Label>
@@ -71,9 +74,9 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
             onChange={(e) => update("analysisDate", e.target.value)}
             required
           />
-        </div>
+          </div>
 
-         <div className="min-w-0 space-y-1.5 sm:col-span-2">
+          <div className="min-w-0 space-y-1.5">
           <Label className="label-caps">Research depth</Label>
           <Select
             value={config.researchDepth}
@@ -88,16 +91,21 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               <SelectItem value="Deep">Deep — extended debate rounds</SelectItem>
             </SelectContent>
           </Select>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-5">
-        <Label className="label-caps">Analyst team</Label>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <div className="mt-5 border-t border-rule pt-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <Label className="label-caps">Analyst team</Label>
+            <span className="text-xs text-muted-foreground">
+              {config.analysts.length} of {ANALYST_OPTIONS.length} selected
+            </span>
+          </div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {ANALYST_OPTIONS.map((a) => (
             <label
               key={a}
-              className="flex cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors hover:bg-muted"
+              className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
             >
               <Checkbox
                 checked={config.analysts.includes(a)}
@@ -106,10 +114,10 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               {a}
             </label>
           ))}
+          </div>
         </div>
-      </div>
 
-       <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+        <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {running ? (
           <Button type="button" variant="outline" onClick={onCancel} className="min-h-11 gap-2 sm:min-h-9">
             <Square className="size-4" /> Stop run
@@ -124,10 +132,11 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
             <Loader2 className="size-4 animate-spin" /> Agents are working…
           </span>
         )}
+        </div>
+        {config.analysts.length === 0 && (
+          <p className="mt-2 text-xs text-bear">Select at least one analyst.</p>
+        )}
       </div>
-      {config.analysts.length === 0 && (
-        <p className="mt-2 text-xs text-bear">Select at least one analyst.</p>
-      )}
     </form>
   );
 }
