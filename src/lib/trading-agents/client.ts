@@ -119,6 +119,17 @@ type EngineRun = {
   logs?: string[];
 };
 
+/** Map the many status spellings engines use onto the dashboard's four states. */
+export function canonicalStatus(raw: string | undefined): RunRecord["status"] {
+  const s = (raw ?? "").toLowerCase();
+  if (["completed", "complete", "success", "succeeded", "finished", "done", "ok"].includes(s)) {
+    return "completed";
+  }
+  if (["failed", "error", "cancelled", "canceled", "aborted", "timeout"].includes(s)) return "error";
+  if (["queued", "pending", "created", "accepted"].includes(s)) return "queued";
+  return "running";
+}
+
 function isEngineRun(raw: unknown): raw is EngineRun {
   return typeof raw === "object" && raw !== null && "run_id" in raw && !("config" in raw);
 }
