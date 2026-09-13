@@ -20,7 +20,7 @@ export function BridgeStatusBadge() {
   return (
     <Link
       to="/setup"
-      className="flex items-center gap-2 rounded-full border border-rule bg-card px-3 py-1.5 text-xs transition-colors hover:bg-muted"
+      className="flex min-h-9 items-center gap-2 rounded-full border border-rule bg-card px-2.5 py-1.5 text-xs transition-colors hover:bg-muted sm:px-3"
     >
       <span
         className={cn(
@@ -29,7 +29,7 @@ export function BridgeStatusBadge() {
         )}
       />
       <span className="font-medium">
-        {isLoading ? "Checking engine…" : online ? "Engine connected" : "Engine offline"}
+        {isLoading ? "Checking…" : online ? "Connected" : "Offline"}
       </span>
       <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">{getBridgeUrl()}</span>
     </Link>

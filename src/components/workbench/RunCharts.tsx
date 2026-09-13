@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Decision, PricePoint, StancePoint } from "@/lib/trading-agents/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AXIS = { stroke: "var(--muted-foreground)", fontSize: 11 };
 
@@ -26,15 +27,17 @@ const tooltipStyle = {
 } as const;
 
 export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: string }) {
+  const isMobile = useIsMobile();
+
   return (
-    <section className="panel p-5">
+    <section className="panel p-4 sm:p-5">
       <h3 className="text-base font-semibold">Price trend and moving averages — {ticker}</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         Close versus 10-EMA, 20-SMA and 50-SMA over the analysis window.
       </p>
-      <div className="mt-4 h-64">
+      <div className="mt-4 h-56 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 5, right: isMobile ? 2 : 8, left: isMobile ? -28 : -12, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" vertical={false} />
             <XAxis dataKey="date" tick={AXIS} tickLine={false} axisLine={{ stroke: "var(--rule)" }} />
             <YAxis tick={AXIS} tickLine={false} axisLine={false} domain={["auto", "auto"]} />
@@ -51,18 +54,20 @@ export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: strin
 }
 
 export function StanceChart({ data }: { data: StancePoint[] }) {
+  const isMobile = useIsMobile();
+
   return (
-    <section className="panel p-5">
+    <section className="panel p-4 sm:p-5">
       <h3 className="text-base font-semibold">Agent stance and consensus</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         Interpretive score derived from each agent's output: −100 fully bearish to +100 fully bullish.
       </p>
       <div className="mt-4 h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 5, right: 16, left: 34, bottom: 0 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" horizontal={false} />
             <XAxis type="number" domain={[-100, 100]} tick={AXIS} tickLine={false} axisLine={{ stroke: "var(--rule)" }} />
-            <YAxis type="category" dataKey="agent" width={124} tick={AXIS} tickLine={false} axisLine={false} />
+            <YAxis type="category" dataKey="agent" width={isMobile ? 82 : 124} tick={AXIS} tickLine={false} axisLine={false} />
             <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} />
             <Bar dataKey="score" name="Stance score" radius={[3, 3, 3, 3]} barSize={14}>
               {data.map((d) => (
@@ -92,12 +97,12 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
   );
 
   return (
-    <section className="panel p-5">
+    <section className="panel p-4 sm:p-5">
       <h3 className="text-base font-semibold">Recommendation confidence</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         Confidence and agreement are interpretive proxies computed from agent alignment.
       </p>
-      <div className="mt-3 flex items-center gap-6">
+      <div className="mt-3 flex flex-col items-center gap-3 min-[380px]:flex-row min-[380px]:gap-4 sm:gap-6">
         <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
@@ -117,7 +122,7 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
           </div>
         </div>
 
-        <dl className="space-y-2 text-sm">
+        <dl className="w-full space-y-2 text-sm min-[380px]:w-auto">
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-bull" />
             <dt className="text-muted-foreground">Bullish agents</dt>

@@ -44,8 +44,8 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
   const showDetails = isRunning || expanded;
 
   return (
-    <section className="panel p-5">
-      <div className="flex items-baseline justify-between">
+    <section className="panel p-4 sm:p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
         <h2 className="text-lg font-semibold">Agent progress</h2>
         <span className="font-mono text-xs text-muted-foreground">
           {counts.completed}/{agents.length} agents
@@ -88,7 +88,7 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
                     )}
                   >
                     <StatusIcon status={a.status} />
-                    <span className={cn(a.status === "pending" && "text-muted-foreground")}>{a.agent}</span>
+                    <span className={cn("min-w-0 break-words", a.status === "pending" && "text-muted-foreground")}>{a.agent}</span>
                     <span className="ml-auto shrink-0 font-mono text-[11px] text-muted-foreground">
                       {a.time ?? (a.note === "Not selected" ? "skipped" : "")}
                     </span>
@@ -122,7 +122,7 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
         </Button>
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-rule pt-4 text-xs">
+      <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 border-t border-rule pt-4 text-xs min-[380px]:grid-cols-2">
         {[
           ["LLM calls", stats.llmCalls],
           ["Tool calls", stats.toolCalls],

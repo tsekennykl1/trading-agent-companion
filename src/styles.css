@@ -161,13 +161,14 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv05", "ss01";
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
-    letter-spacing: -0.015em;
+    letter-spacing: 0;
   }
 }
 

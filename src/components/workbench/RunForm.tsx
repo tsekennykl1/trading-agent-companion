@@ -35,7 +35,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
 
   return (
     <form
-      className="panel p-5"
+      className="panel p-4 sm:p-5"
       onSubmit={(e) => {
         e.preventDefault();
         onRun(config);
@@ -46,8 +46,8 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
         Sent to your local TradingAgents engine — the same inputs as the CLI prompts.
       </p>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
+       <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2">
+         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="ticker" className="label-caps">
             Ticker
           </Label>
@@ -60,7 +60,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
             className="font-mono"
           />
         </div>
-        <div className="space-y-1.5">
+         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="date" className="label-caps">
             Analysis date
           </Label>
@@ -73,13 +73,13 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
           />
         </div>
 
-        <div className="space-y-1.5 sm:col-span-2">
+         <div className="min-w-0 space-y-1.5 sm:col-span-2">
           <Label className="label-caps">Research depth</Label>
           <Select
             value={config.researchDepth}
             onValueChange={(v) => update("researchDepth", v as RunConfig["researchDepth"])}
           >
-            <SelectTrigger>
+             <SelectTrigger className="w-full min-w-0 [&>span]:truncate">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,18 +109,18 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
         </div>
       </div>
 
-      <div className="mt-5 flex items-center gap-3">
+       <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {running ? (
-          <Button type="button" variant="outline" onClick={onCancel} className="gap-2">
+          <Button type="button" variant="outline" onClick={onCancel} className="min-h-11 gap-2 sm:min-h-9">
             <Square className="size-4" /> Stop run
           </Button>
         ) : (
-          <Button type="submit" disabled={disabled || config.analysts.length === 0} className="gap-2">
+          <Button type="submit" disabled={disabled || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
             <Play className="size-4" /> Run analysis
           </Button>
         )}
         {running && (
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
             <Loader2 className="size-4 animate-spin" /> Agents are working…
           </span>
         )}
