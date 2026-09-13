@@ -240,9 +240,7 @@ export function normalizeRun(raw: unknown): RunRecord {
     reports,
     decision: d
       ? {
-          action: (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"].includes(actionText)
-            ? actionText
-            : "Review") as RunRecord["decision"] extends infer T ? (T extends { action: infer A } ? A : never) : never,
+          action,
           rating: actionText,
           confidence,
           consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
