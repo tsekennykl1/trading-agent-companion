@@ -63,6 +63,45 @@ ANALYST_KEYS = {
 
 ACTION_WORDS = ["Overweight", "Underweight", "Buy", "Hold", "Sell"]
 
+# Display names the dashboard may send -> names your TradingAgents install accepts.
+MODEL_ALIASES: dict[str, str] = {
+    # DeepSeek
+    "deepseek-flash": "deepseek-flash",
+    "deepseek v4 flash": "deepseek-flash",
+    "deepseek v4 pro": "deepseek-v4-pro",
+    "deepseek-v4-pro": "deepseek-v4-pro",
+    "deepseek v3": "deepseek-chat",
+    "deepseek-chat": "deepseek-chat",
+    "deepseek r1": "deepseek-reasoner",
+    "deepseek-reasoner": "deepseek-reasoner",
+    # OpenAI
+    "gpt-5.6": "gpt-5.6",
+    "gpt-4o": "gpt-4o",
+    "gpt-4o-mini": "gpt-4o-mini",
+    "o3-mini": "o3-mini",
+    # Anthropic
+    "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
+    "claude-3-7-sonnet-latest": "claude-3-7-sonnet-latest",
+    "claude-3-5-sonnet": "claude-3-5-sonnet-latest",
+    "claude-3-5-sonnet-latest": "claude-3-5-sonnet-latest",
+    "claude-3-opus": "claude-3-opus-latest",
+    "claude-3-opus-latest": "claude-3-opus-latest",
+    # Google
+    "gemini-2.5-pro": "gemini-2.5-pro-preview-03-25",
+    "gemini-2.5-flash": "gemini-2.5-flash-preview-04-17",
+    # Qwen
+    "qwen3-235b-a22b": "qwen3-235b-a22b",
+    "qwen3-30b-a3b": "qwen3-30b-a3b",
+    "qwen-max": "qwen-max",
+}
+
+def normalize_model(name: str) -> str:
+    """Map a user-facing model label to the exact API id the engine expects."""
+    if not name:
+        return name
+    key = name.strip().lower()
+    return MODEL_ALIASES.get(key, name)
+
 app = FastAPI(title="TradingAgents Workbench bridge")
 app.add_middleware(
     CORSMiddleware,
@@ -396,9 +435,9 @@ def execute(run_id: str, cfg: RunConfig) -> None:
         config = dict(DEFAULT_CONFIG)
         config["llm_provider"] = cfg.provider.lower()
         if cfg.quickModel:
-            config["quick_think_llm"] = cfg.quickModel
+            config["quick_think_llm"] = normalize_model(cfg.quickModel)
         if cfg.deepModel:
-            config["deep_think_llm"] = cfg.deepModel
+            config["deep_think_llm"] = normalize_model(cfg.deepModel)
         rounds = {"Shallow": 1, "Medium": 2, "Deep": 3}.get(cfg.researchDepth, 1)
         config["max_debate_rounds"] = rounds
         config["max_risk_discuss_rounds"] = rounds
