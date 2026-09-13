@@ -251,11 +251,13 @@
 
 @utility report-columns {
   & > table {
-    table-layout: fixed;
+    table-layout: auto;
   }
   & > table th:first-child,
   & > table td:first-child {
-    width: min(14rem, 34%);
+    width: 1%;
+    max-width: 13rem;
+    overflow-wrap: anywhere;
   }
   & > table td {
     overflow-wrap: anywhere;
