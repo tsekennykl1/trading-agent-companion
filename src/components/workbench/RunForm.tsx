@@ -35,7 +35,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
 
   return (
     <form
-      className="panel p-5"
+      className="panel p-4 sm:p-5"
       onSubmit={(e) => {
         e.preventDefault();
         onRun(config);
@@ -109,18 +109,18 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
         </div>
       </div>
 
-      <div className="mt-5 flex items-center gap-3">
+       <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {running ? (
-          <Button type="button" variant="outline" onClick={onCancel} className="gap-2">
+          <Button type="button" variant="outline" onClick={onCancel} className="min-h-11 gap-2 sm:min-h-9">
             <Square className="size-4" /> Stop run
           </Button>
         ) : (
-          <Button type="submit" disabled={disabled || config.analysts.length === 0} className="gap-2">
+          <Button type="submit" disabled={disabled || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
             <Play className="size-4" /> Run analysis
           </Button>
         )}
         {running && (
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
             <Loader2 className="size-4 animate-spin" /> Agents are working…
           </span>
         )}

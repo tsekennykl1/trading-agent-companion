@@ -21,23 +21,23 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
 
   return (
     <section className="panel overflow-hidden">
-      <div className="flex flex-wrap items-center gap-4 border-b border-rule bg-surface px-5 py-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
         <span
           className={cn(
-            "flex items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold",
+            "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
             tone.cls,
           )}
         >
           <Icon className="size-5" />
           {decision.action}
         </span>
-        <div className="text-sm">
-          <p className="font-medium">{ticker} — portfolio management decision</p>
+        <div className="min-w-0 text-sm">
+          <p className="font-medium break-words">{ticker} — portfolio management decision</p>
           <p className="text-muted-foreground">
             Confidence {decision.confidence}% · {decision.consensus} consensus across agents
           </p>
         </div>
-        <div className="ml-auto flex gap-5 text-sm">
+        <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
           {[
             ["Entry", decision.entryPrice],
             ["Stop loss", decision.stopLoss],
@@ -50,7 +50,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
         </div>
       </div>
 
-      <div className="px-5 py-5">
+      <div className="px-4 py-4 sm:px-5 sm:py-5">
         <p className="label-caps">Executive summary</p>
         <p className="mt-2 leading-relaxed">{decision.executiveSummary}</p>
 

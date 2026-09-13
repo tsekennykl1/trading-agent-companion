@@ -15,25 +15,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-5 py-3">
-          <Link to="/" className="flex items-center gap-2.5">
+        <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Activity className="size-4" />
             </span>
-            <span className="leading-tight">
-              <span className="block font-display text-base font-semibold">TradingAgents Workbench</span>
-              <span className="block text-[11px] text-muted-foreground">
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate font-display text-base font-semibold">TradingAgents Workbench</span>
+              <span className="hidden truncate text-[11px] text-muted-foreground sm:block">
                 Workplace decision support for multi-agent financial analysis
               </span>
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="order-3 col-span-2 -mx-3 flex snap-x items-center gap-1 overflow-x-auto px-3 pb-0.5 text-sm sm:order-none sm:col-auto sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
             {NAV.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex min-h-9 shrink-0 snap-start items-center gap-1.5 rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 activeProps={{ className: "bg-muted text-foreground font-medium" }}
                 activeOptions={{ exact: to === "/" }}
               >
@@ -43,16 +43,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="ml-auto">
+          <div className="shrink-0 sm:ml-auto">
             <BridgeStatusBadge />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-5 py-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-3 py-5 sm:px-5 sm:py-8">{children}</main>
 
       <footer className="mt-10 border-t border-rule bg-surface">
-        <div className="mx-auto max-w-7xl px-5 py-6 text-xs leading-relaxed text-muted-foreground">
+        <div className="mx-auto max-w-7xl px-3 py-6 text-xs leading-relaxed text-muted-foreground sm:px-5">
           <p>
             Built on TradingAgents — Tauric Research (2024),{" "}
             <a

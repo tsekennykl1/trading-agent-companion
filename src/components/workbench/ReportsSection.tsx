@@ -22,7 +22,7 @@ export function ReportsSection({ run }: { run: RunRecord }) {
 
   return (
     <section className="panel overflow-hidden">
-      <div className="border-b border-rule bg-surface px-5 py-4">
+      <div className="border-b border-rule bg-surface px-4 py-4 sm:px-5">
         <h3 className="text-base font-semibold">Agent reasoning traces</h3>
         <p className="mt-1 text-xs text-muted-foreground">
           Full role-specific output, exactly as produced by the engine.
@@ -60,7 +60,7 @@ export function ReportsSection({ run }: { run: RunRecord }) {
         </nav>
 
         <article
-          className="prose-report max-h-[32rem] overflow-y-auto px-5 py-5 text-sm"
+          className="prose-report max-h-[32rem] min-w-0 overflow-x-auto overflow-y-auto px-4 py-4 text-sm break-words sm:px-5 sm:py-5"
           // Content is generated locally by the user's own engine and rendered
           // through a restricted markdown subset (headings, lists, tables, emphasis).
           dangerouslySetInnerHTML={{ __html: markdownToHtml(run.reports[current.key] ?? "") }}

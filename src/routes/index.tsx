@@ -87,8 +87,8 @@ function Workbench() {
 
   return (
     <AppShell>
-      <div className="mb-7 max-w-3xl">
-        <h1 className="font-display text-3xl font-semibold">Multi-agent analysis, in one workspace</h1>
+      <div className="mb-5 max-w-3xl sm:mb-7">
+        <h1 className="font-display text-2xl font-semibold sm:text-3xl">Multi-agent analysis, in one workspace</h1>
         <p className="mt-2 text-muted-foreground">
           A dashboard, visual analytics and reporting layer over the TradingAgents framework — so a
           non-technical colleague can run an analysis, see how the agents disagreed, and take a memo to a
@@ -111,7 +111,7 @@ function Workbench() {
 
         <div className="space-y-6">
           {run.source === "sample" && (
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />
               <p className="mr-auto">
                 Showing a saved sample run ({SAMPLE_RUN.config.ticker}, {SAMPLE_RUN.config.analysisDate}) so
@@ -119,7 +119,7 @@ function Workbench() {
                 {!engineOnline && " Your engine is not reachable right now."}
               </p>
               {activeRunId && (
-                <Button size="sm" variant="outline" onClick={() => setShowingSample(false)}>
+                <Button size="sm" variant="outline" className="col-span-2 min-h-10 w-full sm:min-h-8 sm:w-auto" onClick={() => setShowingSample(false)}>
                   Back to live run
                 </Button>
               )}

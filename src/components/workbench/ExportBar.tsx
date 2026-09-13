@@ -30,20 +30,20 @@ export function ExportBar({ run }: { run: RunRecord }) {
   };
 
   return (
-    <div className="panel flex flex-wrap items-center gap-3 px-5 py-4">
-      <div className="mr-auto">
+    <div className="panel grid grid-cols-2 gap-3 px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:px-5">
+      <div className="col-span-2 sm:mr-auto">
         <p className="label-caps">Manager-facing report</p>
         <p className="text-sm text-muted-foreground">
           Executive summary, bull/bear points, agent contributions and the full audit trail.
         </p>
       </div>
-      <Button variant="outline" size="sm" onClick={exportMarkdown} className="gap-2">
+      <Button variant="outline" size="sm" onClick={exportMarkdown} className="min-h-10 w-full gap-2 sm:min-h-8 sm:w-auto">
         <FileText className="size-4" /> Markdown
       </Button>
-      <Button variant="outline" size="sm" onClick={exportHtml} className="gap-2">
+      <Button variant="outline" size="sm" onClick={exportHtml} className="min-h-10 w-full gap-2 sm:min-h-8 sm:w-auto">
         <FileCode2 className="size-4" /> HTML
       </Button>
-      <Button size="sm" onClick={printPdf} className="gap-2">
+      <Button size="sm" onClick={printPdf} className="col-span-2 min-h-10 w-full gap-2 sm:min-h-8 sm:w-auto">
         <Printer className="size-4" /> Print / PDF
       </Button>
       <Download className="hidden size-4 text-muted-foreground sm:block" aria-hidden />
