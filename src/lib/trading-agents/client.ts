@@ -119,6 +119,17 @@ type EngineRun = {
   logs?: string[];
 };
 
+/** Map the many status spellings engines use onto the dashboard's four states. */
+export function canonicalStatus(raw: string | undefined): RunRecord["status"] {
+  const s = (raw ?? "").toLowerCase();
+  if (["completed", "complete", "success", "succeeded", "finished", "done", "ok"].includes(s)) {
+    return "completed";
+  }
+  if (["failed", "error", "cancelled", "canceled", "aborted", "timeout"].includes(s)) return "error";
+  if (["queued", "pending", "created", "accepted"].includes(s)) return "queued";
+  return "running";
+}
+
 function isEngineRun(raw: unknown): raw is EngineRun {
   return typeof raw === "object" && raw !== null && "run_id" in raw && !("config" in raw);
 }
@@ -160,8 +171,12 @@ export function normalizeRun(raw: unknown): RunRecord {
     }
     return String(l);
   });
-  const running = raw.status === "running" || raw.status === "queued";
-  const failed = raw.status === "failed" || raw.status === "error";
+  const rawStatus = canonicalStatus(raw.status);
+  // A finished result is proof the run is done, even if the engine's status word is unfamiliar.
+  const status: RunRecord["status"] =
+    rawStatus !== "error" && (result?.decision || raw.error) ? (raw.error ? "error" : "completed") : rawStatus;
+  const running = status === "running" || status === "queued";
+  const failed = status === "error";
 
   const created = raw.created_at ? Date.parse(raw.created_at) : NaN;
   const updated = raw.updated_at ? Date.parse(raw.updated_at) : NaN;
@@ -225,7 +240,7 @@ export function normalizeRun(raw: unknown): RunRecord {
 
   const record: RunRecord = {
     id: raw.run_id,
-    status: raw.status === "failed" ? "error" : (raw.status as RunRecord["status"]),
+    status,
     config: {
       ticker,
       analysisDate,

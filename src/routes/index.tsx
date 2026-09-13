@@ -34,6 +34,12 @@ export const Route = createFileRoute("/")({
   component: Workbench,
 });
 
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${String(s).padStart(2, "0")}s` : `${s}s`;
+}
+
 function Workbench() {
   const health = useBridgeHealth();
   const engineOnline = !!health.data && !health.isError;
@@ -59,12 +65,25 @@ function Workbench() {
     enabled: !!activeRunId,
     refetchInterval: (q) => {
       const s = q.state.data?.status;
-      return s === "completed" || s === "error" ? false : 2000;
+      return s === "completed" || s === "error" ? false : 3000;
     },
   });
 
+  // Elapsed time for the in-progress overlay
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (startedAt === null) return;
+    const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => window.clearInterval(id);
+  }, [startedAt]);
+
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
+    onMutate: () => {
+      setStartedAt(Date.now());
+      setElapsed(0);
+    },
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
       setShowingSample(false);
@@ -91,6 +110,7 @@ function Workbench() {
   const running = run.status === "running" || run.status === "queued";
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
+  const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
 
   return (
     <AppShell>
@@ -132,9 +152,14 @@ function Workbench() {
                   Analyst teams are reviewing market, fundamental, sentiment and risk evidence. The portfolio
                   manager will deliver the decision when their debate is complete.
                 </p>
+                {latestStep && (
+                  <p className="mt-4 max-w-sm truncate text-xs text-muted-foreground" title={latestStep}>
+                    {latestStep}
+                  </p>
+                )}
                 <span className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-primary">
                   <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
-                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker}
+                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
                 </span>
               </div>
             </div>
