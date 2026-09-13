@@ -18,20 +18,15 @@ const EMPTY: RunArtifacts = { marketData: null };
  */
 export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): RunArtifacts {
   const runId = run?.source === "engine" ? run.id : undefined;
-  const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
-  const currentId = useRef<string | undefined>(undefined);
-
-  if (currentId.current !== runId) {
-    currentId.current = runId;
-  }
-
   const terminal = run?.status === "completed" || run?.status === "error";
+  const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
+  const cache = useRef<RunArtifacts>(EMPTY);
 
   useEffect(() => {
-    if (!runId || !enabled) {
-      setArtifacts(EMPTY);
-      return;
-    }
+    cache.current = EMPTY;
+    setArtifacts(EMPTY);
+    if (!runId || !enabled) return;
+
     let alive = true;
     let timer: number | undefined;
 
@@ -40,28 +35,24 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
     const resultHtml = bridgeAssetUrl(`/runs/${runId}/result.html`);
 
     const probe = async () => {
-      const snapshot = artifactsRef.current;
-
+      const have = cache.current;
       const [market, chartOk, resultOk] = await Promise.all([
-        snapshot.marketData ? Promise.resolve(snapshot.marketData) : api.marketData(runId).catch(() => null),
-        snapshot.chartHtmlUrl ? Promise.resolve(true) : api.artifactReady(chartHtml),
-        snapshot.resultHtmlUrl || !terminal ? Promise.resolve(Boolean(snapshot.resultHtmlUrl)) : api.artifactReady(resultHtml),
+        have.marketData ? Promise.resolve(have.marketData) : api.marketData(runId).catch(() => null),
+        have.chartHtmlUrl ? Promise.resolve(true) : api.artifactReady(chartHtml),
+        have.resultHtmlUrl ? Promise.resolve(true) : terminal ? api.artifactReady(resultHtml) : Promise.resolve(false),
       ]);
       if (!alive) return;
 
-      setArtifacts((prev) => {
-        const next: RunArtifacts = {
-          marketData: market ?? prev.marketData,
-          ...(chartOk || prev.chartHtmlUrl ? { chartHtmlUrl: chartHtml, chartPngUrl: chartPng } : {}),
-          ...(resultOk || prev.resultHtmlUrl ? { resultHtmlUrl: resultHtml } : {}),
-        };
-        artifactsRef.current = next;
-        return next;
-      });
+      const next: RunArtifacts = {
+        marketData: market ?? have.marketData,
+        ...(chartOk ? { chartHtmlUrl: chartHtml, chartPngUrl: chartPng } : {}),
+        ...(resultOk ? { resultHtmlUrl: resultHtml } : {}),
+      };
+      cache.current = next;
+      setArtifacts(next);
 
-      const done =
-        artifactsRef.current.marketData && artifactsRef.current.chartHtmlUrl && (!terminal || artifactsRef.current.resultHtmlUrl);
-      if (!done) timer = window.setTimeout(probe, terminal ? 5000 : 4000);
+      const done = next.marketData && next.chartHtmlUrl && (!terminal || next.resultHtmlUrl);
+      if (!done) timer = window.setTimeout(() => void probe(), terminal ? 5000 : 4000);
     };
 
     void probe();
@@ -70,11 +61,6 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
       if (timer) window.clearTimeout(timer);
     };
   }, [runId, enabled, terminal]);
-
-  const artifactsRef = useRef<RunArtifacts>(EMPTY);
-  useEffect(() => {
-    artifactsRef.current = artifacts;
-  }, [artifacts]);
 
   return artifacts;
 }
