@@ -56,9 +56,8 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
   const maxDebateRounds =
     config.researchDepth === "Deep" ? 3 : config.researchDepth === "Medium" ? 2 : 1;
   return {
-    // Engine's expected schema
+    // Engine's expected schema (ticker comes from ...config below)
     model: config.deepModel,
-    ticker: config.ticker,
     end_date: config.analysisDate,
     params: {
       llm_provider: config.provider,
