@@ -310,9 +310,11 @@ export function normalizeRun(raw: unknown): RunRecord {
   // Decision: accept either an action word ("Hold") or a structured object.
   const rawDecision = result?.decision;
   const d = typeof rawDecision === "object" && rawDecision !== null ? rawDecision : undefined;
-  const decisionWord = typeof rawDecision === "string" ? rawDecision : d?.action;
+  const decisionWord = typeof rawDecision === "string" ? rawDecision : (d?.action ?? result?.action);
   const finalText = typeof state["final_trade_decision"] === "string" ? state["final_trade_decision"] : "";
-  const confidenceRaw = typeof d?.confidence === "number" ? d.confidence : 0;
+  const confidenceValue =
+    typeof d?.confidence === "number" ? d.confidence : typeof result?.confidence === "number" ? result.confidence : 0;
+  const confidenceRaw = confidenceValue;
   const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
   const riskSection = state["risk_assessment"] as Record<string, unknown> | undefined;
   const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
@@ -322,7 +324,12 @@ export function normalizeRun(raw: unknown): RunRecord {
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
-  const summaryText = d?.summary ?? (finalText || (result?.summary ?? ""));
+  const summaryText = d?.summary ?? result?.summary ?? (finalText || "");
+
+  const counters = raw.timings?.counters ?? {};
+  const stageDurations = raw.timings?.stage_durations_ms ?? {};
+  const totalMs = stageDurations["total_ms"];
+  const progress = raw.progress;
 
   const record: RunRecord = {
     id: raw.run_id,
