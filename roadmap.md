@@ -29,4 +29,4 @@
 - [x] Add price, volume, and RSI panels to Python-generated charts.
 - [x] Add Agent reports Show All/Hide All title-row control.
 - [x] Apply available, unavailable, and generating status colors.
-- [ ] Verify desktop, iPhone portrait, and a clean build.
+- [x] Verify desktop, iPhone portrait, and a clean build.
