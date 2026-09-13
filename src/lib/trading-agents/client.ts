@@ -191,7 +191,7 @@ export function normalizeRun(raw: unknown): RunRecord {
   const req = raw.request ?? raw.payload ?? {};
   const params = req.params ?? {};
   const result = raw.result ?? undefined;
-  const partial = raw.partial_result ?? {};
+  const partial = (raw.partial_result ?? {}) as Record<string, unknown>;
   // Merge the engine's flat reports dict and its state object into one lookup.
   const state = {
     ...(result?.reports ?? {}),
