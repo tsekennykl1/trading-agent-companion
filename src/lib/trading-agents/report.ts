@@ -115,6 +115,43 @@ function normalizeReportMarkdown(md: string): string {
     .join("\n");
 }
 
+/** Collapse repeated heading/value pairs from JSON-derived reports into tables. */
+function compactFieldGroups(md: string): string {
+  const lines = md.split("\n");
+  const output: string[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const fields: Array<[string, string]> = [];
+    let cursor = index;
+
+    while (cursor < lines.length) {
+      const heading = /^#{2,4}\s+(.+)$/.exec(lines[cursor]?.trim() ?? "");
+      if (!heading) break;
+      let valueIndex = cursor + 1;
+      while (valueIndex < lines.length && !(lines[valueIndex]?.trim())) valueIndex += 1;
+      const value = lines[valueIndex]?.trim() ?? "";
+      if (!value || /^#{1,4}\s+|^[-|]/.test(value)) break;
+      fields.push([heading[1] ?? "Field", value]);
+      cursor = valueIndex + 1;
+      while (cursor < lines.length && !(lines[cursor]?.trim())) cursor += 1;
+    }
+
+    if (fields.length >= 2) {
+      output.push("| Field | Value |", "| --- | --- |");
+      fields.forEach(([label, value]) => output.push(`| ${label.replace(/\|/g, "\\|")} | ${value.replace(/\|/g, "\\|")} |`));
+      output.push("");
+      index = cursor;
+      continue;
+    }
+
+    output.push(lines[index] ?? "");
+    index += 1;
+  }
+
+  return output.join("\n");
+}
+
 /** Minimal markdown -> HTML for the exported standalone report. */
 export function markdownToHtml(md: string): string {
   const out: string[] = [];
@@ -139,7 +176,7 @@ export function markdownToHtml(md: string): string {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/_(.+?)_/g, "<em>$1</em>");
 
-  for (const raw of normalizeReportMarkdown(md).split("\n")) {
+  for (const raw of compactFieldGroups(normalizeReportMarkdown(md)).split("\n")) {
     const line = raw.trimEnd();
     if (!line.trim()) {
       closeList();

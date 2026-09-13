@@ -227,7 +227,7 @@ export function DetailedReport({ url, ticker }: { url: string; ticker: string })
       {ready && open && (
         <article
           aria-label={`${ticker} detailed analysis report`}
-          className="prose-report max-h-[52rem] min-w-0 overflow-x-auto overflow-y-auto px-4 py-5 text-sm break-words sm:px-7 sm:py-7"
+          className="prose-report report-columns max-h-[44rem] min-w-0 overflow-x-auto overflow-y-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       )}

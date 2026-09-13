@@ -139,25 +139,21 @@ function Workbench() {
             ticker={run.config.ticker}
           />
         )}
+        <RunForm
+          key={defaultConfig.analysisDate}
+          defaultConfig={defaultConfig}
+          running={running && !showingSample}
+          disabled={startRun.isPending}
+          onRun={(c) => startRun.mutate(c)}
+          onCancel={cancelRun}
+        />
+        <AgentBoard agents={run.agents} stats={run.stats} />
         {artifacts.resultHtmlUrl && (
           <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
-        <div className="min-w-0 space-y-6">
-          <RunForm
-            key={defaultConfig.analysisDate}
-            defaultConfig={defaultConfig}
-            running={running && !showingSample}
-            disabled={startRun.isPending}
-            onRun={(c) => startRun.mutate(c)}
-            onCancel={cancelRun}
-          />
-          <AgentBoard agents={run.agents} stats={run.stats} />
-        </div>
-
-        <div className="relative min-w-0 space-y-6" aria-busy={analysisBusy}>
+      <div className="relative min-w-0 space-y-6" aria-busy={analysisBusy}>
           {analysisBusy && (
             <section className="panel px-4 py-4 sm:px-5" role="status" aria-live="polite">
               <div className="flex items-start gap-3">
@@ -249,7 +245,6 @@ function Workbench() {
           <StanceChart data={run.stances} />
           <ExportBar run={run} />
           <ReportsSection run={run} />
-        </div>
       </div>
     </AppShell>
   );

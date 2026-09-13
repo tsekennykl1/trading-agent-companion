@@ -42,3 +42,10 @@
 - [x] Remove JSON punctuation, empty fields, and quoted values from detailed reports.
 - [x] Open the portfolio management decision by default.
 - [x] Use agent agreement when the backend returns zero confidence with available stances.
+
+# Compact layout and analyst selection
+
+- [x] Move run settings into a highlighted full-width section near the top.
+- [x] Present agent progress and structured report fields as compact tables.
+- [x] Send analyst selections in both legacy and enhanced backend request fields.
+- [ ] Verify analyst request payloads, desktop/iPhone layouts, and a clean preview build.

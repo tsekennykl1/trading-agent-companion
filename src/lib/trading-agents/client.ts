@@ -65,6 +65,8 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
       quick_think_llm: config.quickModel,
       max_debate_rounds: maxDebateRounds,
       temperature: 0.0,
+      analysts: config.analysts,
+      selected_analysts: config.analysts,
     },
     // Aliases for other bridge implementations
     ...config,
@@ -72,6 +74,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     research_depth: config.researchDepth,
     quick_model: config.quickModel,
     deep_model: config.deepModel,
+    selected_analysts: config.analysts,
   };
 }
 
@@ -91,11 +94,15 @@ type EngineRequest = {
   model?: string;
   ticker?: string;
   end_date?: string;
+  analysts?: string[];
+  selected_analysts?: string[];
   params?: {
     llm_provider?: string;
     deep_think_llm?: string;
     quick_think_llm?: string;
     max_debate_rounds?: number;
+    analysts?: string[];
+    selected_analysts?: string[];
   };
 };
 
@@ -252,6 +259,12 @@ export function normalizeRun(raw: unknown): RunRecord {
 
   const req = raw.request ?? raw.payload ?? {};
   const params = req.params ?? {};
+  const requestedAnalysts =
+    (Array.isArray(req.analysts) ? req.analysts : undefined) ??
+    (Array.isArray(req.selected_analysts) ? req.selected_analysts : undefined) ??
+    (Array.isArray(params.analysts) ? params.analysts : undefined) ??
+    (Array.isArray(params.selected_analysts) ? params.selected_analysts : undefined) ??
+    [];
   const result = raw.result ?? undefined;
   const partial = (raw.partial_result ?? {}) as Record<string, unknown>;
   // Merge the engine's flat reports dict and its state object into one lookup.
@@ -428,7 +441,7 @@ export function normalizeRun(raw: unknown): RunRecord {
           : (params.max_debate_rounds ?? 1) === 2
             ? "Medium"
             : "Shallow",
-      analysts: [],
+      analysts: requestedAnalysts,
       language: "English",
     },
     startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),

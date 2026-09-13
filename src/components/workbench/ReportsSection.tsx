@@ -95,7 +95,7 @@ export function ReportsSection({ run }: { run: RunRecord }) {
               </div>
               {ready && open && (
                 <article
-                  className="prose-report max-h-[42rem] min-w-0 overflow-x-auto overflow-y-auto border-t border-rule px-4 py-5 text-sm break-words sm:px-6 sm:py-6"
+                  className="prose-report report-columns max-h-[36rem] min-w-0 overflow-x-auto overflow-y-auto border-t border-rule px-4 py-5 text-sm break-words sm:px-6 sm:py-6"
                   dangerouslySetInnerHTML={{ __html: markdownToHtml(section.content) }}
                 />
               )}

@@ -74,29 +74,40 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
           </div>
         </div>
       ) : (
-        <div className="mt-4 space-y-4">
-          {Object.entries(teams).map(([team, list]) => (
-            <div key={team}>
-              <p className="label-caps">{team}</p>
-              <ul className="mt-1.5 space-y-1">
-                {list.map((a) => (
-                  <li
-                    key={a.agent}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                      a.status === "in_progress" && "bg-primary/8",
-                    )}
-                  >
-                    <StatusIcon status={a.status} />
-                    <span className={cn("min-w-0 break-words", a.status === "pending" && "text-muted-foreground")}>{a.agent}</span>
-                    <span className="ml-auto shrink-0 font-mono text-[11px] text-muted-foreground">
-                      {a.time ?? (a.note === "Not selected" ? "skipped" : "")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="mt-4 overflow-x-auto rounded-md border border-rule">
+          <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
+            <thead className="bg-muted/70 text-xs text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 font-medium">Team</th>
+                <th className="px-3 py-2 font-medium">Agent</th>
+                <th className="px-3 py-2 font-medium">Status</th>
+                <th className="px-3 py-2 text-right font-medium">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rule">
+              {Object.entries(teams).flatMap(([team, list]) =>
+                list.map((agent, index) => (
+                  <tr key={`${team}-${agent.agent}`} className={cn(agent.status === "in_progress" && "bg-primary/8")}>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
+                      {index === 0 ? team : ""}
+                    </td>
+                    <td className={cn("px-3 py-2", agent.status === "pending" && "text-muted-foreground")}>
+                      {agent.agent}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className="inline-flex items-center gap-2 capitalize">
+                        <StatusIcon status={agent.status} />
+                        {agent.note === "Not selected" ? "Not selected" : agent.status.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right font-mono text-[11px] text-muted-foreground">
+                      {agent.time ?? "—"}
+                    </td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -122,7 +133,7 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
         </Button>
       </div>
 
-      <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 border-t border-rule pt-4 text-xs min-[380px]:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 border-t border-rule pt-4 text-xs sm:grid-cols-3 lg:grid-cols-6">
         {[
           ["LLM calls", stats.llmCalls],
           ["Tool calls", stats.toolCalls],

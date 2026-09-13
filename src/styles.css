@@ -248,3 +248,16 @@
     font-weight: 600;
   }
 }
+
+@utility report-columns {
+  & > table {
+    table-layout: fixed;
+  }
+  & > table th:first-child,
+  & > table td:first-child {
+    width: min(14rem, 34%);
+  }
+  & > table td {
+    overflow-wrap: anywhere;
+  }
+}
