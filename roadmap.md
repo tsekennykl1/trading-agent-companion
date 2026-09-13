@@ -55,4 +55,4 @@
 - [x] Fit structured report Field columns to their labels instead of splitting tables evenly.
 - [x] Use normalized live-run data and independent chart discovery in the Simple dashboard.
 - [x] Show recommendation summary, confidence, and report availability in the Simple dashboard.
-- [ ] Verify report proportions, desktop/iPhone layouts, and a clean preview build.
+- [x] Verify report proportions, desktop/iPhone layouts, and a clean preview build.
