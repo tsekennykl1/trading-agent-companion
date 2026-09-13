@@ -104,6 +104,7 @@ function Workbench() {
   const running = run.status === "running" || run.status === "queued";
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
+  const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
 
   return (
     <AppShell>
