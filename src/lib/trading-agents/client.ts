@@ -289,7 +289,7 @@ export function normalizeRun(raw: unknown): RunRecord {
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
-  const summaryText = d?.summary ?? finalText || (result?.summary ?? "");
+  const summaryText = d?.summary ?? (finalText || (result?.summary ?? ""));
 
   const record: RunRecord = {
     id: raw.run_id,
