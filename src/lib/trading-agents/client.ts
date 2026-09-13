@@ -151,7 +151,15 @@ export function normalizeRun(raw: unknown): RunRecord {
   const state = (result?.state ?? {}) as Record<string, Record<string, unknown>>;
   const ticker = result?.ticker ?? req.ticker ?? "—";
   const analysisDate = result?.analysis_date ?? req.end_date ?? "";
-  const logs = raw.logs ?? [];
+  const logs: string[] = (Array.isArray(raw.logs) ? raw.logs : []).map((l: unknown) => {
+    if (typeof l === "string") return l;
+    if (l && typeof l === "object") {
+      const o = l as Record<string, unknown>;
+      const msg = o["message"] ?? o["msg"] ?? o["text"] ?? JSON.stringify(o);
+      return String(msg);
+    }
+    return String(l);
+  });
   const running = raw.status === "running" || raw.status === "queued";
   const failed = raw.status === "failed" || raw.status === "error";
 
