@@ -49,7 +49,7 @@ const STEPS: { title: string; body: string; code?: string }[] = [
   },
   {
     title: "Point the dashboard at it",
-    body: "Enter the address the bridge prints (default http://127.0.0.1:8787) in the box above and test the connection.",
+    body: "Enter the address the bridge prints (default http://127.0.0.1:8000) in the box above and test the connection.",
   },
 ];
 
