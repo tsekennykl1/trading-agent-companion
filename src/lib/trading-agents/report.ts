@@ -81,6 +81,40 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/** Promote bold field labels from model output into real subheadings. */
+function normalizeReportMarkdown(md: string): string {
+  const labelledField = /\*\*([^*\n]{2,50}?)(?::\*\*|\*\*:)[ \t]*/g;
+
+  return md
+    .split("\n")
+    .flatMap((raw) => {
+      const trimmed = raw.trimStart();
+      if (trimmed.startsWith("|") || trimmed.startsWith("- ")) return [raw];
+
+      const matches = [...raw.matchAll(labelledField)];
+      if (matches.length === 0) return [raw];
+
+      const parts: string[] = [];
+      const firstIndex = matches[0]?.index ?? 0;
+      const before = raw.slice(0, firstIndex).trim();
+      if (before) parts.push(before, "");
+
+      matches.forEach((match, index) => {
+        const label = match[1]?.trim();
+        if (!label) return;
+        const start = (match.index ?? 0) + match[0].length;
+        const end = matches[index + 1]?.index ?? raw.length;
+        const body = raw.slice(start, end).trim();
+        parts.push(`### ${label}`);
+        if (body) parts.push("", body);
+        if (index < matches.length - 1) parts.push("");
+      });
+
+      return parts;
+    })
+    .join("\n");
+}
+
 /** Minimal markdown -> HTML for the exported standalone report. */
 export function markdownToHtml(md: string): string {
   const out: string[] = [];
@@ -105,7 +139,7 @@ export function markdownToHtml(md: string): string {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/_(.+?)_/g, "<em>$1</em>");
 
-  for (const raw of md.split("\n")) {
+  for (const raw of normalizeReportMarkdown(md).split("\n")) {
     const line = raw.trimEnd();
     if (!line.trim()) {
       closeList();
