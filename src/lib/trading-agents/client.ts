@@ -200,9 +200,13 @@ export function normalizeRun(raw: unknown): RunRecord {
   if (typeof result?.final_trade_decision === "string" && !state["final_trade_decision"]) {
     state["final_trade_decision"] = result.final_trade_decision;
   }
-  const ticker = result?.ticker ?? partial["ticker"] ?? req.ticker ?? "—";
+  const ticker =
+    result?.ticker ?? (typeof partial["ticker"] === "string" ? partial["ticker"] : undefined) ?? req.ticker ?? "—";
   const analysisDate =
-    result?.analysis_date ?? (partial["analysis_date"] as string | undefined) ?? req.end_date ?? "";
+    result?.analysis_date ??
+    (typeof partial["analysis_date"] === "string" ? partial["analysis_date"] : undefined) ??
+    req.end_date ??
+    "";
   const logs: string[] = (Array.isArray(raw.logs) ? raw.logs : []).map((l: unknown) => {
     if (typeof l === "string") return l;
     if (l && typeof l === "object") {
