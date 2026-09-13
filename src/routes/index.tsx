@@ -34,6 +34,12 @@ export const Route = createFileRoute("/")({
   component: Workbench,
 });
 
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${String(s).padStart(2, "0")}s` : `${s}s`;
+}
+
 function Workbench() {
   const health = useBridgeHealth();
   const engineOnline = !!health.data && !health.isError;
