@@ -327,15 +327,18 @@ export function normalizeRun(raw: unknown): RunRecord {
     ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),
   };
 
-  if (d) {
+  // Render a decision whenever the engine gave one — or whenever the run is
+  // finished, so a completed run without a structured decision never leaves
+  // the dashboard stuck on "Analysis in progress".
+  if (rawDecision || status === "completed") {
     record.decision = {
       action,
       rating: actionText,
       confidence,
       consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
-      ...(d.position_size ? { positionSizing: titleCase(d.position_size) } : {}),
-      executiveSummary: d.summary ?? "",
-      bullPoints: d.summary ? [d.summary] : [],
+      ...(d?.position_size ? { positionSizing: titleCase(d.position_size) } : {}),
+      executiveSummary: summaryText,
+      bullPoints: summaryText ? [summaryText] : [],
       bearPoints: keyRisks,
     };
   }
