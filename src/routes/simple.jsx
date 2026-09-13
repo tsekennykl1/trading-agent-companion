@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { Button } from "@/components/ui/button";
-import { getBridgeUrl } from "@/lib/trading-agents/client";
+import { getBridgeUrl, runConfigPayload } from "@/lib/trading-agents/client";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 
 const TITLE = "Simple Dashboard — TradingAgents Workbench";
