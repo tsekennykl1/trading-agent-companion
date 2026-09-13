@@ -11,17 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ANALYST_OPTIONS, PROVIDER_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
-
-const DEFAULT_MODELS = ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"];
-
-const MODELS: Record<string, string[]> = {
-  DeepSeek: ["DeepSeek V4 Flash", "DeepSeek V4", "DeepSeek R1"],
-  OpenAI: ["gpt-4.1-mini", "gpt-4.1", "o4-mini"],
-  Anthropic: ["claude-haiku-4.5", "claude-sonnet-4.5"],
-  Google: ["gemini-2.5-flash", "gemini-2.5-pro"],
-  Qwen: ["qwen-plus", "qwen-max"],
-};
+import { ANALYST_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -33,8 +23,6 @@ interface Props {
 
 export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: Props) {
   const [config, setConfig] = useState<RunConfig>(defaultConfig);
-  const modelsFor = (provider: string): string[] => MODELS[provider] ?? DEFAULT_MODELS;
-  const models = modelsFor(config.provider);
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
