@@ -35,3 +35,4 @@
 
 - [x] Replace the raw artifact frame with a readable formatted report.
 - [x] Keep the detailed report collapsed until requested.
+- [x] Decode nested JSON/HTML report wrappers into headings, lists, tables, and paragraphs.
