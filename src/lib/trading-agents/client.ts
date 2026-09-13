@@ -240,7 +240,7 @@ export function normalizeRun(raw: unknown): RunRecord {
     "investment_plan",
   ];
   for (const key of stringReportKeys) {
-    const v = state[key];
+    const v: unknown = state[key];
     if (typeof v === "string" && v.trim()) reports[key] = v;
   }
   if (typeof state["trader_investment_plan"] === "string" && state["trader_investment_plan"]) {
