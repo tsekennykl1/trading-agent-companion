@@ -85,33 +85,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="label-caps">LLM provider</Label>
-          <Select
-            value={config.provider}
-            onValueChange={(v) =>
-              setConfig((c) => ({
-                ...c,
-                provider: v,
-                quickModel: modelsFor(v)[0] ?? "",
-                deepModel: modelsFor(v)[0] ?? "",
-              }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PROVIDER_OPTIONS.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 sm:col-span-2">
           <Label className="label-caps">Research depth</Label>
           <Select
             value={config.researchDepth}
@@ -124,38 +98,6 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               <SelectItem value="Shallow">Shallow — quick, few debate rounds</SelectItem>
               <SelectItem value="Medium">Medium — balanced debate</SelectItem>
               <SelectItem value="Deep">Deep — extended debate rounds</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="label-caps">Quick-thinking engine</Label>
-          <Select value={config.quickModel} onValueChange={(v) => update("quickModel", v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="label-caps">Deep-thinking engine</Label>
-          <Select value={config.deepModel} onValueChange={(v) => update("deepModel", v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>
