@@ -85,7 +85,7 @@ function Setup() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-[95%]">
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">Connect your engine</h1>
         <p className="mt-2 text-muted-foreground">
           TradingAgents is a Python system that runs on your own machine. A small bridge exposes it to this

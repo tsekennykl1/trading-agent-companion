@@ -46,7 +46,7 @@ const LAYERS = [
 function About() {
   return (
     <AppShell>
-      <article className="mx-auto max-w-3xl">
+      <article className="mx-auto max-w-[95%]">
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">
           From research prototype to workplace tool
         </h1>
