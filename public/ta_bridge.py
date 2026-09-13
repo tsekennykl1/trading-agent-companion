@@ -184,19 +184,32 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
         rows = []
         if hasattr(raw, "tail"):
             df = raw.tail(60)
-            closes = df["Close"].tolist()
+            closes = [float(value) for value in df["Close"].tolist()]
             dates = [str(d)[:10] for d in df.index.tolist()]
+            opens = df["Open"].tolist() if "Open" in df.columns else closes
+            highs = df["High"].tolist() if "High" in df.columns else closes
+            lows = df["Low"].tolist() if "Low" in df.columns else closes
+            volumes = df["Volume"].tolist() if "Volume" in df.columns else [0] * len(closes)
+            deltas = pd.Series(closes).diff()
+            gains = deltas.clip(lower=0).ewm(alpha=1 / 14, adjust=False, min_periods=14).mean()
+            losses = (-deltas.clip(upper=0)).ewm(alpha=1 / 14, adjust=False, min_periods=14).mean()
+            relative_strength = gains / losses.replace(0, float("nan"))
+            rsi14 = (100 - (100 / (1 + relative_strength))).fillna(50).tolist()
             ema10 = None
             k = 2 / (10 + 1)
             for i, (d, c) in enumerate(zip(dates, closes)):
-                c = float(c)
                 ema10 = c if ema10 is None else (c * k + ema10 * (1 - k))
                 window = closes[max(0, i - 19) : i + 1]
                 window50 = closes[max(0, i - 49) : i + 1]
                 rows.append(
                     {
                         "date": d,
+                        "open": round(float(opens[i]), 2),
+                        "high": round(float(highs[i]), 2),
+                        "low": round(float(lows[i]), 2),
                         "close": round(c, 2),
+                        "volume": max(0, int(float(volumes[i]))),
+                        "rsi14": round(float(rsi14[i]), 1),
                         "ema10": round(ema10, 2),
                         "sma20": round(sum(window) / len(window), 2),
                         "sma50": round(sum(window50) / len(window50), 2),
@@ -212,37 +225,109 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
 # --------------------------------------------------------------------------
 
 def build_plotly_html(ticker: str, rows: list[dict[str, Any]]) -> str:
-    """Interactive price-trend / moving-average chart rendered with plotly.graph_objects."""
+    """Interactive price, volume, and RSI chart rendered with Plotly."""
     try:
         import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
 
-        fig = go.Figure()
+        fig = make_subplots(
+            rows=3,
+            cols=1,
+            shared_xaxes=True,
+            vertical_spacing=0.035,
+            row_heights=[0.64, 0.18, 0.18],
+        )
         dates = [r["date"] for r in rows]
-        fig.add_trace(go.Scatter(x=dates, y=[r["close"] for r in rows], name="Close",
-                                 mode="lines", line=dict(color="#1d6472", width=2.4)))
+        has_ohlc = all(all(key in row for key in ("open", "high", "low", "close")) for row in rows)
+        if has_ohlc:
+            fig.add_trace(
+                go.Candlestick(
+                    x=dates,
+                    open=[r["open"] for r in rows],
+                    high=[r["high"] for r in rows],
+                    low=[r["low"] for r in rows],
+                    close=[r["close"] for r in rows],
+                    name="Close",
+                    increasing_line_color="#11823b",
+                    decreasing_line_color="#dc2626",
+                ),
+                row=1,
+                col=1,
+            )
+        else:
+            fig.add_trace(
+                go.Scatter(
+                    x=dates,
+                    y=[r["close"] for r in rows],
+                    name="Close",
+                    mode="lines",
+                    line=dict(color="#1d6472", width=2.4),
+                ),
+                row=1,
+                col=1,
+            )
         for key, label, colour in (
             ("ema10", "10-EMA", "#c98a2b"),
             ("sma20", "20-SMA", "#5b8c5a"),
             ("sma50", "50-SMA", "#8f5aa8"),
         ):
             if rows and key in rows[0]:
-                fig.add_trace(go.Scatter(x=dates, y=[r.get(key) for r in rows], name=label,
-                                         mode="lines", line=dict(width=1.4, dash="dash", color=colour)))
-        fig.update_layout(
-            title=f"{ticker} — price trend and moving averages",
-            template="plotly_white",
-            margin=dict(l=48, r=24, t=56, b=40),
-            legend=dict(orientation="h", y=-0.18),
-            xaxis_title="Date",
-            yaxis_title="Price",
+                fig.add_trace(
+                    go.Scatter(
+                        x=dates,
+                        y=[r.get(key) for r in rows],
+                        name=label,
+                        mode="lines",
+                        line=dict(width=1.4, color=colour),
+                    ),
+                    row=1,
+                    col=1,
+                )
+
+        fig.add_trace(
+            go.Bar(
+                x=dates,
+                y=[r.get("volume", 0) for r in rows],
+                name="Volume",
+                marker_color="#7276d9",
+                opacity=0.8,
+            ),
+            row=2,
+            col=1,
         )
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=[r.get("rsi14") for r in rows],
+                name="RSI 14",
+                mode="lines",
+                line=dict(color="#666666", width=1.8),
+            ),
+            row=3,
+            col=1,
+        )
+        fig.add_hline(y=70, line_dash="dash", line_color="#dc2626", line_width=1.4, row=3, col=1)
+        fig.add_hline(y=30, line_dash="dash", line_color="#11823b", line_width=1.4, row=3, col=1)
+        fig.update_layout(
+            title=f"{ticker} — price trend, volume and RSI",
+            template="plotly_white",
+            height=760,
+            margin=dict(l=64, r=32, t=64, b=44),
+            legend=dict(orientation="v", x=1.01, y=1),
+            hovermode="x unified",
+            xaxis_rangeslider_visible=False,
+        )
+        fig.update_yaxes(title_text="Price", row=1, col=1)
+        fig.update_yaxes(title_text="Volume", rangemode="tozero", row=2, col=1)
+        fig.update_yaxes(title_text="RSI", range=[0, 100], row=3, col=1)
+        fig.update_xaxes(title_text="Date", row=3, col=1)
         return fig.to_html(full_html=True, include_plotlyjs="cdn")
     except Exception as exc:  # pragma: no cover
         return f"<html><body><p>Plotly chart unavailable: {exc}</p></body></html>"
 
 
 def build_matplotlib_png(ticker: str, rows: list[dict[str, Any]]) -> bytes:
-    """Static PNG of the same chart, for reports and slide decks."""
+    """Static price, volume, and RSI chart for reports and slide decks."""
     try:
         import io
 
@@ -251,24 +336,42 @@ def build_matplotlib_png(ticker: str, rows: list[dict[str, Any]]) -> bytes:
         import matplotlib.pyplot as plt
 
         dates = [r["date"] for r in rows]
-        fig, ax = plt.subplots(figsize=(9, 4.5), dpi=140)
-        ax.plot(dates, [r["close"] for r in rows], label="Close", color="#1d6472", linewidth=2.2)
+        fig, axes = plt.subplots(
+            3,
+            1,
+            figsize=(12, 8),
+            dpi=140,
+            sharex=True,
+            gridspec_kw={"height_ratios": [3.5, 1, 1], "hspace": 0.08},
+        )
+        price_ax, volume_ax, rsi_ax = axes
+        price_ax.plot(dates, [r["close"] for r in rows], label="Close", color="#1d6472", linewidth=2.2)
         for key, label, colour in (
             ("ema10", "10-EMA", "#c98a2b"),
             ("sma20", "20-SMA", "#5b8c5a"),
             ("sma50", "50-SMA", "#8f5aa8"),
         ):
             if rows and key in rows[0]:
-                ax.plot(dates, [r.get(key) for r in rows], label=label, linewidth=1.2,
-                        linestyle="--", color=colour)
-        ax.set_title(f"{ticker} — price trend and moving averages")
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Price")
-        ax.grid(alpha=0.25)
-        ax.legend(loc="best", fontsize=8)
+                price_ax.plot(dates, [r.get(key) for r in rows], label=label, linewidth=1.2, color=colour)
+        price_ax.set_title(f"{ticker} — price trend, volume and RSI")
+        price_ax.set_ylabel("Price")
+        price_ax.grid(alpha=0.25)
+        price_ax.legend(loc="best", fontsize=8)
+
+        volume_ax.bar(dates, [r.get("volume", 0) for r in rows], color="#7276d9", alpha=0.8)
+        volume_ax.set_ylabel("Volume")
+        volume_ax.grid(axis="y", alpha=0.2)
+
+        rsi_ax.plot(dates, [r.get("rsi14", 50) for r in rows], color="#666666", linewidth=1.5)
+        rsi_ax.axhline(70, color="#dc2626", linestyle="--", linewidth=1)
+        rsi_ax.axhline(30, color="#11823b", linestyle="--", linewidth=1)
+        rsi_ax.set_ylim(0, 100)
+        rsi_ax.set_ylabel("RSI")
+        rsi_ax.set_xlabel("Date")
+        rsi_ax.grid(alpha=0.2)
         step = max(1, len(dates) // 10)
-        ax.set_xticks(dates[::step])
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
+        rsi_ax.set_xticks(dates[::step])
+        plt.setp(rsi_ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
         fig.tight_layout()
         buf = io.BytesIO()
         fig.savefig(buf, format="png")

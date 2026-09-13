@@ -26,7 +26,7 @@
 - [x] Verify desktop and iPhone layouts and confirm a clean build.
 
 # Chart indicators and report controls
-- [ ] Add price, volume, and RSI panels to Python-generated charts.
-- [ ] Add Agent reports Show All/Hide All title-row control.
-- [ ] Apply available, unavailable, and generating status colors.
+- [x] Add price, volume, and RSI panels to Python-generated charts.
+- [x] Add Agent reports Show All/Hide All title-row control.
+- [x] Apply available, unavailable, and generating status colors.
 - [ ] Verify desktop, iPhone portrait, and a clean build.
