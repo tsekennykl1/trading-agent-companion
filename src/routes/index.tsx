@@ -74,6 +74,10 @@ function Workbench() {
 
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
+    onMutate: () => {
+      setStartedAt(Date.now());
+      setElapsed(0);
+    },
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
       setShowingSample(false);
