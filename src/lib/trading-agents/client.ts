@@ -378,10 +378,26 @@ export function normalizeRun(raw: unknown): RunRecord {
   const d = typeof rawDecision === "object" && rawDecision !== null ? rawDecision : undefined;
   const decisionWord = typeof rawDecision === "string" ? rawDecision : (d?.action ?? result?.action);
   const finalText = typeof state["final_trade_decision"] === "string" ? state["final_trade_decision"] : "";
-  const confidenceValue =
-    typeof d?.confidence === "number" ? d.confidence : typeof result?.confidence === "number" ? result.confidence : 0;
-  const confidenceRaw = confidenceValue;
-  const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
+  const reportedConfidence =
+    typeof d?.confidence === "number"
+      ? d.confidence
+      : typeof result?.confidence === "number"
+        ? result.confidence
+        : undefined;
+  const stanceCounts = stances.reduce(
+    (counts, stance) => ({ ...counts, [stance.stance]: counts[stance.stance] + 1 }),
+    { bullish: 0, bearish: 0, neutral: 0 },
+  );
+  const agreementConfidence = stances.length
+    ? Math.round((Math.max(stanceCounts.bullish, stanceCounts.bearish, stanceCounts.neutral) / stances.length) * 100)
+    : 0;
+  const normalizedReportedConfidence =
+    reportedConfidence === undefined
+      ? agreementConfidence
+      : reportedConfidence <= 1
+        ? Math.round(reportedConfidence * 100)
+        : Math.round(reportedConfidence);
+  const confidence = Math.min(100, Math.max(0, normalizedReportedConfidence));
   const riskSection = state["risk_assessment"] as Record<string, unknown> | undefined;
   const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
     ? (riskSection["key_risks"] as string[])

@@ -127,6 +127,15 @@ function Workbench() {
         </p>
       </div>
 
+      <div className="mb-6">
+        <LiveSnapshot run={run} />
+        {!run.partial?.chartsReady && (
+          <div className={run.partial ? "mt-6" : ""}>
+            <PriceChart data={run.prices} ticker={run.config.ticker} />
+          </div>
+        )}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
         <div className="min-w-0 space-y-6">
           <RunForm
@@ -218,10 +227,7 @@ function Workbench() {
             </section>
           )}
 
-          <LiveSnapshot run={run} />
-
           <div className="grid gap-6 xl:grid-cols-2">
-            {!run.partial?.chartsReady && <PriceChart data={run.prices} ticker={run.config.ticker} />}
             {run.decision ? (
               <ConfidenceChart decision={run.decision} stances={run.stances} />
             ) : (

@@ -1,4 +1,7 @@
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { useState } from "react";
+import { ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, Minus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { markdownToHtml } from "@/lib/trading-agents/report";
 import type { Decision } from "@/lib/trading-agents/types";
 import { cn } from "@/lib/utils";
 
@@ -16,74 +19,144 @@ const TONE: Record<string, Tone> = {
 };
 
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
+  const [open, setOpen] = useState(false);
+  const [bullOpen, setBullOpen] = useState(false);
+  const [bearOpen, setBearOpen] = useState(false);
   const tone = TONE[decision.action] ?? FALLBACK_TONE;
   const { Icon } = tone;
 
   return (
     <section className="panel overflow-hidden">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
-        <span
-          className={cn(
-            "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
-            tone.cls,
-          )}
-        >
-          <Icon className="size-5" />
-          {decision.action}
-        </span>
-        <div className="min-w-0 text-sm">
-          <p className="font-medium break-words">{ticker} — portfolio management decision</p>
-          <p className="text-muted-foreground">
-            Confidence {decision.confidence}% · {decision.consensus} consensus across agents
+      <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-semibold">Portfolio management decision</h2>
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            Available · {decision.action} recommendation for {ticker}
           </p>
         </div>
-        <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
-          {[
-            ["Entry", decision.entryPrice],
-            ["Stop loss", decision.stopLoss],
-          ].map(([label, value]) => (
-            <div key={String(label)}>
-              <p className="label-caps">{label}</p>
-              <p className="font-mono text-base">{value === undefined ? "—" : value}</p>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? "Hide" : "Show"}
+        </Button>
+      </div>
+
+      {open && (
+        <div className="border-t border-rule">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
+            <span
+              className={cn(
+                "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
+                tone.cls,
+              )}
+            >
+              <Icon className="size-5" />
+              {decision.action}
+            </span>
+            <div className="min-w-0 text-sm">
+              <p className="font-medium break-words">{ticker} — portfolio management decision</p>
+              <p className="text-muted-foreground">
+                Confidence {decision.confidence}% · {decision.consensus} consensus across agents
+              </p>
             </div>
+            <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
+              {[
+                ["Entry", decision.entryPrice],
+                ["Stop loss", decision.stopLoss],
+              ].map(([label, value]) => (
+                <div key={String(label)}>
+                  <p className="label-caps">{label}</p>
+                  <p className="font-mono text-base">{value === undefined ? "—" : value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            <p className="label-caps">Executive summary</p>
+            <div
+              className="prose-report mt-3 text-sm"
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.executiveSummary) }}
+            />
+
+            {decision.positionSizing && (
+              <div className="mt-4 rounded-md border border-rule bg-muted/50 p-3 text-sm">
+                <p className="label-caps">Position sizing</p>
+                <div
+                  className="prose-report mt-2"
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.positionSizing) }}
+                />
+              </div>
+            )}
+
+            <div className="mt-5 divide-y divide-rule border-y border-rule">
+              <DecisionEvidence
+                title="Key bullish signals"
+                tone="bull"
+                points={decision.bullPoints}
+                open={bullOpen}
+                onToggle={() => setBullOpen((value) => !value)}
+              />
+              <DecisionEvidence
+                title="Key bearish risks"
+                tone="bear"
+                points={decision.bearPoints}
+                open={bearOpen}
+                onToggle={() => setBearOpen((value) => !value)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DecisionEvidence({
+  title,
+  tone,
+  points,
+  open,
+  onToggle,
+}: {
+  title: string;
+  tone: "bull" | "bear";
+  points: string[];
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const available = points.length > 0;
+
+  return (
+    <section className="py-3">
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className={cn("text-sm font-semibold", tone === "bull" ? "text-bull" : "text-bear")}>{title}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {available ? `${points.length} signal${points.length === 1 ? "" : "s"} available` : "Not available"}
+          </p>
+        </div>
+        <Button type="button" size="sm" variant="ghost" disabled={!available} aria-expanded={open} onClick={onToggle}>
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? "Hide" : "Show"}
+        </Button>
+      </div>
+      {available && open && (
+        <div className="mt-3 space-y-4 text-sm">
+          {points.map((point, index) => (
+            <div
+              key={`${title}-${index}`}
+              className={cn("prose-report border-l-2 pl-3", tone === "bull" ? "border-bull/40" : "border-bear/40")}
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(point) }}
+            />
           ))}
         </div>
-      </div>
-
-      <div className="px-4 py-4 sm:px-5 sm:py-5">
-        <p className="label-caps">Executive summary</p>
-        <p className="mt-2 leading-relaxed">{decision.executiveSummary}</p>
-
-        {decision.positionSizing && (
-          <div className="mt-4 rounded-md border border-rule bg-muted/50 p-3 text-sm">
-            <p className="label-caps">Position sizing</p>
-            <p className="mt-1 leading-relaxed">{decision.positionSizing}</p>
-          </div>
-        )}
-
-        <div className="mt-5 grid gap-5 md:grid-cols-2">
-          <div>
-            <p className="label-caps text-bull">Key bullish signals</p>
-            <ul className="mt-2 space-y-2 text-sm">
-              {decision.bullPoints.map((p, i) => (
-                <li key={i} className="border-l-2 border-bull/40 pl-3 leading-relaxed">
-                  {p}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="label-caps text-bear">Key bearish risks</p>
-            <ul className="mt-2 space-y-2 text-sm">
-              {decision.bearPoints.map((p, i) => (
-                <li key={i} className="border-l-2 border-bear/40 pl-3 leading-relaxed">
-                  {p}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+      )}
     </section>
   );
 }

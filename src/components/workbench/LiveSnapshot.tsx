@@ -46,7 +46,7 @@ export function LiveSnapshot({ run }: { run: RunRecord }) {
         </span>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="space-y-5 p-4 sm:p-6">
         {hasMarket && (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
             <Stat label="Last close" value={fmt(p.latestPrice)} />
@@ -105,14 +105,14 @@ export function LiveSnapshot({ run }: { run: RunRecord }) {
                 key={p.chartHtmlUrl}
                 src={p.chartHtmlUrl}
                 title={`${run.config.ticker} price and moving averages`}
-                className="h-[22rem] w-full rounded-md border border-rule bg-surface sm:h-[26rem]"
+                className="h-[30rem] w-full rounded-md border border-rule bg-surface sm:h-[34rem] lg:h-[40rem]"
                 loading="lazy"
               />
             ) : (
               <img
                 src={p.chartPngUrl}
                 alt={`${run.config.ticker} price trend with moving averages`}
-                className="w-full rounded-md border border-rule bg-surface"
+                className="min-h-[30rem] w-full rounded-md border border-rule bg-surface object-contain sm:min-h-[34rem] lg:min-h-[40rem]"
                 loading="lazy"
               />
             )}
