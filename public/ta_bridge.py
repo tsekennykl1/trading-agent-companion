@@ -37,7 +37,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 HOST = "127.0.0.1"
-PORT = 8787
+PORT = 8000
 
 AGENT_SEQUENCE = [
     ("Analyst Team", "Market Analyst", "market_report"),
