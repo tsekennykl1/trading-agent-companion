@@ -258,6 +258,14 @@
     width: 1%;
     max-width: 13rem;
     overflow-wrap: anywhere;
+    white-space: nowrap;
+  }
+  @media (max-width: 639px) {
+    & > table th:first-child,
+    & > table td:first-child {
+      width: 7.5rem;
+      white-space: normal;
+    }
   }
   & > table td {
     overflow-wrap: anywhere;
