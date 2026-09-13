@@ -30,3 +30,8 @@
 - [x] Add Agent reports Show All/Hide All title-row control.
 - [x] Apply available, unavailable, and generating status colors.
 - [x] Verify desktop, iPhone portrait, and a clean build.
+
+# Detailed report presentation
+
+- [x] Replace the raw artifact frame with a readable formatted report.
+- [x] Keep the detailed report collapsed until requested.
