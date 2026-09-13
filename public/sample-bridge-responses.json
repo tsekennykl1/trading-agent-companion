@@ -1,230 +1,117 @@
 {
-  "_comment": "Sample responses from the TradingAgents Workbench bridge (http://127.0.0.1:8787). Generated for backend confirmation.",
+  "_comment": "Expected request/response shapes between the dashboard and the local engine. The dashboard accepts the engine's native format (run_id/request/result/logs) and adapts it internally.",
+
   "GET /health": {
     "status": "ok",
     "engine_version": "installed"
   },
-  "POST /runs request": {
-    "ticker": "0700.HK",
-    "analysisDate": "2026-09-11",
-    "provider": "DeepSeek",
-    "quickModel": "deepseek-chat",
-    "deepModel": "deepseek-reasoner",
-    "researchDepth": "Medium",
-    "analysts": [
-      "Market Analyst",
-      "Sentiment Analyst",
-      "News Analyst",
-      "Fundamentals Analyst"
-    ],
-    "language": "English"
-  },
-  "POST /runs response": {
-    "run_id": "a1b2c3d4e5f6"
-  },
-  "GET /runs": [
-    {
-      "id": "a1b2c3d4e5f6",
-      "status": "completed",
-      "source": "engine",
-      "config": {
-        "ticker": "0700.HK",
-        "analysisDate": "2026-09-11",
-        "provider": "DeepSeek",
-        "quickModel": "deepseek-chat",
-        "deepModel": "deepseek-reasoner",
-        "researchDepth": "Medium",
-        "analysts": [
-          "Market Analyst",
-          "Sentiment Analyst",
-          "News Analyst",
-          "Fundamentals Analyst"
-        ],
-        "language": "English"
-      },
-      "startedAt": "2026-09-12T09:30:00+00:00",
-      "agents": [
-        { "team": "Analyst Team", "agent": "Market Analyst", "status": "completed", "time": "09:31:05" },
-        { "team": "Analyst Team", "agent": "Sentiment Analyst", "status": "completed", "time": "09:31:22" },
-        { "team": "Analyst Team", "agent": "News Analyst", "status": "completed", "time": "09:31:44" },
-        { "team": "Analyst Team", "agent": "Fundamentals Analyst", "status": "completed", "time": "09:32:01" },
-        { "team": "Research Team", "agent": "Bull Researcher", "status": "completed", "time": "09:32:30" },
-        { "team": "Research Team", "agent": "Bear Researcher", "status": "completed", "time": "09:32:55" },
-        { "team": "Research Team", "agent": "Research Manager", "status": "completed", "time": "09:33:20" },
-        { "team": "Trading Team", "agent": "Trader", "status": "completed", "time": "09:33:45" },
-        { "team": "Risk Team", "agent": "Aggressive Analyst", "status": "completed", "time": "09:34:05" },
-        { "team": "Risk Team", "agent": "Conservative Analyst", "status": "completed", "time": "09:34:25" },
-        { "team": "Risk Team", "agent": "Neutral Analyst", "status": "completed", "time": "09:34:45" },
-        { "team": "Portfolio Management", "agent": "Portfolio Manager", "status": "completed", "time": "09:35:10" }
-      ],
-      "prices": [
-        { "date": "2026-06-15", "close": 380.0, "ema10": 380.0, "sma20": 380.0, "sma50": 380.0 },
-        { "date": "2026-06-16", "close": 382.5, "ema10": 380.45, "sma20": 380.13, "sma50": 380.05 },
-        { "date": "2026-06-17", "close": 379.0, "ema10": 380.12, "sma20": 380.07, "sma50": 380.02 },
-        { "date": "2026-09-11", "close": 428.4, "ema10": 425.3, "sma20": 421.5, "sma50": 410.2 }
-      ],
-      "stances": [
-        { "agent": "Market Analyst", "stance": "bullish", "score": 42 },
-        { "agent": "Sentiment Analyst", "stance": "neutral", "score": 8 },
-        { "agent": "News Analyst", "stance": "bullish", "score": 35 },
-        { "agent": "Fundamentals Analyst", "stance": "neutral", "score": 12 },
-        { "agent": "Bull Researcher", "stance": "bullish", "score": 55 },
-        { "agent": "Bear Researcher", "stance": "bearish", "score": -38 },
-        { "agent": "Research Manager", "stance": "neutral", "score": 5 },
-        { "agent": "Trader", "stance": "bullish", "score": 28 },
-        { "agent": "Aggressive Analyst", "stance": "bullish", "score": 48 },
-        { "agent": "Conservative Analyst", "stance": "bearish", "score": -30 },
-        { "agent": "Neutral Analyst", "stance": "neutral", "score": -2 },
-        { "agent": "Portfolio Manager", "stance": "neutral", "score": 6 }
-      ],
-      "reports": {
-        "market_report": "Market technicals remain constructive...",
-        "sentiment_report": "Social sentiment is mixed...",
-        "news_report": "Recent news flow is broadly positive...",
-        "fundamentals_report": "Valuation is fair relative to peers...",
-        "bull_report": "Key bull case: user engagement trends...",
-        "bear_report": "Key bear case: regulatory overhang...",
-        "investment_plan": "Hold current position...",
-        "trader_plan": "Entry Price: 428.4. Stop Loss: 411.9. Position Sizing: 3%.",
-        "risk_aggressive": "Aggressive stance: add on dips...",
-        "risk_conservative": "Conservative stance: trim risk...",
-        "risk_neutral": "Neutral stance: maintain benchmark...",
-        "final_decision": "FINAL TRANSACTION PROPOSAL: Hold"
-      },
-      "decision": {
-        "action": "Hold",
-        "rating": "Hold",
-        "confidence": 78,
-        "consensus": "Medium",
-        "entryPrice": 428.4,
-        "stopLoss": 411.9,
-        "positionSizing": "3% of portfolio",
-        "executiveSummary": "The multi-agent review concludes a Hold rating for 0700.HK as of 2026-09-11. Technicals and news are supportive, while valuation and regulatory risk keep the stance neutral.",
-        "bullPoints": [
-          "User engagement and monetisation metrics remain supportive.",
-          "Technical trend shows price reclaiming the 50-day average."
-        ],
-        "bearPoints": [
-          "Regulatory overhang continues to cap upside.",
-          "Valuation is fair but no longer cheap versus peers."
-        ]
-      },
-      "stats": {
-        "llmCalls": 24,
-        "toolCalls": 8,
-        "tokensIn": 18400,
-        "tokensOut": 6200,
-        "reportsDone": 4,
-        "reportsTotal": 4,
-        "runtimeSeconds": 312
-      },
-      "charts": {
-        "plotly": "/runs/a1b2c3d4e5f6/chart.html",
-        "png": "/runs/a1b2c3d4e5f6/chart.png"
-      }
+
+  "POST /runs (request body)": {
+    "model": "gpt-5.6",
+    "ticker": "NVDA",
+    "end_date": "2026-01-15",
+    "params": {
+      "llm_provider": "openai",
+      "deep_think_llm": "gpt-5.6",
+      "quick_think_llm": "gpt-5.6-luna",
+      "max_debate_rounds": 1,
+      "temperature": 0.0
     }
-  ],
-  "GET /runs/{id}": {
-    "id": "a1b2c3d4e5f6",
+  },
+
+  "POST /runs (response)": {
+    "run_id": "8b7d4d2d-7b2f-4f8d-9a88-2d5c0c41a123"
+  },
+
+  "GET /runs/{run_id} (running)": {
+    "run_id": "8b7d4d2d-7b2f-4f8d-9a88-2d5c0c41a123",
+    "status": "running",
+    "created_at": "2026-09-13T14:22:11Z",
+    "updated_at": "2026-09-13T14:22:58Z",
+    "request": {
+      "model": "gpt-5.6",
+      "ticker": "NVDA",
+      "end_date": "2026-01-15",
+      "params": { "llm_provider": "openai", "max_debate_rounds": 1, "temperature": 0.0 }
+    },
+    "result": null,
+    "error": null,
+    "logs": ["Run created", "TradingAgents import successful", "Configuration loaded", "Fetching market data"]
+  },
+
+  "GET /runs/{run_id} (completed)": {
+    "run_id": "8b7d4d2d-7b2f-4f8d-9a88-2d5c0c41a123",
     "status": "completed",
-    "source": "engine",
-    "config": {
-      "ticker": "0700.HK",
-      "analysisDate": "2026-09-11",
-      "provider": "DeepSeek",
-      "quickModel": "deepseek-chat",
-      "deepModel": "deepseek-reasoner",
-      "researchDepth": "Medium",
-      "analysts": [
-        "Market Analyst",
-        "Sentiment Analyst",
-        "News Analyst",
-        "Fundamentals Analyst"
-      ],
-      "language": "English"
+    "created_at": "2026-09-13T14:22:11Z",
+    "updated_at": "2026-09-13T14:24:03Z",
+    "request": {
+      "model": "gpt-5.6",
+      "ticker": "NVDA",
+      "end_date": "2026-01-15",
+      "params": {
+        "llm_provider": "openai",
+        "deep_think_llm": "gpt-5.6",
+        "quick_think_llm": "gpt-5.6-luna",
+        "max_debate_rounds": 1,
+        "temperature": 0.0,
+        "checkpoint_enabled": true
+      }
     },
-    "startedAt": "2026-09-12T09:30:00+00:00",
-    "agents": [
-      { "team": "Analyst Team", "agent": "Market Analyst", "status": "completed", "time": "09:31:05" },
-      { "team": "Analyst Team", "agent": "Sentiment Analyst", "status": "completed", "time": "09:31:22" },
-      { "team": "Analyst Team", "agent": "News Analyst", "status": "completed", "time": "09:31:44" },
-      { "team": "Analyst Team", "agent": "Fundamentals Analyst", "status": "completed", "time": "09:32:01" },
-      { "team": "Research Team", "agent": "Bull Researcher", "status": "completed", "time": "09:32:30" },
-      { "team": "Research Team", "agent": "Bear Researcher", "status": "completed", "time": "09:32:55" },
-      { "team": "Research Team", "agent": "Research Manager", "status": "completed", "time": "09:33:20" },
-      { "team": "Trading Team", "agent": "Trader", "status": "completed", "time": "09:33:45" },
-      { "team": "Risk Team", "agent": "Aggressive Analyst", "status": "completed", "time": "09:34:05" },
-      { "team": "Risk Team", "agent": "Conservative Analyst", "status": "completed", "time": "09:34:25" },
-      { "team": "Risk Team", "agent": "Neutral Analyst", "status": "completed", "time": "09:34:45" },
-      { "team": "Portfolio Management", "agent": "Portfolio Manager", "status": "completed", "time": "09:35:10" }
-    ],
-    "prices": [
-      { "date": "2026-06-15", "close": 380.0, "ema10": 380.0, "sma20": 380.0, "sma50": 380.0 },
-      { "date": "2026-06-16", "close": 382.5, "ema10": 380.45, "sma20": 380.13, "sma50": 380.05 },
-      { "date": "2026-06-17", "close": 379.0, "ema10": 380.12, "sma20": 380.07, "sma50": 380.02 },
-      { "date": "2026-09-11", "close": 428.4, "ema10": 425.3, "sma20": 421.5, "sma50": 410.2 }
-    ],
-    "stances": [
-      { "agent": "Market Analyst", "stance": "bullish", "score": 42 },
-      { "agent": "Sentiment Analyst", "stance": "neutral", "score": 8 },
-      { "agent": "News Analyst", "stance": "bullish", "score": 35 },
-      { "agent": "Fundamentals Analyst", "stance": "neutral", "score": 12 },
-      { "agent": "Bull Researcher", "stance": "bullish", "score": 55 },
-      { "agent": "Bear Researcher", "stance": "bearish", "score": -38 },
-      { "agent": "Research Manager", "stance": "neutral", "score": 5 },
-      { "agent": "Trader", "stance": "bullish", "score": 28 },
-      { "agent": "Aggressive Analyst", "stance": "bullish", "score": 48 },
-      { "agent": "Conservative Analyst", "stance": "bearish", "score": -30 },
-      { "agent": "Neutral Analyst", "stance": "neutral", "score": -2 },
-      { "agent": "Portfolio Manager", "stance": "neutral", "score": 6 }
-    ],
-    "reports": {
-      "market_report": "Market technicals remain constructive...",
-      "sentiment_report": "Social sentiment is mixed...",
-      "news_report": "Recent news flow is broadly positive...",
-      "fundamentals_report": "Valuation is fair relative to peers...",
-      "bull_report": "Key bull case: user engagement trends...",
-      "bear_report": "Key bear case: regulatory overhang...",
-      "investment_plan": "Hold current position...",
-      "trader_plan": "Entry Price: 428.4. Stop Loss: 411.9. Position Sizing: 3%.",
-      "risk_aggressive": "Aggressive stance: add on dips...",
-      "risk_conservative": "Conservative stance: trim risk...",
-      "risk_neutral": "Neutral stance: maintain benchmark...",
-      "final_decision": "FINAL TRANSACTION PROPOSAL: Hold"
+    "result": {
+      "ticker": "NVDA",
+      "analysis_date": "2026-01-15",
+      "decision": {
+        "action": "buy",
+        "confidence": 0.78,
+        "risk_level": "medium",
+        "position_size": "small",
+        "summary": "Bullish momentum, strong earnings outlook, and favorable analyst sentiment support a cautious buy."
+      },
+      "state": {
+        "market_data": { "price": 184.52, "volume": 42150321, "52_week_high": 195.3, "52_week_low": 98.74 },
+        "technical_analysis": { "trend": "bullish", "rsi": 63.4, "macd_signal": "positive" },
+        "fundamental_analysis": { "revenue_growth": "strong", "profitability": "high", "valuation": "elevated" },
+        "sentiment_analysis": { "news_sentiment": "positive", "social_sentiment": "mixed", "analyst_consensus": "moderate_buy" },
+        "risk_assessment": {
+          "overall_risk": "medium",
+          "key_risks": ["High valuation", "Sector volatility", "Macro uncertainty"]
+        }
+      },
+      "artifacts": {
+        "memory_log_path": "data/trading_memory.md",
+        "checkpoint_dir": "data/tradingagents_cache"
+      }
     },
-    "decision": {
-      "action": "Hold",
-      "rating": "Hold",
-      "confidence": 78,
-      "consensus": "Medium",
-      "entryPrice": 428.4,
-      "stopLoss": 411.9,
-      "positionSizing": "3% of portfolio",
-      "executiveSummary": "The multi-agent review concludes a Hold rating for 0700.HK as of 2026-09-11. Technicals and news are supportive, while valuation and regulatory risk keep the stance neutral.",
-      "bullPoints": [
-        "User engagement and monetisation metrics remain supportive.",
-        "Technical trend shows price reclaiming the 50-day average."
-      ],
-      "bearPoints": [
-        "Regulatory overhang continues to cap upside.",
-        "Valuation is fair but no longer cheap versus peers."
-      ]
-    },
-    "stats": {
-      "llmCalls": 24,
-      "toolCalls": 8,
-      "tokensIn": 18400,
-      "tokensOut": 6200,
-      "reportsDone": 4,
-      "reportsTotal": 4,
-      "runtimeSeconds": 312
-    },
-    "charts": {
-      "plotly": "/runs/a1b2c3d4e5f6/chart.html",
-      "png": "/runs/a1b2c3d4e5f6/chart.png"
-    }
+    "error": null,
+    "logs": [
+      "Run created",
+      "TradingAgents import successful",
+      "Configuration loaded",
+      "Market data fetched",
+      "Analysis completed",
+      "Decision generated"
+    ]
   },
-  "POST /runs/{id}/cancel": {
-    "ok": true
-  }
+
+  "GET /runs/{run_id} (failed)": {
+    "run_id": "8b7d4d2d-7b2f-4f8d-9a88-2d5c0c41a123",
+    "status": "failed",
+    "created_at": "2026-09-13T14:22:11Z",
+    "updated_at": "2026-09-13T14:22:34Z",
+    "request": {
+      "model": "gpt-5.6",
+      "ticker": "NVDA",
+      "end_date": "2026-01-15",
+      "params": { "llm_provider": "openai", "max_debate_rounds": 1, "temperature": 0.0 }
+    },
+    "result": null,
+    "error": {
+      "type": "AuthenticationError",
+      "message": "OPENAI_API_KEY is missing or invalid.",
+      "traceback": "Traceback (most recent call last): ..."
+    },
+    "logs": ["Run created", "TradingAgents import successful", "Configuration loaded", "Run failed during provider initialization"]
+  },
+
+  "POST /runs/{run_id}/cancel (response)": { "ok": true }
 }
