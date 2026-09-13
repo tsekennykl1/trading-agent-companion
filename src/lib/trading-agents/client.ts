@@ -185,6 +185,68 @@ function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral";
   return { stance: "neutral", score: 0 };
 }
 
+/** Make an engine-relative artifact path absolute against the bridge URL. */
+export function bridgeAssetUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${getBridgeUrl().replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+function num(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
+
+/** Read the engine's partial_result (plus nested summary_cards / chart_urls). */
+function readPartial(
+  partial: Record<string, unknown>,
+  runId: string,
+): import("./types").RunPartial | undefined {
+  if (!partial || Object.keys(partial).length === 0) return undefined;
+  const cards = (partial["summary_cards"] ?? {}) as Record<string, unknown>;
+  const get = (...keys: string[]): unknown => {
+    for (const k of keys) {
+      if (partial[k] !== undefined && partial[k] !== null) return partial[k];
+      if (cards[k] !== undefined && cards[k] !== null) return cards[k];
+    }
+    return undefined;
+  };
+  const urls = (partial["chart_urls"] ?? {}) as Record<string, unknown>;
+  const chartsReady = partial["charts_ready"] === true;
+  const html = typeof urls["plotly"] === "string" ? urls["plotly"] : typeof urls["html"] === "string" ? urls["html"] : undefined;
+  const png = typeof urls["png"] === "string" ? urls["png"] : undefined;
+  const warnings = Array.isArray(partial["warnings"])
+    ? (partial["warnings"] as unknown[]).map((w) =>
+        typeof w === "string" ? w : String((w as Record<string, unknown>)?.["message"] ?? w),
+      )
+    : [];
+
+  return {
+    configReady: partial["config_ready"] === true,
+    marketDataReady: partial["market_data_ready"] === true,
+    chartsReady,
+    decisionReady: partial["decision_ready"] === true,
+    ...(typeof get("stock_name", "name") === "string" ? { stockName: get("stock_name", "name") as string } : {}),
+    ...(num(get("latest_price", "latest_close")) !== undefined
+      ? { latestPrice: num(get("latest_price", "latest_close"))! }
+      : {}),
+    ...(num(get("latest_rsi14", "rsi14")) !== undefined ? { latestRsi14: num(get("latest_rsi14", "rsi14"))! } : {}),
+    ...(num(get("latest_ema20", "ema20")) !== undefined ? { latestEma20: num(get("latest_ema20", "ema20"))! } : {}),
+    ...(num(get("latest_ema50", "ema50")) !== undefined ? { latestEma50: num(get("latest_ema50", "ema50"))! } : {}),
+    ...(num(get("change_pct", "price_change_pct")) !== undefined
+      ? { changePct: num(get("change_pct", "price_change_pct"))! }
+      : {}),
+    ...(num(get("price_data_points", "rows")) !== undefined
+      ? { pricePoints: num(get("price_data_points", "rows"))! }
+      : {}),
+    ...(chartsReady
+      ? {
+          chartHtmlUrl: bridgeAssetUrl(html ?? `/runs/${runId}/price-chart.html`),
+          chartPngUrl: bridgeAssetUrl(png ?? `/runs/${runId}/price-chart.png`),
+        }
+      : {}),
+    warnings,
+  };
+}
+
 export function normalizeRun(raw: unknown): RunRecord {
   if (!isEngineRun(raw)) return raw as RunRecord;
 
@@ -354,6 +416,8 @@ export function normalizeRun(raw: unknown): RunRecord {
       language: "English",
     },
     startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),
+    logs,
+    ...(readPartial(partial, raw.run_id) ? { partial: readPartial(partial, raw.run_id)! } : {}),
     agents,
     prices: [],
     stances,
