@@ -19,7 +19,7 @@ const TONE: Record<string, Tone> = {
 };
 
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [bullOpen, setBullOpen] = useState(false);
   const [bearOpen, setBearOpen] = useState(false);
   const tone = TONE[decision.action] ?? FALLBACK_TONE;

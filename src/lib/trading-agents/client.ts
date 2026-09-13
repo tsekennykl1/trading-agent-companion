@@ -392,7 +392,7 @@ export function normalizeRun(raw: unknown): RunRecord {
     ? Math.round((Math.max(stanceCounts.bullish, stanceCounts.bearish, stanceCounts.neutral) / stances.length) * 100)
     : 0;
   const normalizedReportedConfidence =
-    reportedConfidence === undefined
+    reportedConfidence === undefined || (reportedConfidence <= 0 && stances.length > 0)
       ? agreementConfidence
       : reportedConfidence <= 1
         ? Math.round(reportedConfidence * 100)
