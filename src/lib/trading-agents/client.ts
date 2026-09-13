@@ -349,19 +349,33 @@ export function normalizeRun(raw: unknown): RunRecord {
       analysts: [],
       language: "English",
     },
-    startedAt: raw.created_at ?? new Date().toISOString(),
+    startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),
     agents,
     prices: [],
     stances,
     reports,
+    ...(progress?.stage || progress?.message
+      ? {
+          progress: {
+            stage: progress.stage ?? "",
+            message: progress.message ?? "",
+            percent: progress.percent ?? 0,
+            step: progress.step ?? 0,
+            totalSteps: progress.total_steps ?? 0,
+          },
+        }
+      : {}),
+    ...(typeof raw.poll_after_ms === "number" && raw.poll_after_ms > 0
+      ? { pollAfterMs: raw.poll_after_ms }
+      : {}),
     stats: {
-      llmCalls: 0,
-      toolCalls: 0,
-      tokensIn: 0,
-      tokensOut: 0,
+      llmCalls: counters["engine_calls_count"] ?? counters["llm_calls"] ?? 0,
+      toolCalls: counters["tool_calls"] ?? 0,
+      tokensIn: counters["tokens_in"] ?? 0,
+      tokensOut: counters["tokens_out"] ?? 0,
       reportsDone: Object.keys(reports).length,
       reportsTotal: Object.keys(reports).length,
-      runtimeSeconds,
+      runtimeSeconds: typeof totalMs === "number" ? Math.max(1, Math.round(totalMs / 1000)) : runtimeSeconds,
     },
     source: "engine",
     ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),
