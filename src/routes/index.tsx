@@ -9,6 +9,7 @@ import { AgentBoard } from "@/components/workbench/AgentBoard";
 import { DecisionPanel } from "@/components/workbench/DecisionPanel";
 import { ConfidenceChart, PriceChart, StanceChart } from "@/components/workbench/RunCharts";
 import { ReportsSection } from "@/components/workbench/ReportsSection";
+import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -207,9 +208,9 @@ function Workbench() {
           {run.decision ? (
             <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
           ) : (
-            <section className="panel flex min-h-64 flex-col items-center justify-center px-5 py-10 text-center" role="status">
-              <Loader2 className="mb-4 size-7 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-              <h2 className="font-display text-xl font-semibold">Analysis in progress</h2>
+            <section className="panel flex flex-col items-center justify-center px-5 py-8 text-center" role="status">
+              <Loader2 className="mb-3 size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+              <h2 className="font-display text-lg font-semibold">Recommendation pending</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                 Analyst teams are reviewing the evidence. The portfolio manager's decision will appear when
                 their debate is complete.
@@ -217,8 +218,10 @@ function Workbench() {
             </section>
           )}
 
+          <LiveSnapshot run={run} />
+
           <div className="grid gap-6 xl:grid-cols-2">
-            <PriceChart data={run.prices} ticker={run.config.ticker} />
+            {!run.partial?.chartsReady && <PriceChart data={run.prices} ticker={run.config.ticker} />}
             {run.decision ? (
               <ConfidenceChart decision={run.decision} stances={run.stances} />
             ) : (
