@@ -19,9 +19,9 @@ import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 
-const TITLE = "TradingAgents Workbench — Multi-Agent Financial Decision Support";
+const TITLE = "TradingAgents Workbench — Financial Analysis";
 const DESCRIPTION =
-  "Run the TradingAgents multi-agent LLM framework from a browser dashboard: live agent progress, consensus charts and an exportable executive decision memo.";
+  "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
 
 export const Route = createFileRoute("/")({
   head: () => ({

@@ -48,4 +48,4 @@
 - [x] Move run settings into a highlighted full-width section near the top.
 - [x] Present agent progress and structured report fields as compact tables.
 - [x] Send analyst selections in both legacy and enhanced backend request fields.
-- [ ] Verify analyst request payloads, desktop/iPhone layouts, and a clean preview build.
+- [x] Verify analyst request payloads, desktop/iPhone layouts, and a clean preview build.
