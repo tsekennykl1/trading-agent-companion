@@ -97,7 +97,7 @@ function Workbench() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <RunForm
             key={defaultConfig.analysisDate}
             defaultConfig={defaultConfig}
@@ -109,7 +109,7 @@ function Workbench() {
           <AgentBoard agents={run.agents} stats={run.stats} />
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {run.source === "sample" && (
             <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />

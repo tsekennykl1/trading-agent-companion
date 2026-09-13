@@ -46,8 +46,8 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
         Sent to your local TradingAgents engine — the same inputs as the CLI prompts.
       </p>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
+       <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2">
+         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="ticker" className="label-caps">
             Ticker
           </Label>
@@ -60,7 +60,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
             className="font-mono"
           />
         </div>
-        <div className="space-y-1.5">
+         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="date" className="label-caps">
             Analysis date
           </Label>
@@ -73,13 +73,13 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
           />
         </div>
 
-        <div className="space-y-1.5 sm:col-span-2">
+         <div className="min-w-0 space-y-1.5 sm:col-span-2">
           <Label className="label-caps">Research depth</Label>
           <Select
             value={config.researchDepth}
             onValueChange={(v) => update("researchDepth", v as RunConfig["researchDepth"])}
           >
-            <SelectTrigger>
+             <SelectTrigger className="w-full min-w-0 [&>span]:truncate">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
