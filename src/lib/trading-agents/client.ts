@@ -1,7 +1,7 @@
 import type { Action, RunConfig, RunRecord } from "./types";
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
-export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8787";
+export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8000";
 
 export function getBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_URL;
