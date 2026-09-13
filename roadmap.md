@@ -23,4 +23,4 @@
 - [x] Separate bullish signals and bearish risks into independent collapsed sections.
 - [x] Improve generated report heading and paragraph spacing.
 - [x] Derive confidence from agent agreement when the engine omits it.
-- [ ] Verify desktop and iPhone layouts and confirm a clean build.
+- [x] Verify desktop and iPhone layouts and confirm a clean build.
