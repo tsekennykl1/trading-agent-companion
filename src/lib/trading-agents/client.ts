@@ -207,8 +207,9 @@ export function normalizeRun(raw: unknown): RunRecord {
   const d = result?.decision;
   const confidenceRaw = typeof d?.confidence === "number" ? d.confidence : 0;
   const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
-  const keyRisks = Array.isArray(state.risk_assessment?.key_risks)
-    ? (state.risk_assessment!.key_risks as string[])
+  const riskSection = state["risk_assessment"];
+  const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
+    ? (riskSection["key_risks"] as string[])
     : [];
   const actionText = titleCase(d?.action ?? "Review");
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
