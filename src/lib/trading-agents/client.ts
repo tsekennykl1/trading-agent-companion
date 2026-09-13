@@ -239,18 +239,6 @@ export function normalizeRun(raw: unknown): RunRecord {
     prices: [],
     stances,
     reports,
-    decision: d
-      ? {
-          action,
-          rating: actionText,
-          confidence,
-          consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
-          positionSizing: d.position_size ? titleCase(d.position_size) : undefined,
-          executiveSummary: d.summary ?? "",
-          bullPoints: d.summary ? [d.summary] : [],
-          bearPoints: keyRisks,
-        }
-      : undefined,
     stats: {
       llmCalls: 0,
       toolCalls: 0,
@@ -261,8 +249,23 @@ export function normalizeRun(raw: unknown): RunRecord {
       runtimeSeconds,
     },
     source: "engine",
-    error: raw.error ? `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` : undefined,
+    ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),
   };
+
+  if (d) {
+    record.decision = {
+      action,
+      rating: actionText,
+      confidence,
+      consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
+      ...(d.position_size ? { positionSizing: titleCase(d.position_size) } : {}),
+      executiveSummary: d.summary ?? "",
+      bullPoints: d.summary ? [d.summary] : [],
+      bearPoints: keyRisks,
+    };
+  }
+
+  return record;
 }
 
 export const api = {
