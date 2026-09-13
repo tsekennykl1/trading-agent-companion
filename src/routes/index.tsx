@@ -14,6 +14,7 @@ import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/trading-agents/client";
+import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 
@@ -111,6 +112,8 @@ function Workbench() {
 
   const liveRun = runQuery.data as RunRecord | undefined;
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
+  const artifacts = useRunArtifacts(run, run.source === "engine");
+  const chartReady = Boolean(artifacts.chartHtmlUrl || run.partial?.chartsReady);
   const running = run.status === "running" || run.status === "queued";
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
@@ -127,12 +130,34 @@ function Workbench() {
         </p>
       </div>
 
-      <div className="mb-6">
-        <LiveSnapshot run={run} />
-        {!run.partial?.chartsReady && (
-          <div className={run.partial ? "mt-6" : ""}>
-            <PriceChart data={run.prices} ticker={run.config.ticker} />
-          </div>
+      <div className="mb-6 space-y-6">
+        <LiveSnapshot run={run} artifacts={artifacts} />
+        {!chartReady && (
+          <PriceChart
+            data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+            ticker={run.config.ticker}
+          />
+        )}
+        {artifacts.resultHtmlUrl && (
+          <section className="panel overflow-hidden">
+            <div className="flex flex-wrap items-center gap-3 border-b border-rule bg-surface px-4 py-3 sm:px-5">
+              <h3 className="text-base font-semibold">Detailed report</h3>
+              <a
+                href={artifacts.resultHtmlUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="ml-auto text-xs text-primary hover:underline"
+              >
+                Open in a new tab
+              </a>
+            </div>
+            <iframe
+              src={artifacts.resultHtmlUrl}
+              title={`${run.config.ticker} detailed analysis report`}
+              className="h-[34rem] w-full bg-surface"
+              loading="lazy"
+            />
+          </section>
         )}
       </div>
 
