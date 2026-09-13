@@ -86,15 +86,15 @@ function Setup() {
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-display text-3xl font-semibold">Connect your engine</h1>
+        <h1 className="font-display text-2xl font-semibold sm:text-3xl">Connect your engine</h1>
         <p className="mt-2 text-muted-foreground">
           TradingAgents is a Python system that runs on your own machine. A small bridge exposes it to this
           dashboard, so nothing about your API keys or data leaves your computer.
         </p>
 
-        <section className="panel mt-6 p-5">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="min-w-56 flex-1 space-y-1.5">
+        <section className="panel mt-6 p-4 sm:p-5">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <div className="min-w-0 space-y-1.5">
               <Label htmlFor="bridge" className="label-caps">
                 Engine address
               </Label>
@@ -115,17 +115,17 @@ function Setup() {
                     : toast.error("No response from that address"),
                 );
               }}
-              className="gap-2"
+               className="min-h-11 w-full gap-2 sm:min-h-9 sm:w-auto"
             >
               <RefreshCw className="size-4" /> Save and test
             </Button>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 rounded-md border border-rule bg-muted/40 px-3 py-2.5 text-sm">
+          <div className="mt-4 flex items-start gap-2 rounded-md border border-rule bg-muted/40 px-3 py-2.5 text-sm sm:items-center">
             {online ? (
-              <CheckCircle2 className="size-4 text-bull" />
+               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-bull sm:mt-0" />
             ) : (
-              <XCircle className="size-4 text-bear" />
+               <XCircle className="mt-0.5 size-4 shrink-0 text-bear sm:mt-0" />
             )}
             <span>
               {online
@@ -135,14 +135,14 @@ function Setup() {
           </div>
         </section>
 
-        <div className="panel mt-6 flex flex-wrap items-center gap-3 p-5">
+        <div className="panel mt-6 grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-center sm:p-5">
           <div className="mr-auto">
             <p className="font-medium">Bridge script</p>
             <p className="text-sm text-muted-foreground">
               One Python file — wraps TradingAgentsGraph and streams progress to this dashboard.
             </p>
           </div>
-          <Button asChild variant="outline" className="gap-2">
+          <Button asChild variant="outline" className="min-h-11 w-full gap-2 sm:min-h-9 sm:w-auto">
             <a href="/ta_bridge.py" download>
               <Download className="size-4" /> Download ta_bridge.py
             </a>
@@ -152,7 +152,7 @@ function Setup() {
         <h2 className="mt-10 text-xl font-semibold">Setup steps</h2>
         <ol className="mt-4 space-y-4">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="panel p-5">
+            <li key={s.title} className="panel p-4 sm:p-5">
               <div className="flex gap-3">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-xs text-primary-foreground">
                   {i + 1}

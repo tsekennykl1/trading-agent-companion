@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { Button } from "@/components/ui/button";
 import { getBridgeUrl } from "@/lib/trading-agents/client";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 
@@ -99,52 +100,52 @@ function SimpleDashboard() {
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
         <header>
-          <h1 className="font-display text-3xl font-semibold">Simple dashboard</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-3xl">Simple dashboard</h1>
           <p className="mt-2 text-muted-foreground">
             A stripped-back view: one form, one decision, and the price-trend and moving-average charts
             drawn in Python (Plotly and Matplotlib) by the engine itself.
           </p>
         </header>
 
-        <form onSubmit={start} className="panel flex flex-wrap items-end gap-4 p-5">
-          <label className="flex flex-col gap-1 text-sm">
+        <form onSubmit={start} className="panel grid gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-[auto_auto_1fr_auto] lg:items-end">
+          <label className="flex min-w-0 flex-col gap-1 text-sm">
             <span className="label-caps">Ticker</span>
             <input
               value={ticker}
               onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              className="h-9 w-40 rounded-md border border-rule bg-background px-3 font-mono text-sm"
+              className="h-11 w-full min-w-0 rounded-md border border-rule bg-background px-3 font-mono text-sm sm:h-9"
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex min-w-0 flex-col gap-1 text-sm">
             <span className="label-caps">Analysis date</span>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="h-9 rounded-md border border-rule bg-background px-3 text-sm"
+              className="h-11 min-w-0 rounded-md border border-rule bg-background px-3 text-sm sm:h-9"
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex min-w-0 flex-col gap-1 text-sm">
             <span className="label-caps">Depth</span>
             <select
               value={depth}
               onChange={(e) => setDepth(e.target.value)}
-              className="h-9 rounded-md border border-rule bg-background px-3 text-sm"
+              className="h-11 min-w-0 rounded-md border border-rule bg-background px-3 text-sm sm:h-9"
             >
               <option>Shallow</option>
               <option>Medium</option>
               <option>Deep</option>
             </select>
           </label>
-          <button
+          <Button
             type="submit"
             disabled={busy}
-            className="h-9 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            className="min-h-11 w-full sm:col-span-2 sm:min-h-9 lg:col-span-1 lg:w-auto"
           >
             {busy ? "Starting…" : "Run analysis"}
-          </button>
+          </Button>
         </form>
 
         {error && (
@@ -158,21 +159,21 @@ function SimpleDashboard() {
           </p>
         )}
 
-        <section className="panel p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <section className="panel p-4 sm:p-5">
+          <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
             <h2 className="text-base font-semibold">Price trend and moving averages (Python)</h2>
-            <div className="flex gap-1 text-xs">
+            <div className="grid grid-cols-2 gap-1 text-xs">
               {["plotly", "png"].map((k) => (
-                <button
+                <Button
                   key={k}
                   type="button"
                   onClick={() => setChartKind(k)}
-                  className={`rounded-md px-3 py-1.5 ${
-                    chartKind === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted"
-                  }`}
+                  variant={chartKind === k ? "secondary" : "ghost"}
+                  size="sm"
+                  className="min-h-10 min-w-0 whitespace-normal px-2 leading-tight sm:min-h-8"
                 >
                   {k === "plotly" ? "Interactive (Plotly)" : "Static (Matplotlib)"}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -183,7 +184,7 @@ function SimpleDashboard() {
                 <iframe
                   title="Plotly price chart"
                   src={`${base}/runs/${runId}/chart.html`}
-                  className="h-[420px] w-full rounded-md border border-rule bg-surface"
+                  className="h-[300px] w-full rounded-md border border-rule bg-surface sm:h-[420px]"
                 />
               ) : (
                 <img
@@ -200,7 +201,7 @@ function SimpleDashboard() {
           </div>
         </section>
 
-        <section className="panel p-5">
+        <section className="panel p-4 sm:p-5">
           <h2 className="text-base font-semibold">Recommendation</h2>
           {decision ? (
             <div className="mt-3 space-y-2 text-sm">

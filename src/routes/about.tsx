@@ -47,7 +47,7 @@ function About() {
   return (
     <AppShell>
       <article className="mx-auto max-w-3xl">
-        <h1 className="font-display text-3xl font-semibold">
+        <h1 className="font-display text-2xl font-semibold sm:text-3xl">
           From research prototype to workplace tool
         </h1>
         <p className="mt-3 text-muted-foreground">
@@ -81,11 +81,11 @@ function About() {
         <h2 className="mt-10 text-xl font-semibold">What this workbench adds</h2>
         <ol className="mt-4 space-y-3">
           {LAYERS.map(([t, d], i) => (
-            <li key={t} className="panel flex gap-4 p-4">
+            <li key={t} className="panel flex gap-3 p-4 sm:gap-4">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-xs text-primary-foreground">
                 {i + 1}
               </span>
-              <span>
+              <span className="min-w-0">
                 <span className="block font-medium">{t}</span>
                 <span className="mt-1 block text-sm text-muted-foreground">{d}</span>
               </span>
@@ -112,7 +112,7 @@ function About() {
 
         <h2 className="mt-10 text-xl font-semibold">References</h2>
         <ul className="mt-3 space-y-2 text-sm">
-          <li>
+            <li className="break-words">
             Tauric Research. (2024). <em>TradingAgents: Multi-Agent LLM Framework for Financial Trading.</em>{" "}
             <a
               className="text-primary underline underline-offset-2"
@@ -123,7 +123,7 @@ function About() {
               github.com/TauricResearch/TradingAgents
             </a>
           </li>
-          <li>
+            <li className="break-words">
             Liu, Z., et al. (2024).{" "}
             <em>TradingAgents: Multi-Agent Collaboration for Financial Decision-Making.</em> arXiv preprint{" "}
             <a
