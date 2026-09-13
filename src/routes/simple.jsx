@@ -80,9 +80,13 @@ function SimpleDashboard() {
             researchDepth: depth,
             analysts: ["Market Analyst"],
           language: "English",
-        }),
+          })
+        ),
       });
-      if (!res.ok) throw new Error(`Engine responded ${res.status}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Engine responded ${res.status}${text ? `: ${text.slice(0, 300)}` : ""}`);
+      }
       const data = await res.json();
       setRunId(data.run_id);
       setRun(null);
