@@ -14,6 +14,7 @@ import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/trading-agents/client";
+import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 
