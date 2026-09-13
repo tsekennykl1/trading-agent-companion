@@ -12,16 +12,18 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ANALYST_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
+import { cn } from "@/lib/utils";
 
 interface Props {
   defaultConfig: RunConfig;
   running: boolean;
   disabled?: boolean;
+  compact?: boolean;
   onRun: (config: RunConfig) => void;
   onCancel: () => void;
 }
 
-export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: Props) {
+export function RunForm({ defaultConfig, running, disabled, compact = false, onRun, onCancel }: Props) {
   const [config, setConfig] = useState<RunConfig>(defaultConfig);
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
@@ -49,7 +51,14 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
       </header>
 
       <div className="p-4 sm:p-5">
-        <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]">
+        <div
+          className={cn(
+            "grid min-w-0 gap-4",
+            compact
+              ? "md:grid-cols-3 xl:grid-cols-1"
+              : "md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]",
+          )}
+        >
           <div className="min-w-0 space-y-1.5">
           <Label htmlFor="ticker" className="label-caps">
             Ticker
@@ -101,7 +110,7 @@ export function RunForm({ defaultConfig, running, disabled, onRun, onCancel }: P
               {config.analysts.length} of {ANALYST_OPTIONS.length} selected
             </span>
           </div>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-4")}>
           {ANALYST_OPTIONS.map((a) => (
             <label
               key={a}
