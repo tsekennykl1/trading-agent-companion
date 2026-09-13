@@ -70,14 +70,15 @@ function SimpleDashboard() {
       const res = await fetch(`${base}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticker,
-          analysisDate: date,
-          provider: "DeepSeek",
-          quickModel: "",
-          deepModel: "",
-          researchDepth: depth,
-          analysts: ["Market Analyst"],
+        body: JSON.stringify(
+          runConfigPayload({
+            ticker,
+            analysisDate: date,
+            provider: "DeepSeek",
+            quickModel: "",
+            deepModel: "",
+            researchDepth: depth,
+            analysts: ["Market Analyst"],
           language: "English",
         }),
       });
