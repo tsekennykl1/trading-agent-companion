@@ -191,9 +191,18 @@ export function normalizeRun(raw: unknown): RunRecord {
   const req = raw.request ?? raw.payload ?? {};
   const params = req.params ?? {};
   const result = raw.result ?? undefined;
-  const state = (result?.state ?? {}) as Record<string, Record<string, unknown>>;
-  const ticker = result?.ticker ?? req.ticker ?? "—";
-  const analysisDate = result?.analysis_date ?? req.end_date ?? "";
+  const partial = raw.partial_result ?? {};
+  // Merge the engine's flat reports dict and its state object into one lookup.
+  const state = {
+    ...(result?.reports ?? {}),
+    ...(result?.state ?? {}),
+  } as Record<string, Record<string, unknown> | string>;
+  if (typeof result?.final_trade_decision === "string" && !state["final_trade_decision"]) {
+    state["final_trade_decision"] = result.final_trade_decision;
+  }
+  const ticker = result?.ticker ?? partial["ticker"] ?? req.ticker ?? "—";
+  const analysisDate =
+    result?.analysis_date ?? (partial["analysis_date"] as string | undefined) ?? req.end_date ?? "";
   const logs: string[] = (Array.isArray(raw.logs) ? raw.logs : []).map((l: unknown) => {
     if (typeof l === "string") return l;
     if (l && typeof l === "object") {
