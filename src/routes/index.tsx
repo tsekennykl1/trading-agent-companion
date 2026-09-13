@@ -111,6 +111,8 @@ function Workbench() {
 
   const liveRun = runQuery.data as RunRecord | undefined;
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
+  const artifacts = useRunArtifacts(run, run.source === "engine");
+  const chartReady = Boolean(artifacts.chartHtmlUrl || run.partial?.chartsReady);
   const running = run.status === "running" || run.status === "queued";
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
