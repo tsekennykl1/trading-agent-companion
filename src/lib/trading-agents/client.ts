@@ -99,32 +99,56 @@ type EngineRequest = {
   };
 };
 
+type EngineProgress = {
+  stage?: string;
+  message?: string;
+  percent?: number;
+  step?: number;
+  total_steps?: number;
+};
+
 type EngineRun = {
   run_id: string;
   status: string;
   created_at?: string;
   updated_at?: string;
+  started_at?: string;
+  completed_at?: string;
   request?: EngineRequest;
   /** Some bridges call the same object "payload". */
   payload?: EngineRequest;
   result?: {
     ticker?: string;
     analysis_date?: string;
+    /** Flat fields emitted by newer engines. */
+    action?: string;
+    summary?: string;
+    confidence?: number | null;
+    final_trade_decision?: string;
+    reports?: Record<string, unknown>;
+    raw_decision?: unknown;
     /** Either an action word ("Hold") or a structured decision object. */
     decision?:
       | string
       | {
           action?: string;
-          confidence?: number;
+          confidence?: number | null;
           risk_level?: string;
           position_size?: string;
           summary?: string;
         };
-    summary?: string;
     state?: Record<string, unknown>;
   } | null;
-  error?: { type?: string; message?: string } | null;
-  logs?: string[];
+  /** Incremental fields written while the run executes. */
+  partial_result?: Record<string, unknown> | null;
+  progress?: EngineProgress;
+  poll_after_ms?: number;
+  timings?: {
+    stage_durations_ms?: Record<string, number>;
+    counters?: Record<string, number>;
+  };
+  error?: { type?: string; message?: string; traceback?: string; code?: string } | null;
+  logs?: unknown[];
 };
 
 /** Map the many status spellings engines use onto the dashboard's four states. */
@@ -167,9 +191,22 @@ export function normalizeRun(raw: unknown): RunRecord {
   const req = raw.request ?? raw.payload ?? {};
   const params = req.params ?? {};
   const result = raw.result ?? undefined;
-  const state = (result?.state ?? {}) as Record<string, Record<string, unknown>>;
-  const ticker = result?.ticker ?? req.ticker ?? "—";
-  const analysisDate = result?.analysis_date ?? req.end_date ?? "";
+  const partial = (raw.partial_result ?? {}) as Record<string, unknown>;
+  // Merge the engine's flat reports dict and its state object into one lookup.
+  const state = {
+    ...(result?.reports ?? {}),
+    ...(result?.state ?? {}),
+  } as Record<string, Record<string, unknown> | string>;
+  if (typeof result?.final_trade_decision === "string" && !state["final_trade_decision"]) {
+    state["final_trade_decision"] = result.final_trade_decision;
+  }
+  const ticker =
+    result?.ticker ?? (typeof partial["ticker"] === "string" ? partial["ticker"] : undefined) ?? req.ticker ?? "—";
+  const analysisDate =
+    result?.analysis_date ??
+    (typeof partial["analysis_date"] === "string" ? partial["analysis_date"] : undefined) ??
+    req.end_date ??
+    "";
   const logs: string[] = (Array.isArray(raw.logs) ? raw.logs : []).map((l: unknown) => {
     if (typeof l === "string") return l;
     if (l && typeof l === "object") {
@@ -277,9 +314,11 @@ export function normalizeRun(raw: unknown): RunRecord {
   // Decision: accept either an action word ("Hold") or a structured object.
   const rawDecision = result?.decision;
   const d = typeof rawDecision === "object" && rawDecision !== null ? rawDecision : undefined;
-  const decisionWord = typeof rawDecision === "string" ? rawDecision : d?.action;
+  const decisionWord = typeof rawDecision === "string" ? rawDecision : (d?.action ?? result?.action);
   const finalText = typeof state["final_trade_decision"] === "string" ? state["final_trade_decision"] : "";
-  const confidenceRaw = typeof d?.confidence === "number" ? d.confidence : 0;
+  const confidenceValue =
+    typeof d?.confidence === "number" ? d.confidence : typeof result?.confidence === "number" ? result.confidence : 0;
+  const confidenceRaw = confidenceValue;
   const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
   const riskSection = state["risk_assessment"] as Record<string, unknown> | undefined;
   const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
@@ -289,7 +328,12 @@ export function normalizeRun(raw: unknown): RunRecord {
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
-  const summaryText = d?.summary ?? (finalText || (result?.summary ?? ""));
+  const summaryText = d?.summary ?? result?.summary ?? (finalText || "");
+
+  const counters = raw.timings?.counters ?? {};
+  const stageDurations = raw.timings?.stage_durations_ms ?? {};
+  const totalMs = stageDurations["total_ms"];
+  const progress = raw.progress;
 
   const record: RunRecord = {
     id: raw.run_id,
@@ -309,19 +353,33 @@ export function normalizeRun(raw: unknown): RunRecord {
       analysts: [],
       language: "English",
     },
-    startedAt: raw.created_at ?? new Date().toISOString(),
+    startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),
     agents,
     prices: [],
     stances,
     reports,
+    ...(progress?.stage || progress?.message
+      ? {
+          progress: {
+            stage: progress.stage ?? "",
+            message: progress.message ?? "",
+            percent: progress.percent ?? 0,
+            step: progress.step ?? 0,
+            totalSteps: progress.total_steps ?? 0,
+          },
+        }
+      : {}),
+    ...(typeof raw.poll_after_ms === "number" && raw.poll_after_ms > 0
+      ? { pollAfterMs: raw.poll_after_ms }
+      : {}),
     stats: {
-      llmCalls: 0,
-      toolCalls: 0,
-      tokensIn: 0,
-      tokensOut: 0,
+      llmCalls: counters["engine_calls_count"] ?? counters["llm_calls"] ?? 0,
+      toolCalls: counters["tool_calls"] ?? 0,
+      tokensIn: counters["tokens_in"] ?? 0,
+      tokensOut: counters["tokens_out"] ?? 0,
       reportsDone: Object.keys(reports).length,
       reportsTotal: Object.keys(reports).length,
-      runtimeSeconds,
+      runtimeSeconds: typeof totalMs === "number" ? Math.max(1, Math.round(totalMs / 1000)) : runtimeSeconds,
     },
     source: "engine",
     ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),

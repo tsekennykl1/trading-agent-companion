@@ -61,11 +61,23 @@ export interface RunConfig {
   language: string;
 }
 
+export interface RunProgress {
+  stage: string;
+  message: string;
+  percent: number;
+  step: number;
+  totalSteps: number;
+}
+
 export interface RunRecord {
   id: string;
   status: "queued" | "running" | "completed" | "error";
   config: RunConfig;
   startedAt: string;
+  /** Live progress reported by the engine, when available. */
+  progress?: RunProgress;
+  /** Engine-suggested polling interval in milliseconds. */
+  pollAfterMs?: number;
   agents: AgentProgress[];
   prices: PricePoint[];
   stances: StancePoint[];
