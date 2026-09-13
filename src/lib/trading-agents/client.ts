@@ -55,6 +55,13 @@ function formatErrorDetail(text: string): string {
 export function runConfigPayload(config: RunConfig): Record<string, unknown> {
   const maxDebateRounds =
     config.researchDepth === "Deep" ? 3 : config.researchDepth === "Medium" ? 2 : 1;
+  const analystKeys: Record<string, string> = {
+    "Market Analyst": "market",
+    "Sentiment Analyst": "social",
+    "News Analyst": "news",
+    "Fundamentals Analyst": "fundamentals",
+  };
+  const selectedAnalysts = config.analysts.map((analyst) => analystKeys[analyst] ?? analyst);
   return {
     // Engine's expected schema (ticker comes from ...config below)
     model: config.deepModel,
@@ -66,7 +73,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
       max_debate_rounds: maxDebateRounds,
       temperature: 0.0,
       analysts: config.analysts,
-      selected_analysts: config.analysts,
+      selected_analysts: selectedAnalysts,
     },
     // Aliases for other bridge implementations
     ...config,
@@ -74,7 +81,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     research_depth: config.researchDepth,
     quick_model: config.quickModel,
     deep_model: config.deepModel,
-    selected_analysts: config.analysts,
+    selected_analysts: selectedAnalysts,
   };
 }
 
@@ -265,6 +272,13 @@ export function normalizeRun(raw: unknown): RunRecord {
     (Array.isArray(params.analysts) ? params.analysts : undefined) ??
     (Array.isArray(params.selected_analysts) ? params.selected_analysts : undefined) ??
     [];
+  const analystLabels: Record<string, string> = {
+    market: "Market Analyst",
+    social: "Sentiment Analyst",
+    news: "News Analyst",
+    fundamentals: "Fundamentals Analyst",
+  };
+  const requestedAnalystLabels = requestedAnalysts.map((analyst) => analystLabels[analyst] ?? analyst);
   const result = raw.result ?? undefined;
   const partial = (raw.partial_result ?? {}) as Record<string, unknown>;
   // Merge the engine's flat reports dict and its state object into one lookup.
@@ -441,7 +455,7 @@ export function normalizeRun(raw: unknown): RunRecord {
           : (params.max_debate_rounds ?? 1) === 2
             ? "Medium"
             : "Shallow",
-      analysts: requestedAnalysts,
+      analysts: requestedAnalystLabels,
       language: "English",
     },
     startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),
