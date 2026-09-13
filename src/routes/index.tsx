@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { FlaskConical, Info } from "lucide-react";
+import { FlaskConical, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { RunForm } from "@/components/workbench/RunForm";
@@ -52,7 +52,10 @@ function Workbench() {
 
   const runQuery = useQuery({
     queryKey: ["run", activeRunId],
-    queryFn: () => api.getRun(activeRunId!),
+    queryFn: () => {
+      if (!activeRunId) throw new Error("No active run selected");
+      return api.getRun(activeRunId);
+    },
     enabled: !!activeRunId,
     refetchInterval: (q) => {
       const s = q.state.data?.status;
@@ -86,6 +89,8 @@ function Workbench() {
   const liveRun = runQuery.data as RunRecord | undefined;
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const running = run.status === "running" || run.status === "queued";
+  const analysisBusy =
+    startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
 
   return (
     <AppShell>
@@ -111,8 +116,31 @@ function Workbench() {
           <AgentBoard agents={run.agents} stats={run.stats} />
         </div>
 
-        <div className="min-w-0 space-y-6">
-          {run.source === "sample" && (
+        <div className="relative min-w-0 space-y-6" aria-busy={analysisBusy}>
+          {analysisBusy && (
+            <div className="absolute inset-0 z-20 flex items-start justify-center rounded-lg bg-background/85 px-4 pt-8 backdrop-blur-[2px] sm:pt-12">
+              <div
+                className="panel sticky top-24 flex w-full max-w-md flex-col items-center px-5 py-8 text-center shadow-raised sm:px-8 sm:py-10"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="mb-5 grid size-14 place-items-center rounded-full border border-primary/25 bg-primary/10">
+                  <Loader2 className="size-7 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+                </span>
+                <h2 className="font-display text-xl font-semibold">Analysis in progress</h2>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+                  Analyst teams are reviewing market, fundamental, sentiment and risk evidence. The portfolio
+                  manager will deliver the decision when their debate is complete.
+                </p>
+                <span className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-primary">
+                  <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
+                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {showingSample && run.source === "sample" && (
             <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />
               <p className="mr-auto">
@@ -138,15 +166,13 @@ function Workbench() {
           {run.decision ? (
             <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
           ) : (
-            <section className="panel px-5 py-10 text-center">
+            <section className="panel flex min-h-64 flex-col items-center justify-center px-5 py-10 text-center" role="status">
+              <Loader2 className="mb-4 size-7 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
               <h2 className="font-display text-xl font-semibold">Analysis in progress</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                The portfolio manager's decision appears here once the analyst, research and risk teams have
-                finished debating.
+                Analyst teams are reviewing the evidence. The portfolio manager's decision will appear when
+                their debate is complete.
               </p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => setShowingSample(true)}>
-                View sample run meanwhile
-              </Button>
             </section>
           )}
 
