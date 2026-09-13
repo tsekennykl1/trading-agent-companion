@@ -62,4 +62,4 @@
 - [x] Reorganize the laptop Workbench into a compact control rail and wider analysis workspace.
 - [x] Keep tablet and phone layouts stacked, touch-friendly, and free of page-level overflow.
 - [x] Adjust compact form, progress, confidence, and chart sizing for their responsive containers.
-- [ ] Verify laptop, iPad portrait/landscape, iPhone landscape/portrait, and a clean preview build.
+- [x] Verify laptop, iPad portrait/landscape, iPhone landscape/portrait, and a clean preview build.
