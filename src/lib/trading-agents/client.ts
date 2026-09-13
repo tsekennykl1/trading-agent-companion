@@ -164,7 +164,7 @@ function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral";
 export function normalizeRun(raw: unknown): RunRecord {
   if (!isEngineRun(raw)) return raw as RunRecord;
 
-  const req = raw.request ?? {};
+  const req = raw.request ?? raw.payload ?? {};
   const params = req.params ?? {};
   const result = raw.result ?? undefined;
   const state = (result?.state ?? {}) as Record<string, Record<string, unknown>>;
