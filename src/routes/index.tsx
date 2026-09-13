@@ -131,29 +131,18 @@ function Workbench() {
         </p>
       </div>
 
-      <div className="mb-6 space-y-6">
-        <LiveSnapshot run={run} artifacts={artifacts} />
-        {!chartReady && (
-          <PriceChart
-            data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
-            ticker={run.config.ticker}
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
+        <aside className="min-w-0 space-y-5 xl:sticky xl:top-24">
+          <RunForm
+            key={defaultConfig.analysisDate}
+            defaultConfig={defaultConfig}
+            running={running && !showingSample}
+            disabled={startRun.isPending}
+            compact
+            onRun={(c) => startRun.mutate(c)}
+            onCancel={cancelRun}
           />
-        )}
-        <RunForm
-          key={defaultConfig.analysisDate}
-          defaultConfig={defaultConfig}
-          running={running && !showingSample}
-          disabled={startRun.isPending}
-          onRun={(c) => startRun.mutate(c)}
-          onCancel={cancelRun}
-        />
-        <AgentBoard agents={run.agents} stats={run.stats} />
-        {artifacts.resultHtmlUrl && (
-          <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
-        )}
-      </div>
 
-      <div className="relative min-w-0 space-y-6" aria-busy={analysisBusy}>
           {analysisBusy && (
             <section className="panel px-4 py-4 sm:px-5" role="status" aria-live="polite">
               <div className="flex items-start gap-3">
@@ -218,6 +207,27 @@ function Workbench() {
             </div>
           )}
 
+          <AgentBoard agents={run.agents} stats={run.stats} compact />
+
+          {run.decision ? (
+            <ConfidenceChart decision={run.decision} stances={run.stances} />
+          ) : (
+            <section className="panel p-4 sm:p-5">
+              <h3 className="text-base font-semibold">Recommendation confidence</h3>
+              <p className="mt-2 text-sm text-muted-foreground">Available once the run completes.</p>
+            </section>
+          )}
+        </aside>
+
+        <main className="min-w-0 space-y-6">
+          <LiveSnapshot run={run} artifacts={artifacts} />
+          {!chartReady && (
+            <PriceChart
+              data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+              ticker={run.config.ticker}
+            />
+          )}
+
           {run.decision ? (
             <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
           ) : (
@@ -231,20 +241,13 @@ function Workbench() {
             </section>
           )}
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            {run.decision ? (
-              <ConfidenceChart decision={run.decision} stances={run.stances} />
-            ) : (
-              <section className="panel p-5">
-                <h3 className="text-base font-semibold">Recommendation confidence</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Available once the run completes.</p>
-              </section>
-            )}
-          </div>
-
+          {artifacts.resultHtmlUrl && (
+            <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
+          )}
           <StanceChart data={run.stances} />
           <ExportBar run={run} />
           <ReportsSection run={run} />
+        </main>
       </div>
     </AppShell>
   );

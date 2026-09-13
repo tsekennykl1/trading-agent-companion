@@ -56,3 +56,10 @@
 - [x] Use normalized live-run data and independent chart discovery in the Simple dashboard.
 - [x] Show recommendation summary, confidence, and report availability in the Simple dashboard.
 - [x] Verify report proportions, desktop/iPhone layouts, and a clean preview build.
+
+# Responsive two-column trading workbench
+
+- [x] Reorganize the laptop Workbench into a compact control rail and wider analysis workspace.
+- [x] Keep tablet and phone layouts stacked, touch-friendly, and free of page-level overflow.
+- [x] Adjust compact form, progress, confidence, and chart sizing for their responsive containers.
+- [ ] Verify laptop, iPad portrait/landscape, iPhone landscape/portrait, and a clean preview build.

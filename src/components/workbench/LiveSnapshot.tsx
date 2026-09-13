@@ -128,14 +128,14 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                 key={chartHtmlUrl}
                 src={chartHtmlUrl}
                 title={`${run.config.ticker} price, volume and RSI`}
-                className="h-[30rem] w-full rounded-md border border-rule bg-surface sm:h-[34rem] lg:h-[40rem]"
+                className="h-[22rem] w-full rounded-md border border-rule bg-surface min-[480px]:h-[26rem] sm:h-[30rem] xl:h-[36rem]"
                 loading="lazy"
               />
             ) : (
               <img
                 src={chartPngUrl}
                 alt={`${run.config.ticker} price trend with moving averages`}
-                className="min-h-[30rem] w-full rounded-md border border-rule bg-surface object-contain sm:min-h-[34rem] lg:min-h-[40rem]"
+                className="min-h-[22rem] w-full rounded-md border border-rule bg-surface object-contain min-[480px]:min-h-[26rem] sm:min-h-[30rem] xl:min-h-[36rem]"
                 loading="lazy"
               />
             )}

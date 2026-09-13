@@ -26,7 +26,7 @@ function StatusIcon({ status }: { status: AgentProgress["status"] }) {
   );
 }
 
-export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: RunStats }) {
+export function AgentBoard({ agents, stats, compact = false }: { agents: AgentProgress[]; stats: RunStats; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const teams = agents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
@@ -133,7 +133,12 @@ export function AgentBoard({ agents, stats }: { agents: AgentProgress[]; stats: 
         </Button>
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 border-t border-rule pt-4 text-xs sm:grid-cols-3 lg:grid-cols-6">
+      <dl
+        className={cn(
+          "mt-4 grid grid-cols-2 gap-x-5 gap-y-2 border-t border-rule pt-4 text-xs sm:grid-cols-3",
+          !compact && "lg:grid-cols-6",
+        )}
+      >
         {[
           ["LLM calls", stats.llmCalls],
           ["Tool calls", stats.toolCalls],
