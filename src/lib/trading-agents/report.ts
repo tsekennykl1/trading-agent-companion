@@ -83,7 +83,7 @@ function escapeHtml(s: string) {
 
 /** Promote bold field labels from model output into real subheadings. */
 function normalizeReportMarkdown(md: string): string {
-  const labelledField = /\*\*([^*\n]{2,50}?)(?::\*\*|\*\*:)[ \t]*/g;
+  const labelledField = /\*\*([^*\n]{2,50}?)(?:(?::\*\*|\*\*:)[ \t]*|\*\*(?=\s*$))/g;
 
   return md
     .split("\n")
@@ -150,7 +150,7 @@ export function markdownToHtml(md: string): string {
     if (heading) {
       closeList();
       closeTable();
-      const level = heading[1]!.length;
+      const level = heading[1]?.length ?? 1;
       out.push(`<h${level}>${inline(heading[2] ?? "")}</h${level}>`);
       continue;
     }

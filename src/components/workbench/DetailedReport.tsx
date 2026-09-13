@@ -7,49 +7,59 @@ function titleCase(value: string): string {
   return value.replace(/[_-]/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-function valueToMarkdown(value: unknown, depth = 2): string {
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (value === null || value === undefined) return "";
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => {
-        const rendered = valueToMarkdown(item, depth + 1);
-        return rendered ? `- ${rendered.replace(/\n/g, "\n  ")}` : "";
-      })
-      .filter(Boolean)
-      .join("\n");
-  }
+const WRAPPER_KEYS = new Set(["body", "content", "data", "document", "html", "markdown", "report", "result", "text"]);
 
-  return Object.entries(value as Record<string, unknown>)
-    .map(([key, item]) => {
-      const rendered = valueToMarkdown(item, depth + 1);
-      if (!rendered) return "";
-      return `${"#".repeat(Math.min(depth, 4))} ${titleCase(key)}\n\n${rendered}`;
-    })
-    .filter(Boolean)
-    .join("\n\n");
+function htmlToMarkdown(source: string): string {
+  const document = new DOMParser().parseFromString(source, "text/html");
+  const blocks: string[] = [];
+
+  const renderInline = (element: Element): string =>
+    Array.from(element.childNodes)
+      .map((node) => {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+        if (!(node instanceof Element)) return "";
+        const text = renderInline(node);
+        if (node.matches("strong, b")) return `**${text.trim()}**`;
+        if (node.matches("em, i")) return `_${text.trim()}_`;
+        if (node.matches("br")) return "\n";
+        return text;
+      })
+      .join("")
+      .trim();
+
+  document.body.querySelectorAll("h1, h2, h3, h4, p, li, tr, pre").forEach((element) => {
+    const text = renderInline(element);
+    if (!text) return;
+    if (/^H[1-4]$/.test(element.tagName)) {
+      blocks.push(`${"#".repeat(Number(element.tagName.slice(1)))} ${text}`);
+    } else if (element.tagName === "LI") {
+      blocks.push(`- ${text}`);
+    } else if (element.tagName === "TR") {
+      const cells = Array.from(element.querySelectorAll(":scope > th, :scope > td")).map((cell) => renderInline(cell));
+      if (cells.length) blocks.push(`| ${cells.join(" | ")} |`);
+    } else {
+      blocks.push(text);
+    }
+  });
+
+  return blocks.join("\n\n").trim() || document.body.textContent?.trim() || source;
 }
 
-function readableArtifact(source: string): string {
-  let text = source.trim();
-  if (!text) return "";
+function decodeString(value: string, depth: number): string {
+  let text = value.trim();
+  if (!text || depth > 7) return text;
 
-  if (/^\s*<!doctype|^\s*<html|^\s*<body|^\s*<pre/i.test(text)) {
-    const document = new DOMParser().parseFromString(text, "text/html");
-    text = document.body.textContent?.trim() ?? text;
+  text = text.replace(/^```(?:json|markdown|md|html)?\s*/i, "").replace(/\s*```$/, "").trim();
+
+  if (/^\s*<!doctype|^\s*<html|^\s*<body|^\s*<article|^\s*<main|^\s*<pre/i.test(text)) {
+    return decodeString(htmlToMarkdown(text), depth + 1);
   }
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  if (/^[\[{\"]/.test(text)) {
     try {
-      const parsed = JSON.parse(text) as unknown;
-      if (typeof parsed === "string") {
-        text = parsed.trim();
-        continue;
-      }
-      return valueToMarkdown(parsed);
+      return valueToMarkdown(JSON.parse(text) as unknown, 2, depth + 1);
     } catch {
-      break;
+      // It is ordinary report text rather than encoded JSON.
     }
   }
 
@@ -59,6 +69,42 @@ function readableArtifact(source: string): string {
     .replace(/\\"/g, '"')
     .replace(/^['"]|['"]$/g, "")
     .trim();
+}
+
+function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): string {
+  if (typeof value === "string") return decodeString(value, decodeDepth);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) {
+    const primitiveList = value.every((item) => typeof item !== "object" || item === null);
+    return value
+      .map((item, index) => {
+        const rendered = valueToMarkdown(item, headingDepth + 1, decodeDepth + 1);
+        if (!rendered) return "";
+        return primitiveList ? `- ${rendered.replace(/\n/g, "\n  ")}` : `### Item ${index + 1}\n\n${rendered}`;
+      })
+      .filter(Boolean)
+      .join(primitiveList ? "\n" : "\n\n");
+  }
+
+  const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => item !== null && item !== undefined);
+  if (entries.length === 1) {
+    const [key, item] = entries[0] ?? [];
+    if (key && WRAPPER_KEYS.has(key.toLowerCase())) return valueToMarkdown(item, headingDepth, decodeDepth + 1);
+  }
+
+  return entries
+    .map(([key, item]) => {
+      const rendered = valueToMarkdown(item, headingDepth + 1, decodeDepth + 1);
+      if (!rendered) return "";
+      return `${"#".repeat(Math.min(headingDepth, 4))} ${titleCase(key)}\n\n${rendered}`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function readableArtifact(source: string): string {
+  return decodeString(source, 0);
 }
 
 export function DetailedReport({ url, ticker }: { url: string; ticker: string }) {
