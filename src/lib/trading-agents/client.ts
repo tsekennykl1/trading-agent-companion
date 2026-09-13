@@ -216,7 +216,7 @@ export function normalizeRun(raw: unknown): RunRecord {
     (a) => a === actionText,
   ) ?? "Review";
 
-  return {
+  const record: RunRecord = {
     id: raw.run_id,
     status: raw.status === "failed" ? "error" : (raw.status as RunRecord["status"]),
     config: {
