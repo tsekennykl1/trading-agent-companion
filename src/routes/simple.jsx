@@ -91,7 +91,10 @@ function SimpleDashboard() {
       setRunId(data.run_id);
       setRun(null);
     } catch (err) {
-      setError(`${err.message}. Start the Python bridge, then check the Connect engine page.`);
+      const hint = /responded 4\d\d/.test(err.message)
+        ? "The engine rejected the run settings — see the message above for the field it expects."
+        : "Start the Python bridge, then check the Connect engine page.";
+      setError(`${err.message}. ${hint}`);
     } finally {
       setBusy(false);
     }
