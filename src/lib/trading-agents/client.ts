@@ -160,8 +160,9 @@ export function normalizeRun(raw: unknown): RunRecord {
     }
     return String(l);
   });
-  const running = raw.status === "running" || raw.status === "queued";
-  const failed = raw.status === "failed" || raw.status === "error";
+  const status = canonicalStatus(raw.status);
+  const running = status === "running" || status === "queued";
+  const failed = status === "error";
 
   const created = raw.created_at ? Date.parse(raw.created_at) : NaN;
   const updated = raw.updated_at ? Date.parse(raw.updated_at) : NaN;
