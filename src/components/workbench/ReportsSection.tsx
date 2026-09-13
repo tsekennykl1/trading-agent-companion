@@ -24,18 +24,41 @@ export function ReportsSection({ run }: { run: RunRecord }) {
       content: run.reports[key]?.trim() ?? "",
     })),
   );
+  const readyKeys = sectionRows.filter((section) => Boolean(section.content)).map((section) => section.key);
+  const allReadyOpen = readyKeys.length > 0 && readyKeys.every((key) => openSections[key]);
+
+  const toggleAll = () => {
+    setOpenSections(
+      allReadyOpen
+        ? {}
+        : Object.fromEntries(readyKeys.map((key) => [key, true])),
+    );
+  };
 
   return (
     <section className="panel overflow-hidden">
-      <header className="border-b border-rule bg-surface px-4 py-4 sm:px-5">
-        <h2 className="text-base font-semibold">Agent reports</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {available.length > 0
-            ? `${available.length} report${available.length === 1 ? "" : "s"} available${running ? " so far" : ""}`
-            : running
-              ? "Reports are still being written by the agents."
-              : "No reports were produced for this run."}
-        </p>
+      <header className="flex items-center gap-3 border-b border-rule bg-secondary px-4 py-3 sm:px-5">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-semibold">Agent reports</h2>
+          <p className="mt-0.5 text-xs text-secondary-foreground/75">
+            {available.length > 0
+              ? `${available.length} report${available.length === 1 ? "" : "s"} available${running ? " so far" : ""}`
+              : running
+                ? "Reports are still being written by the agents."
+                : "No reports were produced for this run."}
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={readyKeys.length === 0}
+          aria-expanded={allReadyOpen}
+          onClick={toggleAll}
+        >
+          {allReadyOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {allReadyOpen ? "Hide All" : "Show All"}
+        </Button>
       </header>
 
       <div className="divide-y divide-rule">
@@ -47,7 +70,11 @@ export function ReportsSection({ run }: { run: RunRecord }) {
               <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold">{section.label}</h3>
-                  <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <p
+                    className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
+                      ready ? "text-bull" : running ? "text-primary" : "text-bear"
+                    }`}
+                  >
                     {!ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
