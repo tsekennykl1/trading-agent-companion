@@ -10,6 +10,7 @@ import { DecisionPanel } from "@/components/workbench/DecisionPanel";
 import { ConfidenceChart, PriceChart, StanceChart } from "@/components/workbench/RunCharts";
 import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
+import { DetailedReport } from "@/components/workbench/DetailedReport";
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -139,25 +140,7 @@ function Workbench() {
           />
         )}
         {artifacts.resultHtmlUrl && (
-          <section className="panel overflow-hidden">
-            <div className="flex flex-wrap items-center gap-3 border-b border-rule bg-surface px-4 py-3 sm:px-5">
-              <h3 className="text-base font-semibold">Detailed report</h3>
-              <a
-                href={artifacts.resultHtmlUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="ml-auto text-xs text-primary hover:underline"
-              >
-                Open in a new tab
-              </a>
-            </div>
-            <iframe
-              src={artifacts.resultHtmlUrl}
-              title={`${run.config.ticker} detailed analysis report`}
-              className="h-[34rem] w-full bg-surface"
-              loading="lazy"
-            />
-          </section>
+          <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
         )}
       </div>
 
