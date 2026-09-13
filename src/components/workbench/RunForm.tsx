@@ -54,7 +54,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         <div
           className={cn(
             "grid min-w-0 gap-4",
-            !compact && "md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]",
+            compact
+              ? "md:grid-cols-3 xl:grid-cols-1"
+              : "md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]",
           )}
         >
           <div className="min-w-0 space-y-1.5">

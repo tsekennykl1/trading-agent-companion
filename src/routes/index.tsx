@@ -131,20 +131,22 @@ function Workbench() {
         </p>
       </div>
 
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
-        <aside className="min-w-0 space-y-5 xl:sticky xl:top-24">
-          <RunForm
-            key={defaultConfig.analysisDate}
-            defaultConfig={defaultConfig}
-            running={running && !showingSample}
-            disabled={startRun.isPending}
-            compact
-            onRun={(c) => startRun.mutate(c)}
-            onCancel={cancelRun}
-          />
+      <div className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
+        <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
+          <div className="order-1 min-w-0">
+            <RunForm
+              key={defaultConfig.analysisDate}
+              defaultConfig={defaultConfig}
+              running={running && !showingSample}
+              disabled={startRun.isPending}
+              compact
+              onRun={(c) => startRun.mutate(c)}
+              onCancel={cancelRun}
+            />
+          </div>
 
           {analysisBusy && (
-            <section className="panel px-4 py-4 sm:px-5" role="status" aria-live="polite">
+            <section className="panel order-2 px-4 py-4 sm:px-5" role="status" aria-live="polite">
               <div className="flex items-start gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10">
                   <Loader2 className="size-4 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
@@ -185,7 +187,7 @@ function Workbench() {
           )}
 
           {showingSample && run.source === "sample" && (
-            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
+            <div className="order-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />
               <p className="mr-auto">
                 Showing a saved sample run ({SAMPLE_RUN.config.ticker}, {SAMPLE_RUN.config.analysisDate}) so
@@ -201,52 +203,62 @@ function Workbench() {
           )}
 
           {run.status === "error" && (
-            <div className="flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
+            <div className="order-2 flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
               <Info className="size-4 shrink-0 text-destructive" />
               <p>{run.error ?? "The engine reported an error during this run."}</p>
             </div>
           )}
 
-          <AgentBoard agents={run.agents} stats={run.stats} compact />
+          <div className="order-6 min-w-0">
+            <AgentBoard agents={run.agents} stats={run.stats} compact />
+          </div>
 
-          {run.decision ? (
-            <ConfidenceChart decision={run.decision} stances={run.stances} />
-          ) : (
-            <section className="panel p-4 sm:p-5">
-              <h3 className="text-base font-semibold">Recommendation confidence</h3>
-              <p className="mt-2 text-sm text-muted-foreground">Available once the run completes.</p>
-            </section>
-          )}
+          <div className="order-5 min-w-0">
+            {run.decision ? (
+              <ConfidenceChart decision={run.decision} stances={run.stances} />
+            ) : (
+              <section className="panel p-4 sm:p-5">
+                <h3 className="text-base font-semibold">Recommendation confidence</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Available once the run completes.</p>
+              </section>
+            )}
+          </div>
         </aside>
 
-        <main className="min-w-0 space-y-6">
-          <LiveSnapshot run={run} artifacts={artifacts} />
-          {!chartReady && (
-            <PriceChart
-              data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
-              ticker={run.config.ticker}
-            />
-          )}
+        <main className="contents min-w-0 xl:flex xl:flex-col xl:gap-6">
+          <div className="order-3 min-w-0">
+            <LiveSnapshot run={run} artifacts={artifacts} />
+            {!chartReady && (
+              <PriceChart
+                data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+                ticker={run.config.ticker}
+              />
+            )}
+          </div>
 
-          {run.decision ? (
-            <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
-          ) : (
-            <section className="panel flex flex-col items-center justify-center px-5 py-8 text-center" role="status">
-              <Loader2 className="mb-3 size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-              <h2 className="font-display text-lg font-semibold">Recommendation pending</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Analyst teams are reviewing the evidence. The portfolio manager's decision will appear when
-                their debate is complete.
-              </p>
-            </section>
-          )}
+          <div className="order-4 min-w-0">
+            {run.decision ? (
+              <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
+            ) : (
+              <section className="panel flex flex-col items-center justify-center px-5 py-8 text-center" role="status">
+                <Loader2 className="mb-3 size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+                <h2 className="font-display text-lg font-semibold">Recommendation pending</h2>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  Analyst teams are reviewing the evidence. The portfolio manager's decision will appear when
+                  their debate is complete.
+                </p>
+              </section>
+            )}
+          </div>
 
-          {artifacts.resultHtmlUrl && (
-            <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
-          )}
-          <StanceChart data={run.stances} />
-          <ExportBar run={run} />
-          <ReportsSection run={run} />
+          <div className="order-7 min-w-0 space-y-6">
+            {artifacts.resultHtmlUrl && (
+              <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
+            )}
+            <StanceChart data={run.stances} />
+            <ExportBar run={run} />
+            <ReportsSection run={run} />
+          </div>
         </main>
       </div>
     </AppShell>
