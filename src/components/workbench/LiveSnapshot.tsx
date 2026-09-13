@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AlertTriangle, ExternalLink, ImageIcon, LineChart } from "lucide-react";
+import { AlertTriangle, ExternalLink, ImageIcon, LineChart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -18,51 +19,73 @@ const fmt = (v: number | undefined, digits = 2) =>
 /**
  * Renders whatever the engine has already produced — market snapshot, warnings
  * and the interactive chart — while the slow AI analysis is still running.
+ * Market data and chart artifacts are loaded independently of the run poll, so
+ * either one appears the moment it exists.
  */
-export function LiveSnapshot({ run }: { run: RunRecord }) {
+export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
   const [view, setView] = useState<"interactive" | "image">("interactive");
   const p = run.partial;
-  if (!p) return null;
+  const market = artifacts?.marketData ?? null;
+  const running = run.status === "running" || run.status === "queued";
+
+  const latestPrice = p?.latestPrice ?? market?.latestPrice;
+  const latestRsi14 = p?.latestRsi14 ?? market?.latestRsi14;
+  const latestEma20 = p?.latestEma20 ?? market?.latestEma20;
+  const latestEma50 = p?.latestEma50 ?? market?.latestEma50;
+  const changePct = p?.changePct ?? market?.changePct;
+  const pricePoints = p?.pricePoints ?? (market?.prices.length || undefined);
+  const stockName = p?.stockName ?? market?.stockName;
+  const warnings = p?.warnings ?? [];
+
+  const chartHtmlUrl = artifacts?.chartHtmlUrl ?? p?.chartHtmlUrl;
+  const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
 
   const hasMarket =
-    p.marketDataReady ||
-    p.latestPrice !== undefined ||
-    p.latestRsi14 !== undefined ||
-    p.latestEma20 !== undefined;
+    p?.marketDataReady ||
+    latestPrice !== undefined ||
+    latestRsi14 !== undefined ||
+    latestEma20 !== undefined;
 
-  if (!hasMarket && !p.chartsReady && p.warnings.length === 0) return null;
+  if (!hasMarket && !chartHtmlUrl && warnings.length === 0 && !running) return null;
 
   return (
     <section className="panel overflow-hidden">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-rule bg-surface px-4 py-4 sm:px-5">
         <h3 className="text-base font-semibold">
           Market snapshot
-          {p.stockName ? ` — ${p.stockName}` : ""}
+          {stockName ? ` — ${stockName}` : ""}
         </h3>
         <span className="text-xs text-muted-foreground">
           {run.config.ticker}
           {run.config.analysisDate ? ` · ${run.config.analysisDate}` : ""}
-          {p.pricePoints ? ` · ${p.pricePoints} sessions` : ""}
+          {pricePoints ? ` · ${pricePoints} sessions` : ""}
         </span>
       </div>
 
       <div className="space-y-5 p-4 sm:p-6">
-        {hasMarket && (
+        {hasMarket ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-            <Stat label="Last close" value={fmt(p.latestPrice)} />
+            <Stat label="Last close" value={fmt(latestPrice)} />
             <Stat
               label="Change"
-              value={typeof p.changePct === "number" ? `${p.changePct > 0 ? "+" : ""}${p.changePct.toFixed(2)}%` : "—"}
+              value={typeof changePct === "number" ? `${changePct > 0 ? "+" : ""}${changePct.toFixed(2)}%` : "—"}
             />
-            <Stat label="EMA 20" value={fmt(p.latestEma20)} />
-            <Stat label="EMA 50" value={fmt(p.latestEma50)} />
-            <Stat label="RSI 14" value={fmt(p.latestRsi14, 1)} />
+            <Stat label="EMA 20" value={fmt(latestEma20)} />
+            <Stat label="EMA 50" value={fmt(latestEma50)} />
+            <Stat label="RSI 14" value={fmt(latestRsi14, 1)} />
           </div>
+        ) : (
+          running && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+              Waiting for market data from the engine…
+            </p>
+          )
         )}
 
-        {p.warnings.length > 0 && (
+        {warnings.length > 0 && (
           <ul className="space-y-1 rounded-md border border-accent/40 bg-accent/10 px-3 py-2 text-xs">
-            {p.warnings.map((w) => (
+            {warnings.map((w) => (
               <li key={w} className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-accent-foreground" />
                 <span className="break-words">{w}</span>
@@ -71,7 +94,7 @@ export function LiveSnapshot({ run }: { run: RunRecord }) {
           </ul>
         )}
 
-        {p.chartsReady && p.chartHtmlUrl && (
+        {chartHtmlUrl ? (
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -91,7 +114,7 @@ export function LiveSnapshot({ run }: { run: RunRecord }) {
                 <ImageIcon className="size-4" /> Image
               </Button>
               <a
-                href={p.chartHtmlUrl}
+                href={chartHtmlUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
@@ -102,21 +125,28 @@ export function LiveSnapshot({ run }: { run: RunRecord }) {
 
             {view === "interactive" ? (
               <iframe
-                key={p.chartHtmlUrl}
-                src={p.chartHtmlUrl}
-                title={`${run.config.ticker} price and moving averages`}
+                key={chartHtmlUrl}
+                src={chartHtmlUrl}
+                title={`${run.config.ticker} price, volume and RSI`}
                 className="h-[30rem] w-full rounded-md border border-rule bg-surface sm:h-[34rem] lg:h-[40rem]"
                 loading="lazy"
               />
             ) : (
               <img
-                src={p.chartPngUrl}
+                src={chartPngUrl}
                 alt={`${run.config.ticker} price trend with moving averages`}
                 className="min-h-[30rem] w-full rounded-md border border-rule bg-surface object-contain sm:min-h-[34rem] lg:min-h-[40rem]"
                 loading="lazy"
               />
             )}
           </div>
+        ) : (
+          running && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+              The price chart appears here as soon as the engine has drawn it.
+            </p>
+          )
         )}
       </div>
     </section>
