@@ -99,32 +99,56 @@ type EngineRequest = {
   };
 };
 
+type EngineProgress = {
+  stage?: string;
+  message?: string;
+  percent?: number;
+  step?: number;
+  total_steps?: number;
+};
+
 type EngineRun = {
   run_id: string;
   status: string;
   created_at?: string;
   updated_at?: string;
+  started_at?: string;
+  completed_at?: string;
   request?: EngineRequest;
   /** Some bridges call the same object "payload". */
   payload?: EngineRequest;
   result?: {
     ticker?: string;
     analysis_date?: string;
+    /** Flat fields emitted by newer engines. */
+    action?: string;
+    summary?: string;
+    confidence?: number | null;
+    final_trade_decision?: string;
+    reports?: Record<string, unknown>;
+    raw_decision?: unknown;
     /** Either an action word ("Hold") or a structured decision object. */
     decision?:
       | string
       | {
           action?: string;
-          confidence?: number;
+          confidence?: number | null;
           risk_level?: string;
           position_size?: string;
           summary?: string;
         };
-    summary?: string;
     state?: Record<string, unknown>;
   } | null;
-  error?: { type?: string; message?: string } | null;
-  logs?: string[];
+  /** Incremental fields written while the run executes. */
+  partial_result?: Record<string, unknown> | null;
+  progress?: EngineProgress;
+  poll_after_ms?: number;
+  timings?: {
+    stage_durations_ms?: Record<string, number>;
+    counters?: Record<string, number>;
+  };
+  error?: { type?: string; message?: string; traceback?: string; code?: string } | null;
+  logs?: unknown[];
 };
 
 /** Map the many status spellings engines use onto the dashboard's four states. */
