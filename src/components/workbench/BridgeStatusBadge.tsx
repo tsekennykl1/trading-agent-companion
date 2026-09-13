@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { api, getBridgeUrl } from "@/lib/trading-agents/client";
+import { useEffect, useState } from "react";
+import { api, DEFAULT_BRIDGE_URL, getBridgeUrl } from "@/lib/trading-agents/client";
 import { cn } from "@/lib/utils";
 
 export function useBridgeHealth() {
@@ -15,7 +16,12 @@ export function useBridgeHealth() {
 
 export function BridgeStatusBadge() {
   const { data, isError, isLoading } = useBridgeHealth();
+  const [bridgeUrl, setBridgeUrl] = useState(DEFAULT_BRIDGE_URL);
   const online = !!data && !isError;
+
+  useEffect(() => {
+    setBridgeUrl(getBridgeUrl());
+  }, []);
 
   return (
     <Link
@@ -31,7 +37,7 @@ export function BridgeStatusBadge() {
       <span className="font-medium">
         {isLoading ? "Checking…" : online ? "Connected" : "Offline"}
       </span>
-      <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">{getBridgeUrl()}</span>
+      <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">{bridgeUrl}</span>
     </Link>
   );
 }
