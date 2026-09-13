@@ -171,7 +171,10 @@ export function normalizeRun(raw: unknown): RunRecord {
     }
     return String(l);
   });
-  const status = canonicalStatus(raw.status);
+  const rawStatus = canonicalStatus(raw.status);
+  // A finished result is proof the run is done, even if the engine's status word is unfamiliar.
+  const status: RunRecord["status"] =
+    rawStatus !== "error" && (result?.decision || raw.error) ? (raw.error ? "error" : "completed") : rawStatus;
   const running = status === "running" || status === "queued";
   const failed = status === "error";
 
