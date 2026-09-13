@@ -132,9 +132,14 @@ function Workbench() {
                   Analyst teams are reviewing market, fundamental, sentiment and risk evidence. The portfolio
                   manager will deliver the decision when their debate is complete.
                 </p>
+                {latestStep && (
+                  <p className="mt-4 max-w-sm truncate text-xs text-muted-foreground" title={latestStep}>
+                    {latestStep}
+                  </p>
+                )}
                 <span className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-primary">
                   <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
-                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker}
+                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
                 </span>
               </div>
             </div>
