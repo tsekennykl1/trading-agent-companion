@@ -498,4 +498,96 @@ export const api = {
     return items.map(normalizeRun);
   },
   cancelRun: (id: string) => request<{ ok: boolean }>(`/runs/${id}/cancel`, { method: "POST" }),
+
+  /**
+   * Late-bound artifact: market data. 404 means "not generated yet", which is
+   * returned as null rather than thrown, per the backend contract.
+   */
+  marketData: async (id: string): Promise<MarketData | null> => {
+    const base = getBridgeUrl().replace(/\/$/, "");
+    const res = await fetch(`${base}/runs/${id}/market-data`, { cache: "no-store" });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return readMarketData(await res.json());
+  },
+
+  /** Returns true when an artifact URL currently exists (404 = not ready yet). */
+  artifactReady: async (url: string): Promise<boolean> => {
+    try {
+      const res = await fetch(url, { method: "GET", cache: "no-store" });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
 };
+
+export interface MarketData {
+  prices: import("./types").PricePoint[];
+  latestPrice?: number;
+  latestRsi14?: number;
+  latestEma20?: number;
+  latestEma50?: number;
+  changePct?: number;
+  stockName?: string;
+}
+
+/** Tolerant reader for GET /runs/{id}/market-data in its various shapes. */
+export function readMarketData(raw: unknown): MarketData | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const rowsRaw =
+    (Array.isArray(o["prices"]) && o["prices"]) ||
+    (Array.isArray(o["price_data"]) && o["price_data"]) ||
+    (Array.isArray(o["rows"]) && o["rows"]) ||
+    (Array.isArray(o["data"]) && o["data"]) ||
+    [];
+  const prices = (rowsRaw as unknown[])
+    .map((r) => {
+      const row = (r ?? {}) as Record<string, unknown>;
+      const date = String(row["date"] ?? row["Date"] ?? row["timestamp"] ?? "");
+      const close = num(row["close"] ?? row["Close"] ?? row["price"]);
+      if (!date || close === undefined) return undefined;
+      return {
+        date: date.slice(0, 10),
+        close,
+        ...(num(row["ema10"] ?? row["EMA10"]) !== undefined ? { ema10: num(row["ema10"] ?? row["EMA10"])! } : {}),
+        ...(num(row["sma20"] ?? row["SMA20"] ?? row["ema20"]) !== undefined
+          ? { sma20: num(row["sma20"] ?? row["SMA20"] ?? row["ema20"])! }
+          : {}),
+        ...(num(row["sma50"] ?? row["SMA50"] ?? row["ema50"]) !== undefined
+          ? { sma50: num(row["sma50"] ?? row["SMA50"] ?? row["ema50"])! }
+          : {}),
+      } as import("./types").PricePoint;
+    })
+    .filter(Boolean) as import("./types").PricePoint[];
+
+  const cards = (o["summary"] ?? o["summary_cards"] ?? o["indicators"] ?? {}) as Record<string, unknown>;
+  const pick = (...keys: string[]): unknown => {
+    for (const k of keys) {
+      if (o[k] !== undefined && o[k] !== null) return o[k];
+      if (cards[k] !== undefined && cards[k] !== null) return cards[k];
+    }
+    return undefined;
+  };
+  const last = prices.at(-1);
+  const prev = prices.at(-2);
+  const latestPrice = num(pick("latest_price", "latest_close")) ?? last?.close;
+  const changePct =
+    num(pick("change_pct", "price_change_pct")) ??
+    (last && prev && prev.close ? ((last.close - prev.close) / prev.close) * 100 : undefined);
+
+  const data: MarketData = {
+    prices,
+    ...(latestPrice !== undefined ? { latestPrice } : {}),
+    ...(num(pick("latest_rsi14", "rsi14", "rsi")) !== undefined
+      ? { latestRsi14: num(pick("latest_rsi14", "rsi14", "rsi"))! }
+      : {}),
+    ...(num(pick("latest_ema20", "ema20")) !== undefined ? { latestEma20: num(pick("latest_ema20", "ema20"))! } : {}),
+    ...(num(pick("latest_ema50", "ema50")) !== undefined ? { latestEma50: num(pick("latest_ema50", "ema50"))! } : {}),
+    ...(changePct !== undefined ? { changePct } : {}),
+    ...(typeof pick("stock_name", "name") === "string" ? { stockName: pick("stock_name", "name") as string } : {}),
+  };
+  if (!data.prices.length && data.latestPrice === undefined) return null;
+  return data;
+}
