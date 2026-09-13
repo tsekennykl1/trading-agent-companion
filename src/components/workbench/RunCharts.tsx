@@ -95,6 +95,10 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
     (acc, s) => ({ ...acc, [s.stance]: (acc[s.stance] ?? 0) + 1 }),
     { bullish: 0, bearish: 0, neutral: 0 },
   );
+  const agreement = stances.length
+    ? Math.round((Math.max(counts.bullish, counts.bearish, counts.neutral) / stances.length) * 100)
+    : 0;
+  const confidence = decision.confidence > 0 || stances.length === 0 ? decision.confidence : agreement;
 
   return (
     <section className="panel p-4 sm:p-5">
@@ -110,14 +114,14 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
               outerRadius="100%"
               startAngle={90}
               endAngle={-270}
-              data={[{ name: "confidence", value: decision.confidence }]}
+              data={[{ name: "confidence", value: confidence }]}
             >
               <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
               <RadialBar dataKey="value" cornerRadius={8} fill="var(--chart-1)" background={{ fill: "var(--muted)" }} />
             </RadialBarChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-display text-3xl font-semibold">{decision.confidence}%</span>
+            <span className="font-display text-3xl font-semibold">{confidence}%</span>
             <span className="label-caps">confidence</span>
           </div>
         </div>

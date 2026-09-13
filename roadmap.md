@@ -36,3 +36,9 @@
 - [x] Replace the raw artifact frame with a readable formatted report.
 - [x] Keep the detailed report collapsed until requested.
 - [x] Decode nested JSON/HTML report wrappers into headings, lists, tables, and paragraphs.
+
+# Report cleanup and confidence correction
+
+- [x] Remove JSON punctuation, empty fields, and quoted values from detailed reports.
+- [x] Open the portfolio management decision by default.
+- [x] Use agent agreement when the backend returns zero confidence with available stances.

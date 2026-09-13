@@ -9,6 +9,57 @@ function titleCase(value: string): string {
 
 const WRAPPER_KEYS = new Set(["body", "content", "data", "document", "html", "markdown", "report", "result", "text"]);
 
+function isEmptyValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return true;
+  if (Array.isArray(value)) return value.length === 0 || value.every(isEmptyValue);
+  if (typeof value === "object") return Object.values(value as Record<string, unknown>).every(isEmptyValue);
+  return false;
+}
+
+function decodeQuotedValue(value: string): string {
+  const trimmed = value.trim().replace(/,$/, "").trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith('"')) {
+    try {
+      return String(JSON.parse(trimmed));
+    } catch {
+      return trimmed.replace(/^"/, "").replace(/"$/, "").replace(/\\"/g, '"');
+    }
+  }
+  return trimmed.replace(/^['"]|['"]$/g, "");
+}
+
+/** Recover readable content from Markdown mixed with incomplete JSON fragments. */
+function cleanJsonLikeMarkdown(source: string): string {
+  const output: string[] = [];
+
+  for (const rawLine of source.split("\n")) {
+    const trimmed = rawLine.trim();
+    if (/^[{}\[\],]+$/.test(trimmed)) continue;
+
+    const field = /^"?([A-Za-z][\w -]*)"?\s*:\s*(.*)$/.exec(trimmed);
+    if (!field) {
+      output.push(rawLine.replace(/",\s*$/, "").replace(/^"(?=[^"].*)|"$/g, ""));
+      continue;
+    }
+
+    const key = field[1]?.trim() ?? "";
+    const rawValue = field[2]?.trim() ?? "";
+    if (!key || /^(?:""|''|null|undefined|\[\]|\{\})[,]?$/.test(rawValue)) continue;
+    if (/^[{\[][,]?$/.test(rawValue)) {
+      if (!WRAPPER_KEYS.has(key.toLowerCase())) output.push(`## ${titleCase(key)}`, "");
+      continue;
+    }
+
+    const decodedValue = decodeQuotedValue(rawValue);
+    if (!decodedValue) continue;
+    if (WRAPPER_KEYS.has(key.toLowerCase())) output.push(decodedValue, "");
+    else output.push(`### ${titleCase(key)}`, "", decodedValue, "");
+  }
+
+  return output.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function htmlToMarkdown(source: string): string {
   const document = new DOMParser().parseFromString(source, "text/html");
   const blocks: string[] = [];
@@ -63,12 +114,14 @@ function decodeString(value: string, depth: number): string {
     }
   }
 
-  return text
+  const decoded = text
     .replace(/\\r\\n|\\n/g, "\n")
     .replace(/\\t/g, "  ")
     .replace(/\\"/g, '"')
     .replace(/^['"]|['"]$/g, "")
     .trim();
+
+  return cleanJsonLikeMarkdown(decoded);
 }
 
 function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): string {
@@ -87,7 +140,7 @@ function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): str
       .join(primitiveList ? "\n" : "\n\n");
   }
 
-  const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => item !== null && item !== undefined);
+  const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => !isEmptyValue(item));
   if (entries.length === 1) {
     const [key, item] = entries[0] ?? [];
     if (key && WRAPPER_KEYS.has(key.toLowerCase())) return valueToMarkdown(item, headingDepth, decodeDepth + 1);
@@ -104,7 +157,7 @@ function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): str
 }
 
 function readableArtifact(source: string): string {
-  return decodeString(source, 0);
+  return cleanJsonLikeMarkdown(decodeString(source, 0));
 }
 
 export function DetailedReport({ url, ticker }: { url: string; ticker: string }) {

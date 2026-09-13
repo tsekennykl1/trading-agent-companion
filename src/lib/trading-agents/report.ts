@@ -154,6 +154,12 @@ export function markdownToHtml(md: string): string {
       out.push(`<h${level}>${inline(heading[2] ?? "")}</h${level}>`);
       continue;
     }
+    if (/^---+$/.test(line.trim())) {
+      closeList();
+      closeTable();
+      out.push("<hr />");
+      continue;
+    }
     if (line.startsWith("|")) {
       const cells = line.split("|").slice(1, -1).map((c) => c.trim());
       if (cells.every((c) => /^-{2,}$/.test(c))) continue;
