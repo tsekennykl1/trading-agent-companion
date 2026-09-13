@@ -87,32 +87,40 @@ export interface HealthResponse {
 // pass through untouched.
 // ---------------------------------------------------------------------------
 
+type EngineRequest = {
+  model?: string;
+  ticker?: string;
+  end_date?: string;
+  params?: {
+    llm_provider?: string;
+    deep_think_llm?: string;
+    quick_think_llm?: string;
+    max_debate_rounds?: number;
+  };
+};
+
 type EngineRun = {
   run_id: string;
   status: string;
   created_at?: string;
   updated_at?: string;
-  request?: {
-    model?: string;
-    ticker?: string;
-    end_date?: string;
-    params?: {
-      llm_provider?: string;
-      deep_think_llm?: string;
-      quick_think_llm?: string;
-      max_debate_rounds?: number;
-    };
-  };
+  request?: EngineRequest;
+  /** Some bridges call the same object "payload". */
+  payload?: EngineRequest;
   result?: {
     ticker?: string;
     analysis_date?: string;
-    decision?: {
-      action?: string;
-      confidence?: number;
-      risk_level?: string;
-      position_size?: string;
-      summary?: string;
-    };
+    /** Either an action word ("Hold") or a structured decision object. */
+    decision?:
+      | string
+      | {
+          action?: string;
+          confidence?: number;
+          risk_level?: string;
+          position_size?: string;
+          summary?: string;
+        };
+    summary?: string;
     state?: Record<string, unknown>;
   } | null;
   error?: { type?: string; message?: string } | null;
