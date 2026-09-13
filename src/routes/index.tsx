@@ -59,9 +59,18 @@ function Workbench() {
     enabled: !!activeRunId,
     refetchInterval: (q) => {
       const s = q.state.data?.status;
-      return s === "completed" || s === "error" ? false : 2000;
+      return s === "completed" || s === "error" ? false : 3000;
     },
   });
+
+  // Elapsed time for the in-progress overlay
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (startedAt === null) return;
+    const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => window.clearInterval(id);
+  }, [startedAt]);
 
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
