@@ -1,4 +1,4 @@
-import type { RunConfig, RunRecord } from "./types";
+import type { Action, RunConfig, RunRecord } from "./types";
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
 export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8787";
@@ -48,11 +48,25 @@ function formatErrorDetail(text: string): string {
 }
 
 /**
- * Payload sent to POST /runs. Includes snake_case aliases so FastAPI engines
- * that follow Python naming conventions validate too (extra keys are ignored).
+ * Payload sent to POST /runs. Matches the engine's { model, ticker, end_date,
+ * params } schema and also carries camelCase/snake_case aliases so bridges
+ * with either convention validate (extra keys are ignored).
  */
 export function runConfigPayload(config: RunConfig): Record<string, unknown> {
+  const maxDebateRounds =
+    config.researchDepth === "Deep" ? 3 : config.researchDepth === "Medium" ? 2 : 1;
   return {
+    // Engine's expected schema (ticker comes from ...config below)
+    model: config.deepModel,
+    end_date: config.analysisDate,
+    params: {
+      llm_provider: config.provider,
+      deep_think_llm: config.deepModel,
+      quick_think_llm: config.quickModel,
+      max_debate_rounds: maxDebateRounds,
+      temperature: 0.0,
+    },
+    // Aliases for other bridge implementations
     ...config,
     analysis_date: config.analysisDate,
     research_depth: config.researchDepth,
@@ -67,6 +81,192 @@ export interface HealthResponse {
   providers?: string[];
 }
 
+// ---------------------------------------------------------------------------
+// Adapter: convert an engine run ({ run_id, request, result, logs, error })
+// into the dashboard's RunRecord shape. Runs already in RunRecord shape
+// pass through untouched.
+// ---------------------------------------------------------------------------
+
+type EngineRun = {
+  run_id: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+  request?: {
+    model?: string;
+    ticker?: string;
+    end_date?: string;
+    params?: {
+      llm_provider?: string;
+      deep_think_llm?: string;
+      quick_think_llm?: string;
+      max_debate_rounds?: number;
+    };
+  };
+  result?: {
+    ticker?: string;
+    analysis_date?: string;
+    decision?: {
+      action?: string;
+      confidence?: number;
+      risk_level?: string;
+      position_size?: string;
+      summary?: string;
+    };
+    state?: Record<string, unknown>;
+  } | null;
+  error?: { type?: string; message?: string } | null;
+  logs?: string[];
+};
+
+function isEngineRun(raw: unknown): raw is EngineRun {
+  return typeof raw === "object" && raw !== null && "run_id" in raw && !("config" in raw);
+}
+
+function titleCase(value: string): string {
+  return value.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const STANCE_FROM_TEXT: [RegExp, number][] = [
+  [/bullish|positive|strong|high/i, 60],
+  [/bearish|negative|weak/i, -60],
+  [/mixed|neutral|moderate|medium|elevated/i, 10],
+];
+
+function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral"; score: number } {
+  for (const [re, score] of STANCE_FROM_TEXT) {
+    if (re.test(text)) {
+      return { stance: score > 30 ? "bullish" : score < -30 ? "bearish" : "neutral", score };
+    }
+  }
+  return { stance: "neutral", score: 0 };
+}
+
+export function normalizeRun(raw: unknown): RunRecord {
+  if (!isEngineRun(raw)) return raw as RunRecord;
+
+  const req = raw.request ?? {};
+  const params = req.params ?? {};
+  const result = raw.result ?? undefined;
+  const state = (result?.state ?? {}) as Record<string, Record<string, unknown>>;
+  const ticker = result?.ticker ?? req.ticker ?? "—";
+  const analysisDate = result?.analysis_date ?? req.end_date ?? "";
+  const logs = raw.logs ?? [];
+  const running = raw.status === "running" || raw.status === "queued";
+  const failed = raw.status === "failed" || raw.status === "error";
+
+  const created = raw.created_at ? Date.parse(raw.created_at) : NaN;
+  const updated = raw.updated_at ? Date.parse(raw.updated_at) : NaN;
+  const runtimeSeconds =
+    Number.isFinite(created) && Number.isFinite(updated)
+      ? Math.max(0, Math.round((updated - created) / 1000))
+      : 0;
+
+  // Agent progress derived from the log stream
+  const agents = logs.map((line, i) => ({
+    team: "Engine",
+    agent: line,
+    status: (failed && i === logs.length - 1
+      ? "error"
+      : running && i === logs.length - 1
+        ? "in_progress"
+        : "completed") as RunRecord["agents"][number]["status"],
+  }));
+
+  // Analyst stances derived from the state sections
+  const stances: RunRecord["stances"] = [];
+  const stateLabels: Record<string, string> = {
+    technical_analysis: "Market Analyst",
+    sentiment_analysis: "Sentiment Analyst",
+    fundamental_analysis: "Fundamentals Analyst",
+    risk_assessment: "Risk Assessment",
+  };
+  for (const [key, label] of Object.entries(stateLabels)) {
+    const section = state[key];
+    if (!section) continue;
+    const text = Object.values(section)
+      .flatMap((v) => (Array.isArray(v) ? v : [v]))
+      .filter((v) => typeof v === "string")
+      .join(" ");
+    stances.push({ agent: label, ...stanceScore(text) });
+  }
+
+  // Reports from state sections
+  const reports: Record<string, string> = {};
+  for (const [key, section] of Object.entries(state)) {
+    if (section && typeof section === "object") {
+      reports[key] = Object.entries(section)
+        .map(([k, v]) => `- **${titleCase(k)}:** ${Array.isArray(v) ? v.join(", ") : String(v)}`)
+        .join("\n");
+    }
+  }
+  if (logs.length) reports["engine_log"] = logs.map((l) => `- ${l}`).join("\n");
+
+  // Decision
+  const d = result?.decision;
+  const confidenceRaw = typeof d?.confidence === "number" ? d.confidence : 0;
+  const confidence = confidenceRaw <= 1 ? Math.round(confidenceRaw * 100) : Math.round(confidenceRaw);
+  const riskSection = state["risk_assessment"];
+  const keyRisks = riskSection && Array.isArray(riskSection["key_risks"])
+    ? (riskSection["key_risks"] as string[])
+    : [];
+  const actionText = titleCase(d?.action ?? "Review");
+  const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
+    (a) => a === actionText,
+  ) ?? "Review";
+
+  const record: RunRecord = {
+    id: raw.run_id,
+    status: raw.status === "failed" ? "error" : (raw.status as RunRecord["status"]),
+    config: {
+      ticker,
+      analysisDate,
+      provider: titleCase(params.llm_provider ?? ""),
+      quickModel: params.quick_think_llm ?? req.model ?? "",
+      deepModel: params.deep_think_llm ?? req.model ?? "",
+      researchDepth:
+        (params.max_debate_rounds ?? 1) >= 3
+          ? "Deep"
+          : (params.max_debate_rounds ?? 1) === 2
+            ? "Medium"
+            : "Shallow",
+      analysts: [],
+      language: "English",
+    },
+    startedAt: raw.created_at ?? new Date().toISOString(),
+    agents,
+    prices: [],
+    stances,
+    reports,
+    stats: {
+      llmCalls: 0,
+      toolCalls: 0,
+      tokensIn: 0,
+      tokensOut: 0,
+      reportsDone: Object.keys(reports).length,
+      reportsTotal: Object.keys(reports).length,
+      runtimeSeconds,
+    },
+    source: "engine",
+    ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),
+  };
+
+  if (d) {
+    record.decision = {
+      action,
+      rating: actionText,
+      confidence,
+      consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
+      ...(d.position_size ? { positionSizing: titleCase(d.position_size) } : {}),
+      executiveSummary: d.summary ?? "",
+      bullPoints: d.summary ? [d.summary] : [],
+      bearPoints: keyRisks,
+    };
+  }
+
+  return record;
+}
+
 export const api = {
   health: () => request<HealthResponse>("/health"),
   startRun: (config: RunConfig) =>
@@ -74,7 +274,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(runConfigPayload(config)),
     }),
-  getRun: (id: string) => request<RunRecord>(`/runs/${id}`),
-  listRuns: () => request<RunRecord[]>("/runs"),
+  getRun: async (id: string) => normalizeRun(await request<unknown>(`/runs/${id}`)),
+  listRuns: async () => {
+    const raw = await request<unknown>("/runs");
+    const items = Array.isArray(raw) ? raw : ((raw as { runs?: unknown[] }).runs ?? []);
+    return items.map(normalizeRun);
+  },
   cancelRun: (id: string) => request<{ ok: boolean }>(`/runs/${id}/cancel`, { method: "POST" }),
 };
