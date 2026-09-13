@@ -237,7 +237,7 @@ export function normalizeRun(raw: unknown): RunRecord {
 
   const record: RunRecord = {
     id: raw.run_id,
-    status: raw.status === "failed" ? "error" : (raw.status as RunRecord["status"]),
+    status,
     config: {
       ticker,
       analysisDate,
