@@ -196,9 +196,15 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
             relative_strength = gains / losses.replace(0, float("nan"))
             rsi14 = (100 - (100 / (1 + relative_strength))).fillna(50).tolist()
             ema10 = None
-            k = 2 / (10 + 1)
+            ema20 = None
+            ema50 = None
+            k10 = 2 / (10 + 1)
+            k20 = 2 / (20 + 1)
+            k50 = 2 / (50 + 1)
             for i, (d, c) in enumerate(zip(dates, closes)):
-                ema10 = c if ema10 is None else (c * k + ema10 * (1 - k))
+                ema10 = c if ema10 is None else (c * k10 + ema10 * (1 - k10))
+                ema20 = c if ema20 is None else (c * k20 + ema20 * (1 - k20))
+                ema50 = c if ema50 is None else (c * k50 + ema50 * (1 - k50))
                 window = closes[max(0, i - 19) : i + 1]
                 window50 = closes[max(0, i - 49) : i + 1]
                 rows.append(
@@ -211,6 +217,8 @@ def build_prices(ticker: str, end_date: str) -> list[dict[str, Any]]:
                         "volume": max(0, int(float(volumes[i]))),
                         "rsi14": round(float(rsi14[i]), 1),
                         "ema10": round(ema10, 2),
+                        "ema20": round(ema20, 2),
+                        "ema50": round(ema50, 2),
                         "sma20": round(sum(window) / len(window), 2),
                         "sma50": round(sum(window50) / len(window50), 2),
                     }
@@ -267,9 +275,8 @@ def build_plotly_html(ticker: str, rows: list[dict[str, Any]]) -> str:
                 col=1,
             )
         for key, label, colour in (
-            ("ema10", "10-EMA", "#c98a2b"),
-            ("sma20", "20-SMA", "#5b8c5a"),
-            ("sma50", "50-SMA", "#8f5aa8"),
+            ("ema20", "EMA 20", "#f59e0b"),
+            ("ema50", "EMA 50", "#11823b"),
         ):
             if rows and key in rows[0]:
                 fig.add_trace(
@@ -345,24 +352,33 @@ def build_matplotlib_png(ticker: str, rows: list[dict[str, Any]]) -> bytes:
             gridspec_kw={"height_ratios": [3.5, 1, 1], "hspace": 0.08},
         )
         price_ax, volume_ax, rsi_ax = axes
-        price_ax.plot(dates, [r["close"] for r in rows], label="Close", color="#1d6472", linewidth=2.2)
+        has_ohlc = all(all(key in row for key in ("open", "high", "low", "close")) for row in rows)
+        if has_ohlc:
+            for index, row in enumerate(rows):
+                rising = row["close"] >= row["open"]
+                colour = "#11823b" if rising else "#dc2626"
+                price_ax.vlines(index, row["low"], row["high"], color=colour, linewidth=0.8)
+                bottom = min(row["open"], row["close"])
+                height = max(abs(row["close"] - row["open"]), 0.02)
+                price_ax.bar(index, height, bottom=bottom, width=0.62, color=colour, edgecolor=colour)
+        else:
+            price_ax.plot(dates, [r["close"] for r in rows], label="Close", color="#1d6472", linewidth=2.2)
         for key, label, colour in (
-            ("ema10", "10-EMA", "#c98a2b"),
-            ("sma20", "20-SMA", "#5b8c5a"),
-            ("sma50", "50-SMA", "#8f5aa8"),
+            ("ema20", "EMA 20", "#f59e0b"),
+            ("ema50", "EMA 50", "#11823b"),
         ):
             if rows and key in rows[0]:
-                price_ax.plot(dates, [r.get(key) for r in rows], label=label, linewidth=1.2, color=colour)
+                price_ax.plot(range(len(rows)), [r.get(key) for r in rows], label=label, linewidth=1.2, color=colour)
         price_ax.set_title(f"{ticker} — price trend, volume and RSI")
         price_ax.set_ylabel("Price")
         price_ax.grid(alpha=0.25)
         price_ax.legend(loc="best", fontsize=8)
 
-        volume_ax.bar(dates, [r.get("volume", 0) for r in rows], color="#7276d9", alpha=0.8)
+        volume_ax.bar(range(len(rows)), [r.get("volume", 0) for r in rows], color="#7276d9", alpha=0.8)
         volume_ax.set_ylabel("Volume")
         volume_ax.grid(axis="y", alpha=0.2)
 
-        rsi_ax.plot(dates, [r.get("rsi14", 50) for r in rows], color="#666666", linewidth=1.5)
+        rsi_ax.plot(range(len(rows)), [r.get("rsi14", 50) for r in rows], color="#666666", linewidth=1.5)
         rsi_ax.axhline(70, color="#dc2626", linestyle="--", linewidth=1)
         rsi_ax.axhline(30, color="#11823b", linestyle="--", linewidth=1)
         rsi_ax.set_ylim(0, 100)
@@ -370,9 +386,10 @@ def build_matplotlib_png(ticker: str, rows: list[dict[str, Any]]) -> bytes:
         rsi_ax.set_xlabel("Date")
         rsi_ax.grid(alpha=0.2)
         step = max(1, len(dates) // 10)
-        rsi_ax.set_xticks(dates[::step])
+        tick_positions = list(range(0, len(dates), step))
+        rsi_ax.set_xticks(tick_positions, [dates[index] for index in tick_positions])
         plt.setp(rsi_ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
-        fig.tight_layout()
+        fig.subplots_adjust(left=0.08, right=0.98, top=0.92, bottom=0.14)
         buf = io.BytesIO()
         fig.savefig(buf, format="png")
         plt.close(fig)
