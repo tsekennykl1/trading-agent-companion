@@ -141,46 +141,44 @@ function Workbench() {
 
         <div className="relative min-w-0 space-y-6" aria-busy={analysisBusy}>
           {analysisBusy && (
-            <div className="absolute inset-0 z-20 flex items-start justify-center rounded-lg bg-background/85 px-4 pt-8 backdrop-blur-[2px] sm:pt-12">
-              <div
-                className="panel sticky top-24 flex w-full max-w-md flex-col items-center px-5 py-8 text-center shadow-raised sm:px-8 sm:py-10"
-                role="status"
-                aria-live="polite"
-              >
-                <span className="mb-5 grid size-14 place-items-center rounded-full border border-primary/25 bg-primary/10">
-                  <Loader2 className="size-7 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+            <section className="panel px-4 py-4 sm:px-5" role="status" aria-live="polite">
+              <div className="flex items-start gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10">
+                  <Loader2 className="size-4 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                 </span>
-                <h2 className="font-display text-xl font-semibold">Analysis in progress</h2>
-                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                  Analyst teams are reviewing market, fundamental, sentiment and risk evidence. The portfolio
-                  manager will deliver the decision when their debate is complete.
-                </p>
-                {liveRun?.progress && (
-                  <div className="mt-5 w-full max-w-xs">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-500 motion-reduce:transition-none"
-                        style={{ width: `${Math.min(100, Math.max(0, liveRun.progress.percent))}%` }}
-                      />
-                    </div>
-                    <p className="mt-2 text-xs break-words text-muted-foreground">
-                      {liveRun.progress.message || liveRun.progress.stage}
-                      {liveRun.progress.totalSteps > 0 &&
-                        ` · step ${liveRun.progress.step} of ${liveRun.progress.totalSteps}`}
-                    </p>
-                  </div>
-                )}
-                {!liveRun?.progress && latestStep && (
-                  <p className="mt-4 max-w-sm truncate text-xs text-muted-foreground" title={latestStep}>
-                    {latestStep}
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-display text-base font-semibold sm:text-lg">Analysis in progress</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    Everything the engine has finished so far appears below and keeps updating. The portfolio
+                    manager's decision arrives when the debate is complete.
                   </p>
-                )}
-                <span className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-primary">
-                  <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
-                  Working on {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
-                </span>
+                  {liveRun?.progress && (
+                    <div className="mt-3">
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-500 motion-reduce:transition-none"
+                          style={{ width: `${Math.min(100, Math.max(0, liveRun.progress.percent))}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs break-words text-muted-foreground">
+                        {liveRun.progress.message || liveRun.progress.stage}
+                        {liveRun.progress.totalSteps > 0 &&
+                          ` · step ${liveRun.progress.step} of ${liveRun.progress.totalSteps}`}
+                      </p>
+                    </div>
+                  )}
+                  {!liveRun?.progress && latestStep && (
+                    <p className="mt-2 truncate text-xs text-muted-foreground" title={latestStep}>
+                      {latestStep}
+                    </p>
+                  )}
+                  <span className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-primary">
+                    <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
+                    Working on {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
+                  </span>
+                </div>
               </div>
-            </div>
+            </section>
           )}
 
           {showingSample && run.source === "sample" && (
