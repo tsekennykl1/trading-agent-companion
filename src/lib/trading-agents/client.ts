@@ -1,4 +1,4 @@
-import type { RunConfig, RunRecord } from "./types";
+import type { Action, RunConfig, RunRecord } from "./types";
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
 export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8787";
@@ -210,9 +210,10 @@ export function normalizeRun(raw: unknown): RunRecord {
   const keyRisks = Array.isArray(state.risk_assessment?.key_risks)
     ? (state.risk_assessment!.key_risks as string[])
     : [];
-  const actionMap: Record<string, RunRecord["decision"] extends infer T ? (T extends { action: infer A } ? A : never) : never> = {};
-  void actionMap;
   const actionText = titleCase(d?.action ?? "Review");
+  const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
+    (a) => a === actionText,
+  ) ?? "Review";
 
   return {
     id: raw.run_id,
