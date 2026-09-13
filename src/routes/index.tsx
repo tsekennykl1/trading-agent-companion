@@ -64,8 +64,11 @@ function Workbench() {
     },
     enabled: !!activeRunId,
     refetchInterval: (q) => {
-      const s = q.state.data?.status;
-      return s === "completed" || s === "error" ? false : 3000;
+      const data = q.state.data;
+      const s = data?.status;
+      if (s === "completed" || s === "error") return false;
+      // Honour the engine's suggested polling interval when it provides one.
+      return data?.pollAfterMs ?? 3000;
     },
   });
 
@@ -152,7 +155,22 @@ function Workbench() {
                   Analyst teams are reviewing market, fundamental, sentiment and risk evidence. The portfolio
                   manager will deliver the decision when their debate is complete.
                 </p>
-                {latestStep && (
+                {liveRun?.progress && (
+                  <div className="mt-5 w-full max-w-xs">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500 motion-reduce:transition-none"
+                        style={{ width: `${Math.min(100, Math.max(0, liveRun.progress.percent))}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs break-words text-muted-foreground">
+                      {liveRun.progress.message || liveRun.progress.stage}
+                      {liveRun.progress.totalSteps > 0 &&
+                        ` · step ${liveRun.progress.step} of ${liveRun.progress.totalSteps}`}
+                    </p>
+                  </div>
+                )}
+                {!liveRun?.progress && latestStep && (
                   <p className="mt-4 max-w-sm truncate text-xs text-muted-foreground" title={latestStep}>
                     {latestStep}
                   </p>
