@@ -435,9 +435,9 @@ def execute(run_id: str, cfg: RunConfig) -> None:
         config = dict(DEFAULT_CONFIG)
         config["llm_provider"] = cfg.provider.lower()
         if cfg.quickModel:
-            config["quick_think_llm"] = cfg.quickModel
+            config["quick_think_llm"] = normalize_model(cfg.quickModel)
         if cfg.deepModel:
-            config["deep_think_llm"] = cfg.deepModel
+            config["deep_think_llm"] = normalize_model(cfg.deepModel)
         rounds = {"Shallow": 1, "Medium": 2, "Deep": 3}.get(cfg.researchDepth, 1)
         config["max_debate_rounds"] = rounds
         config["max_risk_discuss_rounds"] = rounds
