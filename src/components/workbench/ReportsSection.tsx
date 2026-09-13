@@ -9,15 +9,6 @@ export function ReportsSection({ run }: { run: RunRecord }) {
   const extra = Object.keys(run.reports).filter(
     (k) => run.reports[k]?.trim() && !REPORT_SECTIONS.some((s) => s.key === k),
   );
-  const sections = [
-    ...available,
-    ...extra.map((k) => ({
-      key: k,
-      label: k.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-      team: "Engine",
-    })),
-  ];
-
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const running = run.status === "running" || run.status === "queued";
@@ -25,7 +16,6 @@ export function ReportsSection({ run }: { run: RunRecord }) {
     ...section,
     content: run.reports[section.key]?.trim() ?? "",
   }));
-  const knownKeys = new Set(REPORT_SECTIONS.map((section) => section.key));
   sectionRows.push(
     ...extra.map((key) => ({
       key,

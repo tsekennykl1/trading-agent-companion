@@ -48,66 +48,69 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
 
       {open && (
         <div className="border-t border-rule">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
-        <span
-          className={cn(
-            "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
-            tone.cls,
-          )}
-        >
-          <Icon className="size-5" />
-          {decision.action}
-        </span>
-        <div className="min-w-0 text-sm">
-          <p className="font-medium break-words">{ticker} — portfolio management decision</p>
-          <p className="text-muted-foreground">
-            Confidence {decision.confidence}% · {decision.consensus} consensus across agents
-          </p>
-        </div>
-        <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
-          {[
-            ["Entry", decision.entryPrice],
-            ["Stop loss", decision.stopLoss],
-          ].map(([label, value]) => (
-            <div key={String(label)}>
-              <p className="label-caps">{label}</p>
-              <p className="font-mono text-base">{value === undefined ? "—" : value}</p>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
+            <span
+              className={cn(
+                "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
+                tone.cls,
+              )}
+            >
+              <Icon className="size-5" />
+              {decision.action}
+            </span>
+            <div className="min-w-0 text-sm">
+              <p className="font-medium break-words">{ticker} — portfolio management decision</p>
+              <p className="text-muted-foreground">
+                Confidence {decision.confidence}% · {decision.consensus} consensus across agents
+              </p>
             </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-4 py-4 sm:px-5 sm:py-5">
-        <p className="label-caps">Executive summary</p>
-        <div
-          className="prose-report mt-3 text-sm"
-          dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.executiveSummary) }}
-        />
-
-        {decision.positionSizing && (
-          <div className="mt-4 rounded-md border border-rule bg-muted/50 p-3 text-sm">
-            <p className="label-caps">Position sizing</p>
-            <p className="mt-1 leading-relaxed">{decision.positionSizing}</p>
+            <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
+              {[
+                ["Entry", decision.entryPrice],
+                ["Stop loss", decision.stopLoss],
+              ].map(([label, value]) => (
+                <div key={String(label)}>
+                  <p className="label-caps">{label}</p>
+                  <p className="font-mono text-base">{value === undefined ? "—" : value}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        <div className="mt-5 divide-y divide-rule border-y border-rule">
-          <DecisionEvidence
-            title="Key bullish signals"
-            tone="bull"
-            points={decision.bullPoints}
-            open={bullOpen}
-            onToggle={() => setBullOpen((value) => !value)}
-          />
-          <DecisionEvidence
-            title="Key bearish risks"
-            tone="bear"
-            points={decision.bearPoints}
-            open={bearOpen}
-            onToggle={() => setBearOpen((value) => !value)}
-          />
-        </div>
-      </div>
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            <p className="label-caps">Executive summary</p>
+            <div
+              className="prose-report mt-3 text-sm"
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.executiveSummary) }}
+            />
+
+            {decision.positionSizing && (
+              <div className="mt-4 rounded-md border border-rule bg-muted/50 p-3 text-sm">
+                <p className="label-caps">Position sizing</p>
+                <div
+                  className="prose-report mt-2"
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.positionSizing) }}
+                />
+              </div>
+            )}
+
+            <div className="mt-5 divide-y divide-rule border-y border-rule">
+              <DecisionEvidence
+                title="Key bullish signals"
+                tone="bull"
+                points={decision.bullPoints}
+                open={bullOpen}
+                onToggle={() => setBullOpen((value) => !value)}
+              />
+              <DecisionEvidence
+                title="Key bearish risks"
+                tone="bear"
+                points={decision.bearPoints}
+                open={bearOpen}
+                onToggle={() => setBearOpen((value) => !value)}
+              />
+            </div>
+          </div>
         </div>
       )}
     </section>
