@@ -103,6 +103,34 @@ function Workbench() {
       }),
   });
 
+  // Some engine builds keep POST /runs open until the analysis finishes, so no
+  // run id arrives up front and nothing (chart, reports, progress) is polled.
+  // While the start request is still open, look the run up from the run list.
+  useEffect(() => {
+    if (!startRun.isPending || activeRunId) return;
+    let alive = true;
+    let timer: number | undefined;
+    const discover = async () => {
+      try {
+        const runs = await api.listRuns();
+        const latest = runs.at(-1) ?? runs[0];
+        if (alive && latest?.id) {
+          setActiveRunId(latest.id);
+          setShowingSample(false);
+          return;
+        }
+      } catch {
+        /* engine has no run list — keep waiting for the POST to answer */
+      }
+      if (alive) timer = window.setTimeout(() => void discover(), 4000);
+    };
+    timer = window.setTimeout(() => void discover(), 4000);
+    return () => {
+      alive = false;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [startRun.isPending, activeRunId]);
+
   const cancelRun = () => {
     if (!activeRunId) return;
     api
