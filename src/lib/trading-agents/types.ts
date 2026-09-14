@@ -37,6 +37,30 @@ export interface RunStats {
   runtimeSeconds: number;
 }
 
+/** Actionable price levels the engine may attach to a decision or chart. */
+export interface TradeLevels {
+  entry?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  support: number[];
+  resistance: number[];
+}
+
+/** A dated, explainable event drawn on the price chart. */
+export interface ChartMarker {
+  date: string;
+  kind: "buy" | "sell" | "cross_up" | "cross_down" | "overbought" | "oversold";
+  label: string;
+  price?: number;
+}
+
+/** Qualitative 0-100 scores some engines publish alongside the decision. */
+export interface DecisionScores {
+  bullishness?: number;
+  conviction?: number;
+  risk?: number;
+}
+
 export interface Decision {
   action: Action;
   rating: string;
@@ -44,11 +68,18 @@ export interface Decision {
   consensus: "High" | "Medium" | "Low";
   entryPrice?: number;
   stopLoss?: number;
+  takeProfit?: number;
+  riskLevel?: string;
+  horizon?: string;
+  rationale?: string;
+  levels?: TradeLevels;
+  scores?: DecisionScores;
   positionSizing?: string;
   executiveSummary: string;
   bullPoints: string[];
   bearPoints: string[];
 }
+
 
 export interface RunConfig {
   ticker: string;
