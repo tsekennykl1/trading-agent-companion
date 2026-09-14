@@ -131,8 +131,8 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
 
       <dl
         className={cn(
-          "mt-4 grid grid-cols-2 gap-x-5 gap-y-2 border-t border-rule pt-4 text-xs sm:grid-cols-3",
-          !compact && "lg:grid-cols-6",
+          "mt-4 grid gap-x-5 gap-y-2 border-t border-rule pt-4 text-xs",
+          compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
         )}
       >
         {[
