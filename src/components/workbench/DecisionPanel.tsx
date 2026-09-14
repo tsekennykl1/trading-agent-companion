@@ -132,6 +132,7 @@ function DecisionEvidence({
   open: boolean;
   onToggle: () => void;
 }) {
+  const t = useT();
   const available = points.length > 0;
 
   return (
@@ -140,14 +141,15 @@ function DecisionEvidence({
         <div className="min-w-0 flex-1">
           <h3 className={cn("text-sm font-semibold", tone === "bull" ? "text-bull" : "text-bear")}>{title}</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {available ? `${points.length} signal${points.length === 1 ? "" : "s"} available` : "Not available"}
+            {available ? fill(t("decision.signals"), { n: points.length }) : t("decision.notAvailable")}
           </p>
         </div>
         <Button type="button" size="sm" variant="ghost" disabled={!available} aria-expanded={open} onClick={onToggle}>
           {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-          {open ? "Hide" : "Show"}
+          {open ? t("common.hide") : t("common.show")}
         </Button>
       </div>
+
       {available && open && (
         <div className="mt-3 space-y-4 text-sm">
           {points.map((point, index) => (
