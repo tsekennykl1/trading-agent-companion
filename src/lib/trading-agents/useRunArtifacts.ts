@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api, bridgeAssetUrl, type MarketData, type PriceChartData } from "./client";
 import { REPORT_SECTIONS, type RunRecord } from "./types";
+import { fill, useT } from "@/lib/i18n";
 
 export interface RunArtifacts {
   marketData: MarketData | null;
@@ -45,6 +46,9 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
   const givenResult = partial?.resultHtmlUrl;
   const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
   const cache = useRef<RunArtifacts>(EMPTY);
+  const t = useT();
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     cache.current = EMPTY;
@@ -74,13 +78,35 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
       return next;
     };
 
+    // Publishes a single source the moment it lands, so the chart and the
+    // market snapshot never wait for the slower report fetches.
+    const publish = (patch: Partial<RunArtifacts>) => {
+      if (!alive) return;
+      cache.current = { ...cache.current, ...patch };
+      setArtifacts(cache.current);
+    };
+
     const probe = async () => {
       const have = cache.current;
       const [market, chartData, reports, chartOk, resultOk] = await Promise.all([
-        have.marketData ? Promise.resolve(have.marketData) : api.marketData(runId, marketDataUrl).catch(() => null),
+        have.marketData
+          ? Promise.resolve(have.marketData)
+          : api
+              .marketData(runId, marketDataUrl)
+              .then((value) => {
+                if (value) publish({ marketData: value, marketDataUrl: bridgeAssetUrl(marketDataUrl) });
+                return value;
+              })
+              .catch(() => null),
         have.chartData && terminal
           ? Promise.resolve(have.chartData)
-          : api.priceChartJson(runId, chartJson).catch(() => null),
+          : api
+              .priceChartJson(runId, chartJson)
+              .then((value) => {
+                if (value) publish({ chartData: value, chartJsonUrl: bridgeAssetUrl(chartJson) });
+                return value;
+              })
+              .catch(() => null),
         loadReports(have.reports).catch(() => have.reports),
         have.chartHtmlUrl ? Promise.resolve(true) : api.artifactReady(chartHtml),
         have.resultHtmlUrl ? Promise.resolve(true) : terminal ? api.artifactReady(resultHtml) : Promise.resolve(false),
@@ -119,8 +145,8 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
 
       if (!firstPass) {
         for (const key of newReports) {
-          toast.success(`${reportLabel(key)} report is ready`, {
-            description: "Open it in the Agent reports section below.",
+          toast.success(fill(tRef.current("toast.reportReady"), { name: reportLabel(key) }), {
+            description: tRef.current("toast.reportReadyBody"),
             duration: 3000,
             closeButton: true,
           });
