@@ -208,10 +208,10 @@ export function DetailedReport({
       <header className="flex flex-wrap items-center gap-3 border-b border-rule bg-surface px-4 py-3 sm:px-5">
         <FileText className="size-4 shrink-0 text-primary" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold">Detailed report</h2>
+          <h2 className="text-base font-semibold">{t("report.title")}</h2>
           <p className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${failed ? "text-bear" : ready ? "text-bull" : "text-primary"}`}>
             {loading && <Loader2 className="size-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
-            {failed ? "Could not load the formatted report" : ready ? "Available" : "Preparing report"}
+            {failed ? t("report.failed") : ready ? t("report.available") : t("report.loading")}
           </p>
         </div>
         <a
@@ -220,25 +220,27 @@ export function DetailedReport({
           rel="noreferrer"
           className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
         >
-          Original <ExternalLink className="size-3.5" aria-hidden="true" />
+          {t("report.original")} <ExternalLink className="size-3.5" aria-hidden="true" />
         </a>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={!ready}
-          aria-expanded={open}
-          onClick={() => setOpen((current) => !current)}
-        >
-          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-          {open ? "Hide" : "Show"}
-        </Button>
+        {!expanded && (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={!ready}
+            aria-expanded={open}
+            onClick={() => setOpen((current) => !current)}
+          >
+            {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+            {open ? t("reports.hide") : t("reports.show")}
+          </Button>
+        )}
       </header>
 
       {ready && open && (
         <article
           aria-label={`${ticker} detailed analysis report`}
-          className="prose-report report-columns max-h-[44rem] min-w-0 overflow-x-auto overflow-y-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6"
+          className={`prose-report report-columns min-w-0 overflow-x-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6 ${expanded ? "" : "max-h-[44rem] overflow-y-auto"}`}
           dangerouslySetInnerHTML={{ __html: html }}
         />
       )}
