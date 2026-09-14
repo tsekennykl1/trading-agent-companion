@@ -57,7 +57,9 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
   const warnings = p?.warnings ?? [];
 
-  const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+  // Drop artifact URLs the browser cannot load (http asset on an https page).
+  const rawChartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+  const chartPngUrl = canUseBrowserUrl(rawChartPngUrl) ? rawChartPngUrl : undefined;
   const levels = chartData?.levels ?? run.decision?.levels;
   const allReports = { ...run.reports, ...(artifacts?.reports ?? {}) };
 
