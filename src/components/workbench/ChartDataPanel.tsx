@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PriceChartData } from "@/lib/trading-agents/client";
+import { fill, useT } from "@/lib/i18n";
 
 const LABELS: Record<string, string> = {
   date: "Date",
@@ -39,6 +40,7 @@ const num = (v: unknown) =>
 
 /** Shows exactly which series the engine sent and the numbers behind the chart. */
 export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const rows = chart.rows;
 
@@ -73,7 +75,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
           className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wide uppercase"
         >
           {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-          Chart data ({rows.length} sessions · {present.length} series)
+          {fill(t("data.title"), { rows: rows.length, series: present.length })}
         </button>
         <Button size="sm" variant="outline" className="ml-auto min-h-8" onClick={download}>
           <Download className="size-3.5" /> JSON
@@ -83,7 +85,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
       {open && (
         <div className="space-y-3 border-t border-rule px-3 py-3">
           <div>
-            <p className="mb-1 text-xs font-semibold">Series received</p>
+            <p className="mb-1 text-xs font-semibold">{t("data.received")}</p>
             <div className="flex flex-wrap gap-1.5">
               {present.map(([key, n]) => (
                 <span key={key} className="rounded border border-rule px-1.5 py-0.5 text-[11px]">
@@ -95,7 +97,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
 
           {missing.length > 0 && (
             <div>
-              <p className="mb-1 text-xs font-semibold">Not sent by the engine</p>
+              <p className="mb-1 text-xs font-semibold">{t("data.missing")}</p>
               <p className="text-[11px] text-muted-foreground">{missing.map((k) => LABELS[k]).join(", ")}</p>
             </div>
           )}
@@ -104,7 +106,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
             <table className="w-full text-[11px] tabular-nums">
               <thead className="sticky top-0 bg-surface">
                 <tr>
-                  <th className="px-2 py-1 text-left font-semibold">Date</th>
+                  <th className="px-2 py-1 text-left font-semibold">{t("data.date")}</th>
                   {present.map(([key]) => (
                     <th key={key} className="px-2 py-1 text-right font-semibold whitespace-nowrap">
                       {LABELS[key]}
@@ -126,7 +128,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
               </tbody>
             </table>
           </div>
-          <p className="text-[11px] text-muted-foreground">Showing the 20 most recent sessions, newest first.</p>
+          <p className="text-[11px] text-muted-foreground">{t("data.tail")}</p>
         </div>
       )}
     </div>
