@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
+import { fill, useT } from "@/lib/i18n";
+
 import type { Decision } from "@/lib/trading-agents/types";
 import { cn } from "@/lib/utils";
 
