@@ -631,9 +631,26 @@ export interface ChartRow {
   low?: number;
   close?: number;
   volume?: number;
+  volumeMa?: number;
   ema20?: number;
   ema50?: number;
+  ema12?: number;
+  ema26?: number;
+  sma20?: number;
+  sma50?: number;
+  sma200?: number;
   rsi14?: number;
+  macd?: number;
+  macdSignal?: number;
+  macdHist?: number;
+  bbUpper?: number;
+  bbMiddle?: number;
+  bbLower?: number;
+  atr14?: number;
+  stochK?: number;
+  stochD?: number;
+  obv?: number;
+  vwap?: number;
 }
 
 export interface PriceChartData {
@@ -647,8 +664,18 @@ export interface PriceChartData {
   markers?: ChartMarker[];
 }
 
+
 const numberList = (value: unknown): number[] =>
-  Array.isArray(value) ? (value.map((v) => num(v)).filter((v) => v !== undefined) as number[]) : [];
+  Array.isArray(value)
+    ? (value
+        .map((v) =>
+          v && typeof v === "object"
+            ? num((v as Record<string, unknown>)["price"] ?? (v as Record<string, unknown>)["value"] ?? (v as Record<string, unknown>)["level"])
+            : num(v),
+        )
+        .filter((v) => v !== undefined) as number[])
+    : [];
+
 
 /** Reads entry/stop/target/support/resistance from any snake- or camelCase shape. */
 export function readTradeLevels(raw: unknown): TradeLevels | undefined {
@@ -694,11 +721,35 @@ export function readChartMarkers(raw: unknown): ChartMarker[] {
   for (const item of list) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
-    const date = String(o["date"] ?? o["timestamp"] ?? "").slice(0, 10);
+    const date = String(o["date"] ?? o["t"] ?? o["time"] ?? o["timestamp"] ?? "").slice(0, 10);
     if (!date) continue;
     const rawKind = String(o["kind"] ?? o["type"] ?? o["signal"] ?? "").toLowerCase().replace(/[\s-]/g, "_");
-    const kind = MARKER_KINDS.find((k) => rawKind === k) ?? (rawKind.includes("buy") ? "buy" : rawKind.includes("sell") ? "sell" : undefined);
+    const direction = String(o["direction"] ?? "").toLowerCase();
+    const bullish = rawKind.includes("bullish") || rawKind.includes("golden") || rawKind.includes("breakout") || direction === "bullish";
+    const bearish = rawKind.includes("bearish") || rawKind.includes("death") || rawKind.includes("breakdown") || direction === "bearish";
+    const kind =
+      MARKER_KINDS.find((k) => rawKind === k) ??
+      (rawKind.includes("overbought")
+        ? "overbought"
+        : rawKind.includes("oversold")
+          ? "oversold"
+          : rawKind.includes("buy")
+            ? "buy"
+            : rawKind.includes("sell")
+              ? "sell"
+              : rawKind.includes("cross") || rawKind.includes("breakout") || rawKind.includes("breakdown")
+                ? bullish
+                  ? "cross_up"
+                  : bearish
+                    ? "cross_down"
+                    : undefined
+                : bullish
+                  ? "buy"
+                  : bearish
+                    ? "sell"
+                    : undefined);
     if (!kind) continue;
+
     const price = num(o["price"] ?? o["close"] ?? o["value"]);
     out.push({
       date,
@@ -737,19 +788,112 @@ export function readScores(raw: unknown): DecisionScores | undefined {
 }
 
 
+/** Maps a flat indicator field name (any casing/spelling) onto a ChartRow key. */
+function rowFieldFor(name: string): keyof ChartRow | undefined {
+  const n = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (n.startsWith("volumema") || n.startsWith("volma") || n === "vma") return "volumeMa";
+  if (n.includes("vwap")) return "vwap";
+  if (n.includes("obv")) return "obv";
+  if (n.includes("atr")) return "atr14";
+  if (n.includes("rsi")) return "rsi14";
+  if (n.startsWith("sma") || n.startsWith("ma")) {
+    const w = n.match(/(\d+)/)?.[1];
+    if (w === "200") return "sma200";
+    if (w === "50") return "sma50";
+    if (w === "20") return "sma20";
+    return undefined;
+  }
+  if (n.startsWith("ema")) {
+    const w = n.match(/(\d+)/)?.[1];
+    if (w === "12") return "ema12";
+    if (w === "26") return "ema26";
+    if (w === "50") return "ema50";
+    if (w === "20") return "ema20";
+    return undefined;
+  }
+  return undefined;
+}
+
+/** Multi-valued families keyed by point sub-fields. */
+const MULTI_SERIES: { match: (n: string) => boolean; fields: Record<string, keyof ChartRow> }[] = [
+  {
+    match: (n) => n.includes("macd"),
+    fields: {
+      macd: "macd",
+      value: "macd",
+      line: "macd",
+      signal: "macdSignal",
+      macdsignal: "macdSignal",
+      hist: "macdHist",
+      histogram: "macdHist",
+      macdhist: "macdHist",
+    },
+  },
+  {
+    match: (n) => n.includes("bollinger") || n.startsWith("bb"),
+    fields: { upper: "bbUpper", middle: "bbMiddle", lower: "bbLower", mid: "bbMiddle" },
+  },
+  {
+    match: (n) => n.includes("stoch"),
+    fields: { k: "stochK", d: "stochD", percentk: "stochK", percentd: "stochD", slowk: "stochK", slowd: "stochD" },
+  },
+];
+
+const pointDate = (o: Record<string, unknown>) =>
+  String(o["t"] ?? o["date"] ?? o["Date"] ?? o["time"] ?? o["timestamp"] ?? o["x"] ?? "").slice(0, 10);
+
+/**
+ * Merges the engine's grouped indicator payload (indicators / overlays /
+ * subcharts, in any nesting) into the dated chart rows.
+ */
+function mergeIndicatorSeries(source: unknown, byDate: Map<string, ChartRow>, path: string[] = []): void {
+  if (!source || typeof source !== "object") return;
+  if (Array.isArray(source)) {
+    const name = path.join("_");
+    const n = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const multi = MULTI_SERIES.find((m) => m.match(n));
+    const simpleField = rowFieldFor(name) ?? rowFieldFor(path.at(-2) ?? "");
+    if (!multi && !simpleField) return;
+    for (const item of source) {
+      if (!item || typeof item !== "object") continue;
+      const p = item as Record<string, unknown>;
+      const date = pointDate(p);
+      const row = byDate.get(date);
+      if (!row) continue;
+      if (multi) {
+        for (const [key, value] of Object.entries(p)) {
+          const target = multi.fields[key.toLowerCase().replace(/[^a-z0-9]/g, "")];
+          const v = num(value);
+          if (target && v !== undefined) (row[target] as number | undefined) = v;
+        }
+        continue;
+      }
+      const v = num(p["value"] ?? p["v"] ?? p["y"] ?? p["close"] ?? p["level"]);
+      if (v !== undefined && simpleField) (row[simpleField] as number | undefined) = v;
+    }
+    return;
+  }
+  for (const [key, value] of Object.entries(source as Record<string, unknown>)) {
+    mergeIndicatorSeries(value, byDate, [...path, key]);
+  }
+}
+
 /** Tolerant reader for the price-chart JSON artifact. */
 export function readPriceChart(raw: unknown): PriceChartData | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
+  const series = (o["series"] ?? {}) as Record<string, unknown>;
   const rowsRaw =
     (Array.isArray(o["rows"]) && o["rows"]) ||
+    (Array.isArray(o["bars"]) && o["bars"]) ||
     (Array.isArray(o["prices"]) && o["prices"]) ||
+    (Array.isArray(series["price"]) && series["price"]) ||
     (Array.isArray(o["data"]) && o["data"]) ||
     [];
   const rows = (rowsRaw as unknown[])
     .map((r) => {
       const row = (r ?? {}) as Record<string, unknown>;
-      const date = String(row["date"] ?? row["Date"] ?? row["timestamp"] ?? "").slice(0, 10);
+      const date = pointDate(row);
       if (!date) return undefined;
       const pick = (...keys: string[]) => {
         for (const k of keys) {
@@ -759,35 +903,60 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
         return undefined;
       };
       const entry: ChartRow = { date };
-      const open = pick("open", "Open");
-      const high = pick("high", "High");
-      const low = pick("low", "Low");
-      const close = pick("close", "Close");
-      const volume = pick("volume", "Volume");
-      const ema20 = pick("ema20", "EMA20", "sma20", "SMA20");
-      const ema50 = pick("ema50", "EMA50", "sma50", "SMA50");
-      const rsi14 = pick("rsi14", "RSI14", "rsi");
-      if (open !== undefined) entry.open = open;
-      if (high !== undefined) entry.high = high;
-      if (low !== undefined) entry.low = low;
-      if (close !== undefined) entry.close = close;
-      if (volume !== undefined) entry.volume = volume;
-      if (ema20 !== undefined) entry.ema20 = ema20;
-      if (ema50 !== undefined) entry.ema50 = ema50;
-      if (rsi14 !== undefined) entry.rsi14 = rsi14;
+      const simple: [keyof ChartRow, number | undefined][] = [
+        ["open", pick("open", "Open", "o")],
+        ["high", pick("high", "High", "h")],
+        ["low", pick("low", "Low", "l")],
+        ["close", pick("close", "Close", "c")],
+        ["volume", pick("volume", "Volume", "v")],
+        ["volumeMa", pick("volume_ma_20", "volumeMa", "volume_ma")],
+        ["ema20", pick("ema20", "EMA20", "ema_20")],
+        ["ema50", pick("ema50", "EMA50", "ema_50")],
+        ["ema12", pick("ema12", "EMA12", "ema_12")],
+        ["ema26", pick("ema26", "EMA26", "ema_26")],
+        ["sma20", pick("sma20", "SMA20", "sma_20")],
+        ["sma50", pick("sma50", "SMA50", "sma_50")],
+        ["sma200", pick("sma200", "SMA200", "sma_200")],
+        ["rsi14", pick("rsi14", "RSI14", "rsi_14", "rsi")],
+        ["macd", pick("macd", "MACD", "macd_line")],
+        ["macdSignal", pick("macd_signal", "macdSignal", "signal")],
+        ["macdHist", pick("macd_hist", "macdHist", "macd_histogram", "histogram")],
+        ["bbUpper", pick("bb_upper", "bbUpper", "bollinger_upper", "upper")],
+        ["bbMiddle", pick("bb_middle", "bbMiddle", "bollinger_middle", "middle")],
+        ["bbLower", pick("bb_lower", "bbLower", "bollinger_lower", "lower")],
+        ["atr14", pick("atr14", "atr_14", "atr")],
+        ["stochK", pick("stoch_k", "stochK", "k", "percent_k")],
+        ["stochD", pick("stoch_d", "stochD", "d", "percent_d")],
+        ["obv", pick("obv", "OBV")],
+        ["vwap", pick("vwap", "VWAP")],
+      ];
+      for (const [key, value] of simple) if (value !== undefined) (entry[key] as number | undefined) = value;
+      // Legacy payloads only carried SMA columns for the two moving-average lines.
+      if (entry.ema20 === undefined && entry.sma20 === undefined) {
+        const legacy = pick("SMA20");
+        if (legacy !== undefined) entry.sma20 = legacy;
+      }
       return entry;
     })
     .filter(Boolean) as ChartRow[];
 
   if (!rows.length) return null;
+
+  const byDate = new Map(rows.map((r) => [r.date, r]));
+  for (const key of ["indicators", "overlays", "subcharts"]) {
+    mergeIndicatorSeries(o[key], byDate);
+    mergeIndicatorSeries(series[key], byDate);
+  }
+
   const meta = (o["meta"] ?? {}) as Record<string, unknown>;
   const levels = readTradeLevels(o) ?? readTradeLevels(meta);
   const markers = readChartMarkers(o).length ? readChartMarkers(o) : readChartMarkers(meta);
   return {
-    ticker: String(o["ticker"] ?? meta["stock_code"] ?? ""),
+    ticker: String(o["ticker"] ?? o["symbol"] ?? meta["stock_code"] ?? ""),
     ...(typeof o["analysis_date"] === "string" ? { analysisDate: o["analysis_date"] } : {}),
     meta: {
       ...(typeof meta["stock_name"] === "string" ? { stockName: meta["stock_name"] } : {}),
+      ...(typeof meta["name"] === "string" ? { stockName: meta["name"] } : {}),
       ...(typeof meta["stock_code"] === "string" ? { stockCode: meta["stock_code"] } : {}),
       ...(num(meta["rows"]) !== undefined ? { rows: num(meta["rows"])! } : {}),
     },
@@ -796,6 +965,7 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
     ...(markers.length ? { markers } : {}),
   };
 }
+
 
 
 function reportText(value: unknown): string | null {
