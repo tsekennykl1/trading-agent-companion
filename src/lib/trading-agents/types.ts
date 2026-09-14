@@ -106,6 +106,8 @@ export interface RunPartial {
   marketDataReady?: boolean;
   chartsReady?: boolean;
   decisionReady?: boolean;
+  /** Names of the detail reports the engine has finished. */
+  reportsReady?: string[];
   stockName?: string;
   latestPrice?: number;
   latestRsi14?: number;

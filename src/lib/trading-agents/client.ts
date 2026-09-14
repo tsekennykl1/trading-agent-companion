@@ -278,6 +278,9 @@ function readPartial(
     marketDataReady: partial["market_data_ready"] === true,
     chartsReady,
     decisionReady: partial["decision_ready"] === true,
+    ...(Array.isArray(partial["reports_ready"])
+      ? { reportsReady: (partial["reports_ready"] as unknown[]).map(String) }
+      : {}),
     ...(typeof get("stock_name", "name") === "string" ? { stockName: get("stock_name", "name") as string } : {}),
     ...(num(get("latest_price", "latest_close")) !== undefined
       ? { latestPrice: num(get("latest_price", "latest_close"))! }
