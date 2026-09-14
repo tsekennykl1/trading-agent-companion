@@ -666,7 +666,16 @@ export interface PriceChartData {
 
 
 const numberList = (value: unknown): number[] =>
-  Array.isArray(value) ? (value.map((v) => num(v)).filter((v) => v !== undefined) as number[]) : [];
+  Array.isArray(value)
+    ? (value
+        .map((v) =>
+          v && typeof v === "object"
+            ? num((v as Record<string, unknown>)["price"] ?? (v as Record<string, unknown>)["value"] ?? (v as Record<string, unknown>)["level"])
+            : num(v),
+        )
+        .filter((v) => v !== undefined) as number[])
+    : [];
+
 
 /** Reads entry/stop/target/support/resistance from any snake- or camelCase shape. */
 export function readTradeLevels(raw: unknown): TradeLevels | undefined {
