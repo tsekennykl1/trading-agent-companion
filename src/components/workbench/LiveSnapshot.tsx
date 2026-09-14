@@ -85,6 +85,14 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   const toggleIndicator = (key: IndicatorKey, next: boolean) =>
     setVisible((prev) => (next ? [...new Set([...prev, key])] : prev.filter((k) => k !== key)));
 
+  const panelCount = useMemo(() => {
+    const panels = new Set(
+      INDICATORS.filter((s) => s.panel !== "price" && visible.includes(s.key) && s.has(rows)).map((s) => s.panel),
+    );
+    return panels.size;
+  }, [visible, rows]);
+
+
   useEffect(() => {
     if (!chartData && chartPngUrl) setView("image");
     if (chartData) setView("interactive");
