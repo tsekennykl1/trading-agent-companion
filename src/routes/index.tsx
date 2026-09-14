@@ -215,7 +215,7 @@ function Workbench() {
     <AppShell>
       <div
         className={`mb-5 grid min-w-0 gap-4 xl:items-start sm:mb-6 ${
-          startedAt !== null ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]" : ""
+          showExportBar ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]" : ""
         }`}
       >
         <div className="min-w-0 pt-1">
@@ -224,7 +224,7 @@ function Workbench() {
             {t("home.intro")}
           </p>
         </div>
-        {startedAt !== null && (
+        {showExportBar && (
           <ExportBar
             run={run}
             reportUrl={artifacts.resultHtmlUrl}
