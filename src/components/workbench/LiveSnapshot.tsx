@@ -49,6 +49,9 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   const warnings = p?.warnings ?? [];
 
   const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+  const levels = chartData?.levels ?? run.decision?.levels;
+  const allReports = { ...run.reports, ...(artifacts?.reports ?? {}) };
+
 
   useEffect(() => {
     if (!chartData && chartPngUrl) setView("image");
