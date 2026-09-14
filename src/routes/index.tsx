@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlaskConical, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
@@ -84,11 +84,26 @@ function Workbench() {
     return () => window.clearInterval(id);
   }, [startedAt]);
 
+  // What the user asked for on this attempt, plus the runs that already existed
+  // before it — so run discovery can never latch onto an earlier ticker's run.
+  const requestedTicker = useRef<string | null>(null);
+  const knownRunIds = useRef<Set<string>>(new Set());
+
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
-    onMutate: () => {
+    onMutate: (config: RunConfig) => {
+      requestedTicker.current = config.ticker.trim().toUpperCase();
+      setActiveRunId(null);
       setStartedAt(Date.now());
       setElapsed(0);
+      void api
+        .listRuns()
+        .then((runs) => {
+          knownRunIds.current = new Set(runs.map((r) => r.id));
+        })
+        .catch(() => {
+          knownRunIds.current = new Set();
+        });
     },
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
@@ -113,9 +128,12 @@ function Workbench() {
     const discover = async () => {
       try {
         const runs = await api.listRuns();
-        const latest = runs.at(-1) ?? runs[0];
-        if (alive && latest?.id) {
-          setActiveRunId(latest.id);
+        const want = requestedTicker.current;
+        const fresh = runs.filter((r) => !knownRunIds.current.has(r.id));
+        const match =
+          fresh.find((r) => !want || r.config.ticker.trim().toUpperCase() === want) ?? undefined;
+        if (alive && match?.id) {
+          setActiveRunId(match.id);
           setShowingSample(false);
           return;
         }
