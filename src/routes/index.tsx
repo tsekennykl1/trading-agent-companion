@@ -221,7 +221,8 @@ function Workbench() {
   const reportsReadyCount = liveRun?.partial?.reportsReady?.length ?? 0;
   const reportReady =
     run.source === "sample" ||
-    (liveRun?.status === "completed" && reportsReadyCount > 0);
+    (liveRun?.status === "completed" &&
+      (reportsReadyCount > 0 || Boolean(artifacts.resultHtmlUrl)));
   const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
 
   return (
