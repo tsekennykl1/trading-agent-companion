@@ -29,7 +29,7 @@ const LABELS: Record<string, string> = {
   stochK: "Stoch %K",
   stochD: "Stoch %D",
   obv: "OBV",
-  vwap: "VWAP",
+  vwap: "VWAP (20d)",
 };
 
 const KNOWN = Object.keys(LABELS).filter((k) => k !== "date");

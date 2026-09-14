@@ -232,9 +232,17 @@ function readPartial(
     return undefined;
   };
   const urls = (partial["chart_urls"] ?? {}) as Record<string, unknown>;
+  const art = (partial["artifacts"] ?? {}) as Record<string, unknown>;
+  const str = (...candidates: unknown[]) =>
+    candidates.find((v): v is string => typeof v === "string" && v.trim().length > 0);
   const chartsReady = partial["charts_ready"] === true;
-  const html = typeof urls["plotly"] === "string" ? urls["plotly"] : typeof urls["html"] === "string" ? urls["html"] : undefined;
-  const png = typeof urls["png"] === "string" ? urls["png"] : undefined;
+  const html = str(urls["plotly"], urls["html"], art["price_chart_html"], urls["html_legacy"], art["chart_html"]);
+  const png = str(urls["png"], art["price_chart_png"], urls["png_legacy"], art["chart_png"]);
+  const chartJson = str(partial["price_chart_json_url"], art["price_chart_json"]);
+  const marketDataUrl = str(partial["market_data_url"], art["market_data"], art["market_data_json"]);
+  const resultUrl = str(partial["result_url"], art["result_html"]);
+  const legacyPng = str(urls["png_legacy"], art["chart_png"]);
+  const legacyHtml = str(urls["html_legacy"], art["chart_html"]);
   const warnings = Array.isArray(partial["warnings"])
     ? (partial["warnings"] as unknown[]).map((w) =>
         typeof w === "string" ? w : String((w as Record<string, unknown>)?.["message"] ?? w),
@@ -265,6 +273,11 @@ function readPartial(
           chartPngUrl: bridgeAssetUrl(png ?? `/runs/${runId}/price-chart.png`),
         }
       : {}),
+    ...(chartJson ? { chartJsonUrl: bridgeAssetUrl(chartJson) } : {}),
+    ...(marketDataUrl ? { marketDataUrl: bridgeAssetUrl(marketDataUrl) } : {}),
+    ...(resultUrl ? { resultHtmlUrl: bridgeAssetUrl(resultUrl) } : {}),
+    ...(legacyPng ? { chartPngLegacyUrl: bridgeAssetUrl(legacyPng) } : {}),
+    ...(legacyHtml ? { chartHtmlLegacyUrl: bridgeAssetUrl(legacyHtml) } : {}),
     warnings,
   };
 }
@@ -582,10 +595,9 @@ export const api = {
    * Late-bound artifact: market data. 404 means "not generated yet", which is
    * returned as null rather than thrown, per the backend contract.
    */
-  marketData: async (id: string): Promise<MarketData | null> => {
-    const base = getBridgeUrl().replace(/\/$/, "");
-    const res = await fetch(`${base}/runs/${id}/market-data`, { cache: "no-store" });
-    if (res.status === 404) return null;
+  marketData: async (id: string, url?: string): Promise<MarketData | null> => {
+    const target = url ? bridgeAssetUrl(url) : bridgeAssetUrl(`/runs/${id}/market-data`);
+    const res = await fetch(target, { cache: "no-store" });
     if (!res.ok) return null;
     return readMarketData(await res.json());
   },
@@ -601,8 +613,8 @@ export const api = {
   },
 
   /** GET /runs/{id}/price-chart.json — structured chart data for React Plotly. */
-  priceChartJson: async (id: string): Promise<PriceChartData | null> => {
-    const raw = await getJson(`/runs/${id}/price-chart.json`);
+  priceChartJson: async (id: string, url?: string): Promise<PriceChartData | null> => {
+    const raw = await getJson(url ?? `/runs/${id}/price-chart.json`);
     return readPriceChart(raw);
   },
 
@@ -622,8 +634,7 @@ export const api = {
 /** GET helper that treats "not ready" (404) and network errors as null. */
 async function getJson(path: string): Promise<unknown> {
   try {
-    const base = getBridgeUrl().replace(/\/$/, "");
-    const res = await fetch(`${base}${path}`, { cache: "no-store" });
+    const res = await fetch(bridgeAssetUrl(path), { cache: "no-store" });
     if (!res.ok) return null;
     const text = await res.text();
     if (!text.trim()) return null;
@@ -669,7 +680,16 @@ export interface ChartRow {
 export interface PriceChartData {
   ticker: string;
   analysisDate?: string;
-  meta?: { stockName?: string; stockCode?: string; rows?: number };
+  meta?: {
+    stockName?: string;
+    stockCode?: string;
+    rows?: number;
+    range?: string;
+    visibleStart?: string;
+    visibleEnd?: string;
+    /** e.g. "rolling_vwap_20" — used to label the VWAP series precisely. */
+    vwapMode?: string;
+  };
   rows: ChartRow[];
   /** Optional trade levels published with the chart payload. */
   levels?: TradeLevels;
@@ -945,7 +965,7 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
         ["low", pick("low", "Low", "l")],
         ["close", pick("close", "Close", "c")],
         ["volume", pick("volume", "Volume", "v")],
-        ["volumeMa", pick("volume_ma_20", "volumeMa", "volume_ma")],
+        ["volumeMa", pick("volume_ma20", "volume_ma_20", "volumeMa", "volume_ma", "volume_sma20")],
         ["ema20", pick("ema20", "EMA20", "ema_20")],
         ["ema50", pick("ema50", "EMA50", "ema_50")],
         ["ema12", pick("ema12", "EMA12", "ema_12")],
@@ -996,6 +1016,10 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
       ...(typeof meta["name"] === "string" ? { stockName: meta["name"] } : {}),
       ...(typeof meta["stock_code"] === "string" ? { stockCode: meta["stock_code"] } : {}),
       ...(num(meta["rows"]) !== undefined ? { rows: num(meta["rows"])! } : {}),
+      ...(typeof meta["range"] === "string" ? { range: meta["range"] } : {}),
+      ...(typeof meta["visible_start"] === "string" ? { visibleStart: meta["visible_start"] } : {}),
+      ...(typeof meta["visible_end"] === "string" ? { visibleEnd: meta["visible_end"] } : {}),
+      ...(typeof meta["vwap_mode"] === "string" ? { vwapMode: meta["vwap_mode"] } : {}),
     },
     rows,
     ...(levels ? { levels } : {}),

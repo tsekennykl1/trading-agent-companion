@@ -53,7 +53,7 @@ export const INDICATORS: IndicatorSpec[] = [
     on: true,
     has: (rows) => rows.some((r) => r.bbUpper !== undefined && r.bbLower !== undefined),
   },
-  { key: "vwap", label: "VWAP", panel: "price", group: "Overlays", on: false, has: field("vwap") },
+  { key: "vwap", label: "VWAP (20-day rolling)", panel: "price", group: "Overlays", on: false, has: field("vwap") },
   { key: "levels", label: "Entry / stop / target & S-R", panel: "price", group: "Annotations", on: true, has: () => true },
   { key: "markers", label: "Signal markers", panel: "price", group: "Annotations", on: true, has: () => true },
   { key: "volume", label: "Volume", panel: "volume", group: "Panels", on: true, has: field("volume") },

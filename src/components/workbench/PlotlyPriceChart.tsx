@@ -34,7 +34,7 @@ const OVERLAY_LINES: { key: IndicatorKey; field: keyof ChartRow; name: string; c
   { key: "sma20", field: "sma20", name: "SMA 20", color: "#0891b2", dash: "dot" },
   { key: "sma50", field: "sma50", name: "SMA 50", color: "#ca8a04", dash: "dot" },
   { key: "sma200", field: "sma200", name: "SMA 200", color: "#475569" },
-  { key: "vwap", field: "vwap", name: "VWAP", color: "#be185d", dash: "dashdot" },
+  { key: "vwap", field: "vwap", name: "VWAP (20d rolling)", color: "#be185d", dash: "dashdot" },
 ];
 
 const PANEL_ORDER: PanelKey[] = ["volume", "rsi", "macd", "stoch", "atr", "obv"];

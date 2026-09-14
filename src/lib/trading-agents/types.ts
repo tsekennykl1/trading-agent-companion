@@ -116,6 +116,15 @@ export interface RunPartial {
   /** Absolute URLs to the engine's chart artifacts. */
   chartHtmlUrl?: string;
   chartPngUrl?: string;
+  /** Structured chart payload (price-chart.json). */
+  chartJsonUrl?: string;
+  /** Full market-data JSON artifact. */
+  marketDataUrl?: string;
+  /** Rich result page. */
+  resultHtmlUrl?: string;
+  /** Pre-rename artifacts, kept for migration. */
+  chartPngLegacyUrl?: string;
+  chartHtmlLegacyUrl?: string;
   warnings: string[];
 }
 
