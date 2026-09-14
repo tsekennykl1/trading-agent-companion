@@ -117,33 +117,33 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
     <section className="panel overflow-hidden">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-rule bg-surface px-4 py-4 sm:px-5">
         <h3 className="text-base font-semibold">
-          Market snapshot
+          {t("snapshot.title")}
           {stockName ? ` — ${stockName}` : ""}
         </h3>
         <span className="text-xs text-muted-foreground">
           {run.config.ticker}
           {run.config.analysisDate ? ` · ${run.config.analysisDate}` : ""}
-          {pricePoints ? ` · ${pricePoints} sessions` : ""}
+          {pricePoints ? ` · ${pricePoints} ${t("snapshot.sessions")}` : ""}
         </span>
       </div>
 
       <div className="space-y-5 p-4 sm:p-6">
         {hasMarket ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-            <Stat label="Last close" value={fmt(latestPrice)} />
+            <Stat label={t("snapshot.lastClose")} value={fmt(latestPrice)} />
             <Stat
-              label="Change"
+              label={t("snapshot.change")}
               value={typeof changePct === "number" ? `${changePct > 0 ? "+" : ""}${changePct.toFixed(2)}%` : "—"}
             />
-            <Stat label="EMA 20" value={fmt(latestEma20)} />
-            <Stat label="EMA 50" value={fmt(latestEma50)} />
-            <Stat label="RSI 14" value={fmt(latestRsi14, 1)} />
+            <Stat label={t("snapshot.ema20")} value={fmt(latestEma20)} />
+            <Stat label={t("snapshot.ema50")} value={fmt(latestEma50)} />
+            <Stat label={t("snapshot.rsi14")} value={fmt(latestRsi14, 1)} />
           </div>
         ) : (
           running && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-              Waiting for market data from the engine…
+              {t("snapshot.waitingMarket")}
             </p>
           )
         )}
@@ -170,7 +170,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                   disabled={!chartData}
                   onClick={() => setView("interactive")}
                 >
-                  <LineChart className="size-4" /> Interactive
+                  <LineChart className="size-4" /> {t("snapshot.interactive")}
                 </Button>
                 <Button
                   size="sm"
@@ -179,7 +179,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                   disabled={!chartPngUrl}
                   onClick={() => setView("image")}
                 >
-                  <ImageIcon className="size-4" /> Image
+                  <ImageIcon className="size-4" /> {t("snapshot.image")}
                 </Button>
                 {chartPngUrl && (
                   <a
@@ -188,7 +188,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     rel="noreferrer"
                     className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
-                    Open image <ExternalLink className="size-3.5" />
+                    {t("snapshot.openImage")} <ExternalLink className="size-3.5" />
                   </a>
                 )}
               </div>
@@ -200,6 +200,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     hasLevels={Boolean(levels)}
                     visible={visible}
                     onToggle={toggleIndicator}
+                    onToggleMany={toggleMany}
                   />
                   <PlotlyPriceChart
                     chart={chartData}
@@ -237,7 +238,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
           running && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-              The price chart appears here as soon as the engine has published its data.
+              {t("snapshot.waitingChart")}
             </p>
           )
         )}
