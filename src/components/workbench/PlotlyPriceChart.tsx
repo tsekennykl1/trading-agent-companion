@@ -2,6 +2,8 @@ import { Suspense, lazy, useMemo } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import type { PriceChartData } from "@/lib/trading-agents/client";
+import { deriveMarkers } from "@/lib/trading-agents/signals";
+import type { ChartMarker, TradeLevels } from "@/lib/trading-agents/types";
 
 const Plot = lazy(() => import("./plotly-lazy"));
 
@@ -14,11 +16,32 @@ function Fallback({ label }: { label: string }) {
   );
 }
 
+const MARKER_STYLE: Record<ChartMarker["kind"], { symbol: string; color: string; offset: number }> = {
+  buy: { symbol: "triangle-up", color: "#16a34a", offset: -0.025 },
+  sell: { symbol: "triangle-down", color: "#dc2626", offset: 0.025 },
+  cross_up: { symbol: "circle", color: "#2563eb", offset: -0.02 },
+  cross_down: { symbol: "circle", color: "#b45309", offset: 0.02 },
+  overbought: { symbol: "star", color: "#dc2626", offset: 0.03 },
+  oversold: { symbol: "star", color: "#16a34a", offset: -0.03 },
+};
+
 /**
  * Renders price / volume / RSI panels client-side from the engine's
- * price-chart JSON, replacing the server-rendered HTML chart artifact.
+ * price-chart JSON, plus optional trade levels and signal markers.
  */
-export function PlotlyPriceChart({ chart, height = 520 }: { chart: PriceChartData; height?: number }) {
+export function PlotlyPriceChart({
+  chart,
+  height = 520,
+  levels,
+  showMarkers = true,
+}: {
+  chart: PriceChartData;
+  height?: number;
+  /** Entry / stop / target / support / resistance drawn over the price panel. */
+  levels?: TradeLevels | undefined;
+  showMarkers?: boolean;
+}) {
+
   const { data, layout } = useMemo(() => {
     const rows = chart.rows;
     const x = rows.map((r) => r.date);
