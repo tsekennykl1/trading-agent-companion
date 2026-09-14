@@ -958,7 +958,7 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
         ["low", pick("low", "Low", "l")],
         ["close", pick("close", "Close", "c")],
         ["volume", pick("volume", "Volume", "v")],
-        ["volumeMa", pick("volume_ma_20", "volumeMa", "volume_ma")],
+        ["volumeMa", pick("volume_ma20", "volume_ma_20", "volumeMa", "volume_ma", "volume_sma20")],
         ["ema20", pick("ema20", "EMA20", "ema_20")],
         ["ema50", pick("ema50", "EMA50", "ema_50")],
         ["ema12", pick("ema12", "EMA12", "ema_12")],
