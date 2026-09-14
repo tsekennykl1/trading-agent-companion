@@ -1,5 +1,7 @@
-import { useMemo } from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 import { extractReasons } from "@/lib/trading-agents/signals";
 import { cn } from "@/lib/utils";
 
@@ -8,16 +10,26 @@ import { cn } from "@/lib/utils";
  * whichever analyst reports have already arrived.
  */
 export function SignalReasons({ reports }: { reports: Record<string, string> }) {
+  const t = useT();
+  const [open, setOpen] = useState(true);
   const { bullish, bearish } = useMemo(() => extractReasons(reports), [reports]);
   if (!bullish.length && !bearish.length) return null;
 
   return (
     <section className="panel p-4">
-      <h3 className="text-sm font-semibold">Why this signal?</h3>
-      <div className="mt-3 space-y-4">
-        <ReasonList title="Bullish" tone="bull" points={bullish} Icon={TrendingUp} />
-        <ReasonList title="Bearish" tone="bear" points={bearish} Icon={TrendingDown} />
+      <div className="flex items-center gap-3">
+        <h3 className="min-w-0 flex-1 text-sm font-semibold">Why this signal?</h3>
+        <Button type="button" size="sm" variant="ghost" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? t("reports.hide") : t("reports.show")}
+        </Button>
       </div>
+      {open && (
+        <div className="mt-3 space-y-4">
+          <ReasonList title="Bullish" tone="bull" points={bullish} Icon={TrendingUp} />
+          <ReasonList title="Bearish" tone="bear" points={bearish} Icon={TrendingDown} />
+        </div>
+      )}
     </section>
   );
 }

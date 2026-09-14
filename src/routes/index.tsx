@@ -173,6 +173,9 @@ function Workbench() {
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
+  const reportReady =
+    Boolean(run.decision) ||
+    Object.values({ ...run.reports, ...(artifacts.reports ?? {}) }).some((v) => v?.trim());
 
   return (
     <AppShell>
@@ -183,8 +186,26 @@ function Workbench() {
             {t("home.intro")}
           </p>
         </div>
-        <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
+        <ExportBar
+          run={run}
+          reportUrl={artifacts.resultHtmlUrl}
+          ready={reportReady}
+          loading={!reportReady && (analysisBusy || running)}
+        />
       </div>
+
+      {!chartReady && (
+        <div className="mb-6 min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
+          <RunForm
+            key={`top-${defaultConfig.analysisDate}`}
+            defaultConfig={defaultConfig}
+            running={running && !showingSample}
+            disabled={startRun.isPending}
+            onRun={(c) => startRun.mutate(c)}
+            onCancel={cancelRun}
+          />
+        </div>
+      )}
 
       <div className="mb-6 min-w-0">
         <LiveSnapshot run={run} artifacts={artifacts} />
@@ -198,17 +219,19 @@ function Workbench() {
 
       <div className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
-          <div className="order-1 min-w-0">
-            <RunForm
-              key={defaultConfig.analysisDate}
-              defaultConfig={defaultConfig}
-              running={running && !showingSample}
-              disabled={startRun.isPending}
-              compact
-              onRun={(c) => startRun.mutate(c)}
-              onCancel={cancelRun}
-            />
-          </div>
+          {chartReady && (
+            <div className="order-1 min-w-0">
+              <RunForm
+                key={defaultConfig.analysisDate}
+                defaultConfig={defaultConfig}
+                running={running && !showingSample}
+                disabled={startRun.isPending}
+                compact
+                onRun={(c) => startRun.mutate(c)}
+                onCancel={cancelRun}
+              />
+            </div>
+          )}
 
           {analysisBusy && (
             <section className="panel order-2 px-4 py-4 sm:px-5" role="status" aria-live="polite">

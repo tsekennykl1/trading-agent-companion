@@ -61,6 +61,7 @@ const EN = {
   "export.print": "Print / PDF",
   "export.open": "Open detailed report",
   "export.openHint": "The full engine report opens on its own page.",
+  "export.preparing": "Report in progress — exports unlock when it is ready.",
 
   "report.title": "Detailed report",
   "report.back": "Back to workbench",
@@ -260,6 +261,7 @@ const ZH: Record<TKey, string> = {
   "export.print": "列印／PDF",
   "export.open": "開啟詳細報告",
   "export.openHint": "完整的引擎報告會在獨立頁面開啟。",
+  "export.preparing": "報告產生中 — 完成後即可匯出。",
 
   "report.title": "詳細報告",
   "report.back": "返回工作台",
