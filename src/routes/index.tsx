@@ -257,7 +257,7 @@ function Workbench() {
             )}
             <StanceChart data={run.stances} />
             <ExportBar run={run} />
-            <ReportsSection run={run} />
+            <ReportsSection run={run} extraReports={artifacts.reports} />
           </div>
         </main>
       </div>
