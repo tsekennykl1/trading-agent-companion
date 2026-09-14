@@ -241,7 +241,7 @@ function Workbench() {
         {showExportBar && (
           <ExportBar
             run={run}
-            reportUrl={artifacts.resultHtmlUrl}
+            reportUrl={canUseBrowserUrl(artifacts.resultHtmlUrl) ? artifacts.resultHtmlUrl : undefined}
             ready={reportReady}
             loading={!reportReady}
           />
