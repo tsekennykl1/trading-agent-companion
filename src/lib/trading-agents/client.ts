@@ -721,11 +721,35 @@ export function readChartMarkers(raw: unknown): ChartMarker[] {
   for (const item of list) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
-    const date = String(o["date"] ?? o["timestamp"] ?? "").slice(0, 10);
+    const date = String(o["date"] ?? o["t"] ?? o["time"] ?? o["timestamp"] ?? "").slice(0, 10);
     if (!date) continue;
     const rawKind = String(o["kind"] ?? o["type"] ?? o["signal"] ?? "").toLowerCase().replace(/[\s-]/g, "_");
-    const kind = MARKER_KINDS.find((k) => rawKind === k) ?? (rawKind.includes("buy") ? "buy" : rawKind.includes("sell") ? "sell" : undefined);
+    const direction = String(o["direction"] ?? "").toLowerCase();
+    const bullish = rawKind.includes("bullish") || rawKind.includes("golden") || rawKind.includes("breakout") || direction === "bullish";
+    const bearish = rawKind.includes("bearish") || rawKind.includes("death") || rawKind.includes("breakdown") || direction === "bearish";
+    const kind =
+      MARKER_KINDS.find((k) => rawKind === k) ??
+      (rawKind.includes("overbought")
+        ? "overbought"
+        : rawKind.includes("oversold")
+          ? "oversold"
+          : rawKind.includes("buy")
+            ? "buy"
+            : rawKind.includes("sell")
+              ? "sell"
+              : rawKind.includes("cross") || rawKind.includes("breakout") || rawKind.includes("breakdown")
+                ? bullish
+                  ? "cross_up"
+                  : bearish
+                    ? "cross_down"
+                    : undefined
+                : bullish
+                  ? "buy"
+                  : bearish
+                    ? "sell"
+                    : undefined);
     if (!kind) continue;
+
     const price = num(o["price"] ?? o["close"] ?? o["value"]);
     out.push({
       date,
