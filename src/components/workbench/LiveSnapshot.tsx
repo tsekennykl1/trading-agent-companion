@@ -3,6 +3,7 @@ import { AlertTriangle, ExternalLink, ImageIcon, LineChart, Loader2 } from "luci
 import { Button } from "@/components/ui/button";
 import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
 import { IndicatorToggles } from "@/components/workbench/IndicatorToggles";
+import { ChartDataPanel } from "@/components/workbench/ChartDataPanel";
 import { DecisionCard } from "@/components/workbench/DecisionCard";
 import { SignalReasons } from "@/components/workbench/SignalReasons";
 
@@ -201,6 +202,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     levels={levels}
                     visible={visible}
                   />
+                  <ChartDataPanel chart={chartData} />
                 </>
               ) : (
 
