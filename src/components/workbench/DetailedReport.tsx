@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
+import { useT } from "@/lib/i18n";
 
 function titleCase(value: string): string {
   return value.replace(/[_-]/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
@@ -160,8 +161,18 @@ function readableArtifact(source: string): string {
   return cleanJsonLikeMarkdown(decodeString(source, 0));
 }
 
-export function DetailedReport({ url, ticker }: { url: string; ticker: string }) {
-  const [open, setOpen] = useState(false);
+export function DetailedReport({
+  url,
+  ticker,
+  expanded = false,
+}: {
+  url: string;
+  ticker: string;
+  /** Rendered on its own page: always open, no collapse control. */
+  expanded?: boolean;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(expanded);
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
