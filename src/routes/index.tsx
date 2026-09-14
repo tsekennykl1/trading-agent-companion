@@ -86,6 +86,40 @@ function Workbench() {
     return () => window.clearInterval(id);
   }, [startedAt]);
 
+  // Restore an in-flight or completed run when the user returns to the workbench
+  // (for example after viewing the detail report and clicking Back to Dashboard).
+  useEffect(() => {
+    try {
+      const savedRunId = sessionStorage.getItem("ta-active-run-id");
+      const savedStartedAt = sessionStorage.getItem("ta-started-at");
+      if (savedRunId) {
+        setActiveRunId(savedRunId);
+        setShowingSample(false);
+        if (savedStartedAt) setStartedAt(Number(savedStartedAt));
+      }
+    } catch {
+      // sessionStorage may be unavailable in some environments.
+    }
+  }, []);
+
+  // Persist the active run so it survives route navigation within the same tab.
+  useEffect(() => {
+    try {
+      if (activeRunId) {
+        sessionStorage.setItem("ta-active-run-id", activeRunId);
+      } else {
+        sessionStorage.removeItem("ta-active-run-id");
+      }
+      if (startedAt !== null) {
+        sessionStorage.setItem("ta-started-at", String(startedAt));
+      } else {
+        sessionStorage.removeItem("ta-started-at");
+      }
+    } catch {
+      // ignore
+    }
+  }, [activeRunId, startedAt]);
+
   // What the user asked for on this attempt, plus the runs that already existed
   // before it — so run discovery can never latch onto an earlier ticker's run.
   const requestedTicker = useRef<string | null>(null);
