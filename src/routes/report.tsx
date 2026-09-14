@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, FileCode2, FileText, Printer } from "lucide-react";
+import { ArrowLeft, FileCode2, FileText, Loader2, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { DetailedReport } from "@/components/workbench/DetailedReport";
@@ -54,6 +54,7 @@ function ReportPage() {
   const ticker = search.ticker;
   const t = useT();
   const [markdown, setMarkdown] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const ready = markdown.trim().length > 0;
   const title = `${t("report.title")}${ticker ? ` — ${ticker}` : ""}`;
@@ -81,15 +82,23 @@ function ReportPage() {
     setTimeout(() => win.print(), 400);
   };
 
+  const dim = ready ? "" : "pointer-events-none opacity-40 cursor-not-allowed";
+
   const actions = (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={saveMarkdown}>
+    <div className="flex flex-wrap items-center gap-1.5" aria-busy={loading} aria-live="polite">
+      {loading && (
+        <span className="mr-1 flex items-center gap-1.5 text-xs font-medium text-primary">
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          {t("report.loading")}
+        </span>
+      )}
+      <Button size="sm" variant="outline" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={saveMarkdown}>
         <FileText className="size-3.5" /> {t("export.markdown")}
       </Button>
-      <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={saveHtml}>
+      <Button size="sm" variant="outline" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={saveHtml}>
         <FileCode2 className="size-3.5" /> {t("export.html")}
       </Button>
-      <Button size="sm" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={printPdf}>
+      <Button size="sm" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={printPdf}>
         <Printer className="size-3.5" /> {t("export.print")}
       </Button>
     </div>
@@ -103,11 +112,11 @@ function ReportPage() {
             <ArrowLeft className="size-4" /> {t("report.back")}
           </Link>
         </Button>
-        <h1 className="font-display text-xl font-semibold sm:text-2xl">{title}</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
       </div>
 
       {url ? (
-        <DetailedReport url={url} ticker={ticker || "run"} expanded onContent={setMarkdown} />
+        <DetailedReport url={url} ticker={ticker || "run"} expanded onContent={setMarkdown} onLoadingChange={setLoading} />
       ) : (
         <p className="panel px-4 py-6 text-sm text-muted-foreground sm:px-5">{t("report.missing")}</p>
       )}
