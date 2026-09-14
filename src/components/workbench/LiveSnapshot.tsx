@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ExternalLink, ImageIcon, LineChart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
+import { IndicatorToggles } from "@/components/workbench/IndicatorToggles";
 import { DecisionCard } from "@/components/workbench/DecisionCard";
 import { SignalReasons } from "@/components/workbench/SignalReasons";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
+
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
