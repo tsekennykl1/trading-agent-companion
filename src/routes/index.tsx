@@ -209,6 +209,7 @@ function Workbench() {
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
   const reportReady = Boolean(artifacts.resultHtmlUrl);
+  const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
 
   return (
     <AppShell>
