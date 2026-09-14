@@ -7,7 +7,7 @@ import { DecisionCard } from "@/components/workbench/DecisionCard";
 import { SignalReasons } from "@/components/workbench/SignalReasons";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
+import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
