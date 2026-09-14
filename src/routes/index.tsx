@@ -103,7 +103,14 @@ function Workbench() {
   }, []);
 
   // Persist the active run so it survives route navigation within the same tab.
+  const persistInitialMount = useRef(true);
   useEffect(() => {
+    // Skip the very first mount so the restore effect above can read sessionStorage
+    // before this effect has a chance to clear it with the initial null state.
+    if (persistInitialMount.current) {
+      persistInitialMount.current = false;
+      return;
+    }
     try {
       if (activeRunId) {
         sessionStorage.setItem("ta-active-run-id", activeRunId);
