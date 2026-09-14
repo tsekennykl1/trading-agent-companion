@@ -36,9 +36,9 @@ function LanguageSwitch() {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   const { t } = useLanguage();
-  return (
+
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
         <div className="mx-auto grid max-w-[95%] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5">
