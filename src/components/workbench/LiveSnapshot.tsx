@@ -116,7 +116,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
         )}
 
         {chartData || chartPngUrl ? (
-          <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
+          <div className="grid min-w-0 gap-4">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -162,9 +162,15 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
             </div>
 
             {(run.decision || Object.keys(allReports).length > 0) && (
-              <div className="min-w-0 space-y-4">
-                {run.decision && <DecisionCard decision={run.decision} ticker={run.config.ticker} />}
-                <SignalReasons reports={allReports} />
+              <div className="flex min-w-0 flex-wrap gap-4">
+                {run.decision && (
+                  <div className="min-w-0 flex-1">
+                    <DecisionCard decision={run.decision} ticker={run.config.ticker} />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <SignalReasons reports={allReports} />
+                </div>
               </div>
             )}
           </div>
