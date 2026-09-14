@@ -45,7 +45,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
   const present = useMemo(() => {
     const counts = new Map<string, number>();
     for (const key of KNOWN) {
-      const n = rows.reduce((acc, r) => acc + ((r as Record<string, unknown>)[key] !== undefined ? 1 : 0), 0);
+      const n = rows.reduce((acc, r) => acc + ((r as unknown as Record<string, unknown>)[key] !== undefined ? 1 : 0), 0);
       if (n > 0) counts.set(key, n);
     }
     return [...counts.entries()];
@@ -118,7 +118,7 @@ export function ChartDataPanel({ chart }: { chart: PriceChartData }) {
                     <td className="px-2 py-1 whitespace-nowrap">{r.date}</td>
                     {present.map(([key]) => (
                       <td key={key} className="px-2 py-1 text-right">
-                        {num((r as Record<string, unknown>)[key])}
+                        {num((r as unknown as Record<string, unknown>)[key])}
                       </td>
                     ))}
                   </tr>
