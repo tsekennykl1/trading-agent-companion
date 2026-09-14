@@ -258,7 +258,7 @@ function ArtifactLinks({ run, artifacts }: { run: RunRecord; artifacts: RunArtif
   const p = run.partial;
   const items: { label: string; url: string }[] = [];
   const add = (label: string, url?: string) => {
-    if (url && !items.some((i) => i.url === url)) items.push({ label, url });
+    if (url && canUseBrowserUrl(url) && !items.some((i) => i.url === url)) items.push({ label, url });
   };
   add(t("links.marketJson"), artifacts?.marketDataUrl ?? p?.marketDataUrl);
   add(t("links.chartJson"), artifacts?.chartJsonUrl ?? p?.chartJsonUrl);
