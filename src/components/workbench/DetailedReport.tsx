@@ -212,8 +212,8 @@ function stripSystemSections(source: string): string {
   for (const rawLine of lines) {
     const headingMatch = /^(#{1,6})\s+(.+)$/.exec(rawLine);
     if (headingMatch) {
-      const level = headingMatch[1].length;
-      const title = headingMatch[2].trim();
+      const level = headingMatch[1]?.length ?? 0;
+      const title = headingMatch[2]?.trim() ?? "";
       if (isSystemKey(title)) {
         skipLevel = level;
         continue;
