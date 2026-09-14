@@ -14,9 +14,8 @@ const EN = {
   "footer.disclaimer":
     "Decision-support prototype for academic use. Not investment advice and not an autonomous trading system.",
 
-  "home.title": "Multi-agent analysis, in one workspace",
-  "home.intro":
-    "A dashboard, visual analytics and reporting layer over the TradingAgents framework — so a non-technical colleague can run an analysis, see how the agents disagreed, and take a memo to a meeting.",
+  "home.title": "Multi-Agent Financial Analysis",
+  "home.intro": "An academic workbench for TradingAgents analysis, consensus, and reporting.",
   "home.progressTitle": "Analysis in progress",
   "home.progressBody":
     "Everything the engine has finished so far appears below and keeps updating. The portfolio manager's decision arrives when the debate is complete.",
@@ -133,6 +132,7 @@ const EN = {
   "decision.heading": "{ticker} — portfolio management decision",
   "decision.confidenceLine": "Confidence {c}% · {k} consensus across agents",
   "decision.entry": "Entry",
+  "decision.target": "Target",
   "decision.stopLoss": "Stop loss",
   "decision.summary": "Executive summary",
   "decision.sizing": "Position sizing",
@@ -146,6 +146,7 @@ const EN = {
   "charts.stanceTitle": "Agent stance and consensus",
   "charts.stanceBody":
     "Interpretive score derived from each agent's output: −100 fully bearish to +100 fully bullish.",
+  "charts.stancePending": "Available when agent stance data arrives.",
   "charts.confTitle": "Recommendation confidence",
   "charts.confBody": "Confidence and agreement are interpretive proxies computed from agent alignment.",
   "charts.confidence": "confidence",
@@ -190,9 +191,8 @@ const ZH: Record<TKey, string> = {
   "footer.disclaimer":
     "此為學術用途的決策支援原型，並非投資建議，亦非自動交易系統。",
 
-  "home.title": "多代理人分析，集中於同一工作台",
-  "home.intro":
-    "以 TradingAgents 框架為基礎的儀表板、視覺化分析與報告層，讓非技術同事也能執行分析、了解各代理人的分歧，並帶一份備忘錄開會。",
+  "home.title": "多代理人金融分析",
+  "home.intro": "用於 TradingAgents 分析、共識與報告的學術工作台。",
   "home.progressTitle": "分析進行中",
   "home.progressBody":
     "引擎已完成的內容會即時顯示於下方並持續更新。投資組合經理的決策會在辯論完成後出現。",
@@ -308,6 +308,7 @@ const ZH: Record<TKey, string> = {
   "decision.heading": "{ticker} — 投資組合管理決策",
   "decision.confidenceLine": "信心度 {c}% · 代理人共識：{k}",
   "decision.entry": "進場價",
+  "decision.target": "目標價",
   "decision.stopLoss": "停損價",
   "decision.summary": "重點摘要",
   "decision.sizing": "部位配置",
@@ -320,6 +321,7 @@ const ZH: Record<TKey, string> = {
   "charts.priceBody": "分析期間的收盤價與 10-EMA、20-SMA、50-SMA 比較。",
   "charts.stanceTitle": "代理人立場與共識",
   "charts.stanceBody": "依各代理人輸出推導的評分：−100 為極度看空，+100 為極度看多。",
+  "charts.stancePending": "代理人立場資料到達後即可查看。",
   "charts.confTitle": "建議信心度",
   "charts.confBody": "信心度與一致性為依代理人立場推算的參考指標。",
   "charts.confidence": "信心度",

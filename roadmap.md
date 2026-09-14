@@ -63,3 +63,11 @@
 - [x] Keep tablet and phone layouts stacked, touch-friendly, and free of page-level overflow.
 - [x] Adjust compact form, progress, confidence, and chart sizing for their responsive containers.
 - [x] Verify laptop, iPad portrait/landscape, iPhone landscape/portrait, and a clean preview build.
+
+# Compact results and complete decision data
+
+- [x] Place report actions at the top-left of the main results column.
+- [x] Pair stance and confidence responsively, with stance opening when data arrives.
+- [x] Add collapsed summary, bullish, and bearish report controls.
+- [x] Parse and display entry, target, and stop from common backend response shapes.
+- [ ] Verify desktop/mobile presentation and a clean preview build.

@@ -23,6 +23,7 @@ const TONE: Record<string, Tone> = {
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
   const t = useT();
   const [open, setOpen] = useState(true);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [bullOpen, setBullOpen] = useState(false);
   const [bearOpen, setBearOpen] = useState(false);
   const tone = TONE[decision.action] ?? FALLBACK_TONE;
@@ -67,9 +68,10 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
                 {fill(t("decision.confidenceLine"), { c: decision.confidence, k: decision.consensus })}
               </p>
             </div>
-            <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
+            <div className="grid shrink-0 grid-cols-3 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
               {[
                 [t("decision.entry"), decision.entryPrice],
+                [t("decision.target"), decision.takeProfit],
                 [t("decision.stopLoss"), decision.stopLoss],
               ].map(([label, value]) => (
                 <div key={String(label)}>
@@ -81,10 +83,11 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
           </div>
 
           <div className="px-4 py-4 sm:px-5 sm:py-5">
-            <p className="label-caps">{t("decision.summary")}</p>
-            <div
-              className="prose-report mt-3 text-sm"
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.executiveSummary) }}
+            <DecisionNarrative
+              title={t("decision.summary")}
+              content={decision.executiveSummary}
+              open={summaryOpen}
+              onToggle={() => setSummaryOpen((value) => !value)}
             />
 
             {decision.positionSizing && (
@@ -97,7 +100,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
               </div>
             )}
 
-            <div className="mt-5 divide-y divide-rule border-y border-rule">
+            <div className="divide-y divide-rule border-y border-rule">
               <DecisionEvidence
                 title={t("decision.bull")}
                 tone="bull"
@@ -115,6 +118,40 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
             </div>
           </div>
         </div>
+      )}
+    </section>
+  );
+}
+
+function DecisionNarrative({
+  title,
+  content,
+  open,
+  onToggle,
+}: {
+  title: string;
+  content: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const t = useT();
+  const available = content.trim().length > 0;
+  return (
+    <section className="border-y border-rule py-3">
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold">{title}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {available ? t("reports.available") : t("decision.notAvailable")}
+          </p>
+        </div>
+        <Button type="button" size="sm" variant="ghost" disabled={!available} aria-expanded={open} onClick={onToggle}>
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? t("common.hide") : t("common.show")}
+        </Button>
+      </div>
+      {available && open && (
+        <div className="prose-report mt-3 text-sm" dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }} />
       )}
     </section>
   );
