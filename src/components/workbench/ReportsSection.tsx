@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
+import { useT } from "@/lib/i18n";
 import { REPORT_SECTIONS, type RunRecord } from "@/lib/trading-agents/types";
 
 export function ReportsSection({
@@ -12,6 +13,7 @@ export function ReportsSection({
   /** Reports fetched individually from the split report endpoints. */
   extraReports?: Record<string, string>;
 }) {
+  const t = useT();
   const reports: Record<string, string> = { ...(extraReports ?? {}), ...run.reports };
   for (const [key, value] of Object.entries(extraReports ?? {})) {
     if (!reports[key]?.trim() && value?.trim()) reports[key] = value;
@@ -50,13 +52,13 @@ export function ReportsSection({
     <section className="panel overflow-hidden">
       <header className="flex items-center gap-3 border-b border-rule bg-secondary px-4 py-3 sm:px-5">
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold">Agent reports</h2>
+          <h2 className="text-base font-semibold">{t("reports.title")}</h2>
           <p className="mt-0.5 text-xs text-secondary-foreground/75">
             {available.length > 0
-              ? `${available.length} report${available.length === 1 ? "" : "s"} available${running ? " so far" : ""}`
+              ? `${available.length} · ${t("reports.available")}`
               : running
-                ? "Reports are still being written by the agents."
-                : "No reports were produced for this run."}
+                ? t("reports.writing")
+                : t("reports.produced")}
           </p>
         </div>
         <Button
@@ -68,7 +70,7 @@ export function ReportsSection({
           onClick={toggleAll}
         >
           {allReadyOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-          {allReadyOpen ? "Hide All" : "Show All"}
+          {allReadyOpen ? t("reports.hideAll") : t("reports.showAll")}
         </Button>
       </header>
 
@@ -89,7 +91,7 @@ export function ReportsSection({
                     {!ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
-                    {ready ? `Available · ${section.team}` : running ? `In progress · ${section.team}` : `Not available · ${section.team}`}
+                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${section.team}`}
                   </p>
                 </div>
                 <Button
@@ -101,7 +103,7 @@ export function ReportsSection({
                   onClick={() => setOpenSections((current) => ({ ...current, [section.key]: !open }))}
                 >
                   {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-                  {open ? "Hide" : "Show"}
+                  {open ? t("reports.hide") : t("reports.show")}
                 </Button>
               </div>
               {ready && open && (
@@ -114,7 +116,7 @@ export function ReportsSection({
           );
         })}
         {sectionRows.length === 0 && (
-          <p className="px-4 py-4 text-sm text-muted-foreground sm:px-5">No report sections are available.</p>
+          <p className="px-4 py-4 text-sm text-muted-foreground sm:px-5">{t("reports.none")}</p>
         )}
       </div>
     </section>

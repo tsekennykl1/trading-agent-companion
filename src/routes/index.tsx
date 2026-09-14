@@ -10,7 +10,6 @@ import { DecisionPanel } from "@/components/workbench/DecisionPanel";
 import { ConfidenceChart, PriceChart, StanceChart } from "@/components/workbench/RunCharts";
 import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
-import { DetailedReport } from "@/components/workbench/DetailedReport";
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import { api } from "@/lib/trading-agents/client";
 import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
+import { useT } from "@/lib/i18n";
 
 const TITLE = "My Trading Agents — Financial Analysis";
 const DESCRIPTION =
@@ -44,6 +44,7 @@ function formatElapsed(seconds: number): string {
 }
 
 function Workbench() {
+  const t = useT();
   const health = useBridgeHealth();
   const engineOnline = !!health.data && !health.isError;
 
@@ -178,11 +179,9 @@ function Workbench() {
   return (
     <AppShell>
       <div className="mb-5 max-w-3xl sm:mb-7">
-        <h1 className="font-display text-2xl font-semibold sm:text-3xl">Multi-agent analysis, in one workspace</h1>
+        <h1 className="font-display text-2xl font-semibold sm:text-3xl">{t("home.title")}</h1>
         <p className="mt-2 text-muted-foreground">
-          A dashboard, visual analytics and reporting layer over the TradingAgents framework — so a
-          non-technical colleague can run an analysis, see how the agents disagreed, and take a memo to a
-          meeting.
+          {t("home.intro")}
         </p>
       </div>
 
@@ -207,10 +206,9 @@ function Workbench() {
                   <Loader2 className="size-4 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-base font-semibold sm:text-lg">Analysis in progress</h2>
+                  <h2 className="font-display text-base font-semibold sm:text-lg">{t("home.progressTitle")}</h2>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Everything the engine has finished so far appears below and keeps updating. The portfolio
-                    manager's decision arrives when the debate is complete.
+                    {t("home.progressBody")}
                   </p>
                   {liveRun?.progress && (
                     <div className="mt-3">
@@ -223,7 +221,7 @@ function Workbench() {
                       <p className="mt-2 text-xs break-words text-muted-foreground">
                         {liveRun.progress.message || liveRun.progress.stage}
                         {liveRun.progress.totalSteps > 0 &&
-                          ` · step ${liveRun.progress.step} of ${liveRun.progress.totalSteps}`}
+                          ` · ${t("home.step")} ${liveRun.progress.step} ${t("home.of")} ${liveRun.progress.totalSteps}`}
                       </p>
                     </div>
                   )}
@@ -234,7 +232,7 @@ function Workbench() {
                   )}
                   <span className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-primary">
                     <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
-                    Working on {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
+                    {t("home.workingOn")} {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
                   </span>
                 </div>
               </div>
@@ -245,13 +243,12 @@ function Workbench() {
             <div className="order-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />
               <p className="mr-auto">
-                Showing a saved sample run ({SAMPLE_RUN.config.ticker}, {SAMPLE_RUN.config.analysisDate}) so
-                the workbench is demonstrable offline.
-                {!engineOnline && " Your engine is not reachable right now."}
+                {t("home.sampleNotice")} ({SAMPLE_RUN.config.ticker}, {SAMPLE_RUN.config.analysisDate})
+                {!engineOnline && ` ${t("home.engineOffline")}`}
               </p>
               {activeRunId && (
                 <Button size="sm" variant="outline" className="col-span-2 min-h-10 w-full sm:min-h-8 sm:w-auto" onClick={() => setShowingSample(false)}>
-                  Back to live run
+                  {t("home.backToLive")}
                 </Button>
               )}
             </div>
@@ -260,7 +257,7 @@ function Workbench() {
           {run.status === "error" && (
             <div className="order-2 flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
               <Info className="size-4 shrink-0 text-destructive" />
-              <p>{run.error ?? "The engine reported an error during this run."}</p>
+              <p>{run.error ?? t("home.runError")}</p>
             </div>
           )}
 
@@ -273,8 +270,8 @@ function Workbench() {
               <ConfidenceChart decision={run.decision} stances={run.stances} />
             ) : (
               <section className="panel p-4 sm:p-5">
-                <h3 className="text-base font-semibold">Recommendation confidence</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Available once the run completes.</p>
+                <h3 className="text-base font-semibold">{t("home.confidenceTitle")}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t("home.confidenceBody")}</p>
               </section>
             )}
           </div>
@@ -297,21 +294,17 @@ function Workbench() {
             ) : (
               <section className="panel flex flex-col items-center justify-center px-5 py-8 text-center" role="status">
                 <Loader2 className="mb-3 size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-                <h2 className="font-display text-lg font-semibold">Recommendation pending</h2>
+                <h2 className="font-display text-lg font-semibold">{t("home.pendingTitle")}</h2>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  Analyst teams are reviewing the evidence. The portfolio manager's decision will appear when
-                  their debate is complete.
+                  {t("home.pendingBody")}
                 </p>
               </section>
             )}
           </div>
 
           <div className="order-7 min-w-0 space-y-6">
-            {artifacts.resultHtmlUrl && (
-              <DetailedReport url={artifacts.resultHtmlUrl} ticker={run.config.ticker} />
-            )}
             <StanceChart data={run.stances} />
-            <ExportBar run={run} />
+            <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
             <ReportsSection run={run} extraReports={artifacts.reports} />
           </div>
         </main>
