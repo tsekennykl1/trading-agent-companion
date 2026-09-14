@@ -6,6 +6,9 @@ import type {
   RunRecord,
   TradeLevels,
 } from "./types";
+import { PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
+
+export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
