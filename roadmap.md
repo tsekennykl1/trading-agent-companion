@@ -78,4 +78,4 @@
 - [x] Align stance and confidence panels and enlarge their charts.
 - [x] Place report actions beside the page title and move the market chart upward.
 - [x] Put Annotations after OBV and remove its redundant All checkbox.
-- [ ] Verify English/Traditional Chinese, desktop/mobile layouts, and a clean preview build.
+- [x] Verify English/Traditional Chinese, desktop/mobile layouts, and a clean preview build.
