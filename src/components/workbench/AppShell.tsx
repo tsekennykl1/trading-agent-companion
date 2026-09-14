@@ -1,17 +1,43 @@
 import { Link } from "@tanstack/react-router";
-import { Activity, BookOpen, LayoutDashboard, Plug } from "lucide-react";
+import { Activity, BookOpen, LayoutDashboard, Languages, Plug } from "lucide-react";
 import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
+import { useLanguage } from "@/lib/i18n";
 
 const NAV = [
-  { to: "/", label: "Workbench", icon: LayoutDashboard },
-  
-  { to: "/setup", label: "Connect engine", icon: Plug },
-  { to: "/about", label: "About the project", icon: BookOpen },
+  { to: "/", label: "nav.workbench", icon: LayoutDashboard },
+  { to: "/setup", label: "nav.setup", icon: Plug },
+  { to: "/about", label: "nav.about", icon: BookOpen },
 ] as const;
 
+function LanguageSwitch() {
+  const { lang, setLang, t } = useLanguage();
+  return (
+    <div
+      className="flex shrink-0 items-center gap-1 rounded-md border border-rule bg-surface p-0.5"
+      role="group"
+      aria-label={t("app.language")}
+    >
+      <Languages className="ml-1 size-3.5 text-muted-foreground" aria-hidden="true" />
+      {(["en", "zh"] as const).map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => setLang(code)}
+          aria-pressed={lang === code}
+          className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+            lang === code ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {code === "en" ? "EN" : "繁中"}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
