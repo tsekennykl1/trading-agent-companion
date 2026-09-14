@@ -70,9 +70,9 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
             </div>
             <div className="grid shrink-0 grid-cols-3 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
               {[
-                [t("decision.entry"), decision.entryPrice],
-                [t("decision.target"), decision.takeProfit],
-                [t("decision.stopLoss"), decision.stopLoss],
+                [t("decision.entry"), decision.entryPrice ?? decision.levels?.entry],
+                [t("decision.target"), decision.takeProfit ?? decision.levels?.takeProfit],
+                [t("decision.stopLoss"), decision.stopLoss ?? decision.levels?.stopLoss],
               ].map(([label, value]) => (
                 <div key={String(label)}>
                   <p className="label-caps">{label}</p>

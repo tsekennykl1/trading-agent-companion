@@ -70,4 +70,4 @@
 - [x] Pair stance and confidence responsively, with stance opening when data arrives.
 - [x] Add collapsed summary, bullish, and bearish report controls.
 - [x] Parse and display entry, target, and stop from common backend response shapes.
-- [ ] Verify desktop/mobile presentation and a clean preview build.
+- [x] Verify desktop/mobile presentation and a clean preview build.

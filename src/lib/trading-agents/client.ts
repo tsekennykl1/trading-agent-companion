@@ -551,7 +551,7 @@ export function normalizeRun(raw: unknown): RunRecord {
       partial["decision"],
       partial,
     ].filter((value): value is Record<string, unknown> => Boolean(value && typeof value === "object"));
-    let levels: TradeLevels | undefined;
+    let levels: TradeLevels | undefined = readTradeLevels(finalText);
     let scores: DecisionScores | undefined;
     for (const src of decisionSources) {
       levels = levels ?? readTradeLevels(src);
@@ -743,6 +743,24 @@ const numberList = (value: unknown): number[] =>
 
 /** Reads entry/stop/target/support/resistance from any snake- or camelCase shape. */
 export function readTradeLevels(raw: unknown): TradeLevels | undefined {
+  if (typeof raw === "string") {
+    const labelled = (labels: string[]) => {
+      const expression = new RegExp(`(?:${labels.join("|")})\\s*(?:price|level|zone)?\\s*[:=：-]?\\s*(?:HK\\$|USD\\$|\\$)?\\s*([0-9][0-9,]*(?:\\.[0-9]+)?)`, "i");
+      const match = raw.match(expression);
+      return match?.[1] ? num(match[1]) : undefined;
+    };
+    const entry = labelled(["entry", "entry price", "buy price", "進場價", "入場價"]);
+    const stopLoss = labelled(["stop loss", "stop-loss", "stop", "停損價", "止蝕價"]);
+    const takeProfit = labelled(["take profit", "take-profit", "target price", "target", "目標價", "止賺價"]);
+    if (entry === undefined && stopLoss === undefined && takeProfit === undefined) return undefined;
+    return {
+      ...(entry !== undefined ? { entry } : {}),
+      ...(stopLoss !== undefined ? { stopLoss } : {}),
+      ...(takeProfit !== undefined ? { takeProfit } : {}),
+      support: [],
+      resistance: [],
+    };
+  }
   if (!raw || typeof raw !== "object") return undefined;
   const o = raw as Record<string, unknown>;
   const nestedKeys = ["levels", "trade_levels", "tradeLevels", "price_levels", "priceLevels", "targets", "recommendation"];
