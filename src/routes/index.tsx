@@ -19,7 +19,7 @@ import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 
-const TITLE = "TradingAgents Workbench — Financial Analysis";
+const TITLE = "My Trading Agents — Financial Analysis";
 const DESCRIPTION =
   "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
 

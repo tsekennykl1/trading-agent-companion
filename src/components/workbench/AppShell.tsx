@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Activity className="size-4" />
             </span>
             <span className="min-w-0 leading-tight">
-              <span className="block truncate font-display text-base font-semibold">TradingAgents Workbench</span>
+              <span className="block truncate font-display text-base font-semibold">My Trading Agents</span>
               <span className="hidden truncate text-[11px] text-muted-foreground sm:block">
                 Workplace decision support for multi-agent financial analysis
               </span>

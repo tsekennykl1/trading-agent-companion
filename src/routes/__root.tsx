@@ -78,11 +78,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TradingAgents Workbench" },
+      { title: "My Trading Agents" },
       {
         name: "description",
         content:
-          "Dashboard, visual analytics and executive reporting for the TradingAgents multi-agent LLM framework.",
+          "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
