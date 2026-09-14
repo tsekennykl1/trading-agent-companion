@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/workbench/AppShell";
 
-const TITLE = "About — TradingAgents Workbench project";
+const TITLE = "About — My Trading Agents project";
 const DESCRIPTION =
-  "Project scope, design goals and evaluation plan for turning the TradingAgents multi-agent LLM framework into a workplace-ready decision support tool.";
+  "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
 
 export const Route = createFileRoute("/about")({
   head: () => ({

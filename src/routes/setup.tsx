@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DEFAULT_BRIDGE_URL, getBridgeUrl, setBridgeUrl } from "@/lib/trading-agents/client";
 
-const TITLE = "Connect your TradingAgents engine — Workbench setup";
+const TITLE = "Connect your TradingAgents engine — My Trading Agents setup";
 const DESCRIPTION =
-  "Start the local bridge next to your TradingAgents checkout and point the workbench dashboard at it to run live multi-agent analyses.";
+  "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
