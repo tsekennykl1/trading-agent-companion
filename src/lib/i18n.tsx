@@ -396,3 +396,11 @@ export function useLanguage(): LanguageValue {
 export function useT(): (key: TKey) => string {
   return useContext(LanguageContext).t;
 }
+
+/** Fills {name} placeholders in a translated template. */
+export function fill(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in vars ? String(vars[key]) : match,
+  );
+}
+
