@@ -58,11 +58,38 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   const levels = chartData?.levels ?? run.decision?.levels;
   const allReports = { ...run.reports, ...(artifacts?.reports ?? {}) };
 
+  // Which technical studies are ticked; re-seeded whenever a new payload of
+  // indicators arrives, but the user's choices stick while the run continues.
+  const rows = useMemo(() => chartData?.rows ?? [], [chartData]);
+  const availableSignature = useMemo(
+    () =>
+      rows.length
+        ? Object.keys(
+            rows.reduce<Record<string, true>>((acc, r) => {
+              for (const [k, v] of Object.entries(r)) if (v !== undefined) acc[k] = true;
+              return acc;
+            }, {}),
+          )
+            .sort()
+            .join(",")
+        : "",
+    [rows],
+  );
+  const [visible, setVisible] = useState<IndicatorKey[]>([]);
+  useEffect(() => {
+    if (!rows.length) return;
+    setVisible(defaultVisible(rows, Boolean(levels)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableSignature, Boolean(levels)]);
+
+  const toggleIndicator = (key: IndicatorKey, next: boolean) =>
+    setVisible((prev) => (next ? [...new Set([...prev, key])] : prev.filter((k) => k !== key)));
 
   useEffect(() => {
     if (!chartData && chartPngUrl) setView("image");
     if (chartData) setView("interactive");
   }, [chartData, chartPngUrl]);
+
 
   const hasMarket =
     p?.marketDataReady ||
