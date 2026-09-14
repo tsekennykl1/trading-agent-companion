@@ -595,10 +595,9 @@ export const api = {
    * Late-bound artifact: market data. 404 means "not generated yet", which is
    * returned as null rather than thrown, per the backend contract.
    */
-  marketData: async (id: string): Promise<MarketData | null> => {
-    const base = getBridgeUrl().replace(/\/$/, "");
-    const res = await fetch(`${base}/runs/${id}/market-data`, { cache: "no-store" });
-    if (res.status === 404) return null;
+  marketData: async (id: string, url?: string): Promise<MarketData | null> => {
+    const target = url ? bridgeAssetUrl(url) : bridgeAssetUrl(`/runs/${id}/market-data`);
+    const res = await fetch(target, { cache: "no-store" });
     if (!res.ok) return null;
     return readMarketData(await res.json());
   },
