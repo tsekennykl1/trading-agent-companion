@@ -70,6 +70,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     "Fundamentals Analyst": "fundamentals",
   };
   const selectedAnalysts = config.analysts.map((analyst) => analystKeys[analyst] ?? analyst);
+  const language = config.language?.trim() || "English";
   return {
     // Engine's expected schema (ticker comes from ...config below)
     model: config.deepModel,
@@ -82,6 +83,9 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
       temperature: 0.0,
       analysts: config.analysts,
       selected_analysts: selectedAnalysts,
+      language,
+      report_language: language,
+      output_language: language,
     },
     // Aliases for other bridge implementations
     ...config,
@@ -90,7 +94,11 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     quick_model: config.quickModel,
     deep_model: config.deepModel,
     selected_analysts: selectedAnalysts,
+    language,
+    report_language: language,
+    output_language: language,
   };
+
 }
 
 export interface HealthResponse {
