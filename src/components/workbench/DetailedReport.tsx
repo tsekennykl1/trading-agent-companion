@@ -22,6 +22,8 @@ const SYSTEM_KEYS = new Set([
   "rawdata",
   "raw_output",
   "raw_response",
+  "raw_result",
+  "metadata",
   "run_id",
   "runid",
   "logs",
@@ -201,8 +203,35 @@ function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): str
     .join("\n\n");
 }
 
+/** Drop Markdown/HTML sections whose headings are machine-only (Artifacts, Raw Result, etc.). */
+function stripSystemSections(source: string): string {
+  const lines = source.split("\n");
+  const output: string[] = [];
+  let skipLevel = 0;
+
+  for (const rawLine of lines) {
+    const headingMatch = /^(#{1,6})\s+(.+)$/.exec(rawLine);
+    if (headingMatch) {
+      const level = headingMatch[1]?.length ?? 0;
+      const title = headingMatch[2]?.trim() ?? "";
+      if (isSystemKey(title)) {
+        skipLevel = level;
+        continue;
+      }
+      if (skipLevel > 0 && level <= skipLevel) {
+        skipLevel = 0;
+      }
+    }
+    if (skipLevel === 0) {
+      output.push(rawLine);
+    }
+  }
+
+  return output.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function readableArtifact(source: string): string {
-  return cleanJsonLikeMarkdown(decodeString(source, 0));
+  return stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0)));
 }
 
 export function DetailedReport({

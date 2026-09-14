@@ -60,6 +60,7 @@ function Workbench() {
     setDefaultConfig((c) => ({ ...c, analysisDate: new Date().toISOString().slice(0, 10) }));
   }, []);
 
+
   const runQuery = useQuery({
     queryKey: ["run", activeRunId],
     queryFn: () => {
@@ -84,6 +85,47 @@ function Workbench() {
     const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
     return () => window.clearInterval(id);
   }, [startedAt]);
+
+  // Restore an in-flight or completed run when the user returns to the workbench
+  // (for example after viewing the detail report and clicking Back to Dashboard).
+  useEffect(() => {
+    try {
+      const savedRunId = sessionStorage.getItem("ta-active-run-id");
+      const savedStartedAt = sessionStorage.getItem("ta-started-at");
+      if (savedRunId) {
+        setActiveRunId(savedRunId);
+        setShowingSample(false);
+        if (savedStartedAt) setStartedAt(Number(savedStartedAt));
+      }
+    } catch {
+      // sessionStorage may be unavailable in some environments.
+    }
+  }, []);
+
+  // Persist the active run so it survives route navigation within the same tab.
+  const persistInitialMount = useRef(true);
+  useEffect(() => {
+    // Skip the very first mount so the restore effect above can read sessionStorage
+    // before this effect has a chance to clear it with the initial null state.
+    if (persistInitialMount.current) {
+      persistInitialMount.current = false;
+      return;
+    }
+    try {
+      if (activeRunId) {
+        sessionStorage.setItem("ta-active-run-id", activeRunId);
+      } else {
+        sessionStorage.removeItem("ta-active-run-id");
+      }
+      if (startedAt !== null) {
+        sessionStorage.setItem("ta-started-at", String(startedAt));
+      } else {
+        sessionStorage.removeItem("ta-started-at");
+      }
+    } catch {
+      // ignore
+    }
+  }, [activeRunId, startedAt]);
 
   // What the user asked for on this attempt, plus the runs that already existed
   // before it — so run discovery can never latch onto an earlier ticker's run.
@@ -174,12 +216,13 @@ function Workbench() {
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
   const reportReady = Boolean(artifacts.resultHtmlUrl);
+  const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
 
   return (
     <AppShell>
       <div
         className={`mb-5 grid min-w-0 gap-4 xl:items-start sm:mb-6 ${
-          startedAt !== null ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]" : ""
+          showExportBar ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]" : ""
         }`}
       >
         <div className="min-w-0 pt-1">
@@ -188,7 +231,7 @@ function Workbench() {
             {t("home.intro")}
           </p>
         </div>
-        {startedAt !== null && (
+        {showExportBar && (
           <ExportBar
             run={run}
             reportUrl={artifacts.resultHtmlUrl}
