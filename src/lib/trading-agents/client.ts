@@ -547,7 +547,185 @@ export const api = {
       return false;
     }
   },
+
+  /** GET /runs/{id}/price-chart.json — structured chart data for React Plotly. */
+  priceChartJson: async (id: string): Promise<PriceChartData | null> => {
+    const raw = await getJson(`/runs/${id}/price-chart.json`);
+    return readPriceChart(raw);
+  },
+
+  /** GET /runs/{id}/reports — whichever analyst reports are ready so far. */
+  reportsIndex: async (id: string): Promise<{ names: string[]; contents: Record<string, string> }> => {
+    const raw = await getJson(`/runs/${id}/reports`);
+    return readReportsIndex(raw);
+  },
+
+  /** GET /runs/{id}/reports/{name} — a single report as soon as it exists. */
+  report: async (id: string, name: string): Promise<string | null> => {
+    const raw = await getJson(`/runs/${id}/reports/${encodeURIComponent(name)}`);
+    return readReportContent(raw);
+  },
 };
+
+/** GET helper that treats "not ready" (404) and network errors as null. */
+async function getJson(path: string): Promise<unknown> {
+  try {
+    const base = getBridgeUrl().replace(/\/$/, "");
+    const res = await fetch(`${base}${path}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const text = await res.text();
+    if (!text.trim()) return null;
+    try {
+      return JSON.parse(text) as unknown;
+    } catch {
+      return text;
+    }
+  } catch {
+    return null;
+  }
+}
+
+export interface ChartRow {
+  date: string;
+  open?: number;
+  high?: number;
+  low?: number;
+  close?: number;
+  volume?: number;
+  ema20?: number;
+  ema50?: number;
+  rsi14?: number;
+}
+
+export interface PriceChartData {
+  ticker: string;
+  analysisDate?: string;
+  meta?: { stockName?: string; stockCode?: string; rows?: number };
+  rows: ChartRow[];
+}
+
+/** Tolerant reader for the price-chart JSON artifact. */
+export function readPriceChart(raw: unknown): PriceChartData | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const rowsRaw =
+    (Array.isArray(o["rows"]) && o["rows"]) ||
+    (Array.isArray(o["prices"]) && o["prices"]) ||
+    (Array.isArray(o["data"]) && o["data"]) ||
+    [];
+  const rows = (rowsRaw as unknown[])
+    .map((r) => {
+      const row = (r ?? {}) as Record<string, unknown>;
+      const date = String(row["date"] ?? row["Date"] ?? row["timestamp"] ?? "").slice(0, 10);
+      if (!date) return undefined;
+      const pick = (...keys: string[]) => {
+        for (const k of keys) {
+          const v = num(row[k]);
+          if (v !== undefined) return v;
+        }
+        return undefined;
+      };
+      const entry: ChartRow = { date };
+      const open = pick("open", "Open");
+      const high = pick("high", "High");
+      const low = pick("low", "Low");
+      const close = pick("close", "Close");
+      const volume = pick("volume", "Volume");
+      const ema20 = pick("ema20", "EMA20", "sma20", "SMA20");
+      const ema50 = pick("ema50", "EMA50", "sma50", "SMA50");
+      const rsi14 = pick("rsi14", "RSI14", "rsi");
+      if (open !== undefined) entry.open = open;
+      if (high !== undefined) entry.high = high;
+      if (low !== undefined) entry.low = low;
+      if (close !== undefined) entry.close = close;
+      if (volume !== undefined) entry.volume = volume;
+      if (ema20 !== undefined) entry.ema20 = ema20;
+      if (ema50 !== undefined) entry.ema50 = ema50;
+      if (rsi14 !== undefined) entry.rsi14 = rsi14;
+      return entry;
+    })
+    .filter(Boolean) as ChartRow[];
+
+  if (!rows.length) return null;
+  const meta = (o["meta"] ?? {}) as Record<string, unknown>;
+  return {
+    ticker: String(o["ticker"] ?? meta["stock_code"] ?? ""),
+    ...(typeof o["analysis_date"] === "string" ? { analysisDate: o["analysis_date"] } : {}),
+    meta: {
+      ...(typeof meta["stock_name"] === "string" ? { stockName: meta["stock_name"] } : {}),
+      ...(typeof meta["stock_code"] === "string" ? { stockCode: meta["stock_code"] } : {}),
+      ...(num(meta["rows"]) !== undefined ? { rows: num(meta["rows"])! } : {}),
+    },
+    rows,
+  };
+}
+
+function reportText(value: unknown): string | null {
+  if (typeof value === "string") return value.trim() ? value : null;
+  if (value && typeof value === "object") {
+    const o = value as Record<string, unknown>;
+    for (const key of ["content", "report", "text", "markdown", "body"]) {
+      const inner = o[key];
+      if (typeof inner === "string" && inner.trim()) return inner;
+    }
+  }
+  return null;
+}
+
+/** Reads a single-report response in any of the shapes the engine may use. */
+export function readReportContent(raw: unknown): string | null {
+  return reportText(raw);
+}
+
+/**
+ * Reads GET /runs/{id}/reports. The engine may return a name→content map, a
+ * wrapper object, or just a list of ready report names.
+ */
+export function readReportsIndex(raw: unknown): { names: string[]; contents: Record<string, string> } {
+  const empty = { names: [] as string[], contents: {} as Record<string, string> };
+  if (!raw) return empty;
+
+  const collect = (value: unknown): { names: string[]; contents: Record<string, string> } => {
+    if (Array.isArray(value)) {
+      const names: string[] = [];
+      const contents: Record<string, string> = {};
+      for (const item of value) {
+        if (typeof item === "string") {
+          names.push(item);
+          continue;
+        }
+        const o = (item ?? {}) as Record<string, unknown>;
+        const name = typeof o["name"] === "string" ? o["name"] : typeof o["key"] === "string" ? o["key"] : undefined;
+        if (!name) continue;
+        names.push(name);
+        const text = reportText(o);
+        if (text) contents[name] = text;
+      }
+      return { names, contents };
+    }
+    if (value && typeof value === "object") {
+      const o = value as Record<string, unknown>;
+      const names: string[] = [];
+      const contents: Record<string, string> = {};
+      for (const [key, v] of Object.entries(o)) {
+        if (v === null || v === undefined || v === false) continue;
+        names.push(key);
+        const text = reportText(v);
+        if (text) contents[key] = text;
+      }
+      return { names, contents };
+    }
+    return empty;
+  };
+
+  if (typeof raw === "object" && !Array.isArray(raw)) {
+    const o = raw as Record<string, unknown>;
+    for (const key of ["reports", "available", "ready", "items"]) {
+      if (o[key] !== undefined && o[key] !== null) return collect(o[key]);
+    }
+  }
+  return collect(raw);
+}
 
 export interface MarketData {
   prices: import("./types").PricePoint[];

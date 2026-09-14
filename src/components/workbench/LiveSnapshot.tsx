@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ExternalLink, ImageIcon, LineChart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
@@ -24,21 +26,34 @@ const fmt = (v: number | undefined, digits = 2) =>
  */
 export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
   const [view, setView] = useState<"interactive" | "image">("interactive");
+  const isMobile = useIsMobile();
   const p = run.partial;
   const market = artifacts?.marketData ?? null;
+  const chartData = artifacts?.chartData ?? null;
+  const lastRow = chartData?.rows.at(-1);
+  const prevRow = chartData?.rows.at(-2);
   const running = run.status === "running" || run.status === "queued";
 
-  const latestPrice = p?.latestPrice ?? market?.latestPrice;
-  const latestRsi14 = p?.latestRsi14 ?? market?.latestRsi14;
-  const latestEma20 = p?.latestEma20 ?? market?.latestEma20;
-  const latestEma50 = p?.latestEma50 ?? market?.latestEma50;
-  const changePct = p?.changePct ?? market?.changePct;
-  const pricePoints = p?.pricePoints ?? (market?.prices.length || undefined);
-  const stockName = p?.stockName ?? market?.stockName;
+  const latestPrice = p?.latestPrice ?? market?.latestPrice ?? lastRow?.close;
+  const latestRsi14 = p?.latestRsi14 ?? market?.latestRsi14 ?? lastRow?.rsi14;
+  const latestEma20 = p?.latestEma20 ?? market?.latestEma20 ?? lastRow?.ema20;
+  const latestEma50 = p?.latestEma50 ?? market?.latestEma50 ?? lastRow?.ema50;
+  const changePct =
+    p?.changePct ??
+    market?.changePct ??
+    (lastRow?.close !== undefined && prevRow?.close
+      ? ((lastRow.close - prevRow.close) / prevRow.close) * 100
+      : undefined);
+  const pricePoints = p?.pricePoints ?? (market?.prices.length || chartData?.rows.length || undefined);
+  const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
   const warnings = p?.warnings ?? [];
 
-  const chartHtmlUrl = artifacts?.chartHtmlUrl ?? p?.chartHtmlUrl;
   const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+
+  useEffect(() => {
+    if (!chartData && chartPngUrl) setView("image");
+    if (chartData) setView("interactive");
+  }, [chartData, chartPngUrl]);
 
   const hasMarket =
     p?.marketDataReady ||
@@ -46,7 +61,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
     latestRsi14 !== undefined ||
     latestEma20 !== undefined;
 
-  if (!hasMarket && !chartHtmlUrl && warnings.length === 0 && !running) return null;
+  if (!hasMarket && !chartData && !chartPngUrl && warnings.length === 0 && !running) return null;
 
   return (
     <section className="panel overflow-hidden">
@@ -94,13 +109,14 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
           </ul>
         )}
 
-        {chartHtmlUrl ? (
+        {chartData || chartPngUrl ? (
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant={view === "interactive" ? "default" : "outline"}
                 className="min-h-9"
+                disabled={!chartData}
                 onClick={() => setView("interactive")}
               >
                 <LineChart className="size-4" /> Interactive
@@ -109,32 +125,29 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                 size="sm"
                 variant={view === "image" ? "default" : "outline"}
                 className="min-h-9"
+                disabled={!chartPngUrl}
                 onClick={() => setView("image")}
               >
                 <ImageIcon className="size-4" /> Image
               </Button>
-              <a
-                href={chartHtmlUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                Open chart <ExternalLink className="size-3.5" />
-              </a>
+              {chartPngUrl && (
+                <a
+                  href={chartPngUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  Open image <ExternalLink className="size-3.5" />
+                </a>
+              )}
             </div>
 
-            {view === "interactive" ? (
-              <iframe
-                key={chartHtmlUrl}
-                src={chartHtmlUrl}
-                title={`${run.config.ticker} price, volume and RSI`}
-                className="h-[22rem] w-full rounded-md border border-rule bg-surface min-[480px]:h-[26rem] sm:h-[30rem] xl:h-[36rem]"
-                loading="lazy"
-              />
+            {view === "interactive" && chartData ? (
+              <PlotlyPriceChart chart={chartData} height={isMobile ? 400 : 560} />
             ) : (
               <img
                 src={chartPngUrl}
-                alt={`${run.config.ticker} price trend with moving averages`}
+                alt={`${run.config.ticker} price, volume and RSI`}
                 className="min-h-[22rem] w-full rounded-md border border-rule bg-surface object-contain min-[480px]:min-h-[26rem] sm:min-h-[30rem] xl:min-h-[36rem]"
                 loading="lazy"
               />
@@ -144,7 +157,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
           running && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-              The price chart appears here as soon as the engine has drawn it.
+              The price chart appears here as soon as the engine has published its data.
             </p>
           )
         )}
