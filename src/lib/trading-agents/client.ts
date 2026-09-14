@@ -232,9 +232,17 @@ function readPartial(
     return undefined;
   };
   const urls = (partial["chart_urls"] ?? {}) as Record<string, unknown>;
+  const art = (partial["artifacts"] ?? {}) as Record<string, unknown>;
+  const str = (...candidates: unknown[]) =>
+    candidates.find((v): v is string => typeof v === "string" && v.trim().length > 0);
   const chartsReady = partial["charts_ready"] === true;
-  const html = typeof urls["plotly"] === "string" ? urls["plotly"] : typeof urls["html"] === "string" ? urls["html"] : undefined;
-  const png = typeof urls["png"] === "string" ? urls["png"] : undefined;
+  const html = str(urls["plotly"], urls["html"], art["price_chart_html"], urls["html_legacy"], art["chart_html"]);
+  const png = str(urls["png"], art["price_chart_png"], urls["png_legacy"], art["chart_png"]);
+  const chartJson = str(partial["price_chart_json_url"], art["price_chart_json"]);
+  const marketDataUrl = str(partial["market_data_url"], art["market_data"], art["market_data_json"]);
+  const resultUrl = str(partial["result_url"], art["result_html"]);
+  const legacyPng = str(urls["png_legacy"], art["chart_png"]);
+  const legacyHtml = str(urls["html_legacy"], art["chart_html"]);
   const warnings = Array.isArray(partial["warnings"])
     ? (partial["warnings"] as unknown[]).map((w) =>
         typeof w === "string" ? w : String((w as Record<string, unknown>)?.["message"] ?? w),
