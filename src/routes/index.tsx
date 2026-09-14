@@ -128,7 +128,7 @@ function Workbench() {
   // run id arrives up front and nothing (chart, reports, progress) is polled.
   // While the start request is still open, look the run up from the run list.
   useEffect(() => {
-    if (!startRun.isPending || activeRunId) return;
+    if (!startRun.isPending || activeRunId || !runListSupported.current) return;
     let alive = true;
     let timer: number | undefined;
     const discover = async () => {
@@ -144,7 +144,10 @@ function Workbench() {
           return;
         }
       } catch {
-        /* engine has no run list — keep waiting for the POST to answer */
+        // The engine does not expose a run list. Stop asking and rely on the
+        // run id from POST /runs plus the per-run endpoints.
+        runListSupported.current = false;
+        return;
       }
       if (alive) timer = window.setTimeout(() => void discover(), 4000);
     };
