@@ -33,13 +33,13 @@ export function ExportBar({ run, reportUrl }: { run: RunRecord; reportUrl?: stri
   };
 
   return (
-    <section className="panel px-4 py-4 sm:px-5">
-      <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
-        <div className="min-w-0 flex-1">
+    <section className="panel px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="min-w-0 flex-1 basis-48">
           <p className="label-caps">{t("export.title")}</p>
-          <p className="text-sm text-muted-foreground">{t("export.body")}</p>
+          <p className="line-clamp-2 text-xs text-muted-foreground">{t("export.body")}</p>
         </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+        <div className="flex w-full flex-wrap gap-1.5 sm:w-auto">
           {reportUrl && (
             <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>

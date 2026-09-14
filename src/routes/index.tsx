@@ -176,11 +176,24 @@ function Workbench() {
 
   return (
     <AppShell>
-      <div className="mb-5 max-w-3xl sm:mb-7">
-        <h1 className="font-display text-2xl font-semibold sm:text-3xl">{t("home.title")}</h1>
-        <p className="mt-2 text-muted-foreground">
-          {t("home.intro")}
-        </p>
+      <div className="mb-5 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)] xl:items-start sm:mb-6">
+        <div className="min-w-0 pt-1">
+          <h1 className="font-display text-2xl font-semibold sm:text-3xl">{t("home.title")}</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            {t("home.intro")}
+          </p>
+        </div>
+        <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
+      </div>
+
+      <div className="mb-6 min-w-0">
+        <LiveSnapshot run={run} artifacts={artifacts} />
+        {!chartReady && (
+          <PriceChart
+            data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+            ticker={run.config.ticker}
+          />
+        )}
       </div>
 
       <div className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
@@ -266,20 +279,6 @@ function Workbench() {
         </aside>
 
         <main className="contents min-w-0 xl:flex xl:flex-col xl:gap-6">
-          <div className="order-3 min-w-0">
-            <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
-          </div>
-
-          <div className="order-4 min-w-0">
-            <LiveSnapshot run={run} artifacts={artifacts} />
-            {!chartReady && (
-              <PriceChart
-                data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
-                ticker={run.config.ticker}
-              />
-            )}
-          </div>
-
           <div className="order-5 min-w-0">
             {run.decision ? (
               <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
@@ -295,12 +294,12 @@ function Workbench() {
           </div>
 
           <div className="order-7 min-w-0 space-y-6">
-            <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
+            <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-stretch">
               <StanceChart data={run.stances} />
               {run.decision ? (
                 <ConfidenceChart decision={run.decision} stances={run.stances} />
               ) : (
-                <section className="panel p-4 sm:p-5">
+                <section className="panel h-full p-4 sm:p-5">
                   <h3 className="text-base font-semibold">{t("home.confidenceTitle")}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{t("home.confidenceBody")}</p>
                 </section>

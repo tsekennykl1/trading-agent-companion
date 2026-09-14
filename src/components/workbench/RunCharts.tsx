@@ -18,7 +18,22 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Decision, PricePoint, StancePoint } from "@/lib/trading-agents/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { fill, useT } from "@/lib/i18n";
+import { fill, useT, type TKey } from "@/lib/i18n";
+
+const AGENT_KEYS: Record<string, TKey> = {
+  "Market Analyst": "analyst.Market Analyst",
+  "Sentiment Analyst": "analyst.Sentiment Analyst",
+  "News Analyst": "analyst.News Analyst",
+  "Fundamentals Analyst": "analyst.Fundamentals Analyst",
+  "Bull Researcher": "role.Bull Researcher",
+  "Bear Researcher": "role.Bear Researcher",
+  "Research Manager": "role.Research Manager",
+  Trader: "role.Trader",
+  "Aggressive Analyst": "role.Aggressive Analyst",
+  "Conservative Analyst": "role.Conservative Analyst",
+  "Neutral Analyst": "role.Neutral Analyst",
+  "Portfolio Manager": "role.Portfolio Manager",
+};
 
 const AXIS = { stroke: "var(--muted-foreground)", fontSize: 11 };
 
@@ -64,9 +79,13 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
   useEffect(() => {
     if (data.length > 0) setOpen(true);
   }, [data.length]);
+  const localizedData = data.map((item) => {
+    const key = AGENT_KEYS[item.agent];
+    return { ...item, agentLabel: key ? t(key) : item.agent };
+  });
 
   return (
-    <section className="panel overflow-hidden">
+    <section className="panel h-full overflow-hidden">
       <div className="flex items-start gap-3 p-4 sm:p-5">
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold">{t("charts.stanceTitle")}</h3>
@@ -87,12 +106,12 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
         </Button>
       </div>
       {open && data.length > 0 && (
-        <div className="h-64 border-t border-rule px-3 pb-4 pt-3 sm:h-72 sm:px-5">
+        <div className="h-72 border-t border-rule px-3 pb-4 pt-3 sm:h-80 sm:px-5">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
+            <BarChart data={localizedData} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" horizontal={false} />
               <XAxis type="number" domain={[-100, 100]} tick={AXIS} tickLine={false} axisLine={{ stroke: "var(--rule)" }} />
-              <YAxis type="category" dataKey="agent" width={isMobile ? 82 : 124} tick={AXIS} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="agentLabel" width={isMobile ? 82 : 124} tick={AXIS} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} />
               <Bar dataKey="score" name="Stance score" radius={[3, 3, 3, 3]} barSize={14}>
                 {data.map((d) => (
@@ -128,11 +147,11 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
   const confidence = decision.confidence > 0 || stances.length === 0 ? decision.confidence : agreement;
 
   return (
-    <section className="panel p-4 sm:p-5">
+    <section className="panel flex h-full flex-col p-4 sm:p-5">
       <h3 className="text-base font-semibold">{t("charts.confTitle")}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{t("charts.confBody")}</p>
-      <div className="mt-3 flex flex-col items-center gap-3 min-[380px]:flex-row min-[380px]:gap-4 sm:gap-6">
-        <div className="relative h-40 w-40 shrink-0">
+      <div className="mt-3 flex flex-1 flex-col items-center justify-center gap-3 min-[380px]:flex-row min-[380px]:gap-4 sm:gap-6">
+        <div className="relative h-48 w-48 shrink-0 sm:h-52 sm:w-52">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               innerRadius="72%"
