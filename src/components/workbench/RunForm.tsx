@@ -65,7 +65,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       className="panel overflow-hidden"
       onSubmit={(e) => {
         e.preventDefault();
-        onRun(config);
+        const ticker = resolveTicker();
+        if (!ticker) return;
+        setConfig((c) => ({ ...c, ticker }));
+        onRun({ ...config, ticker });
       }}
     >
       <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
