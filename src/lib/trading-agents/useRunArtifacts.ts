@@ -106,7 +106,7 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
               .catch(() => null),
         loadReports(have.reports).catch(() => have.reports),
         have.chartHtmlUrl ? Promise.resolve(true) : api.artifactReady(chartHtml),
-        have.resultHtmlUrl ? Promise.resolve(true) : terminal ? api.artifactReady(resultHtml) : Promise.resolve(false),
+        have.resultHtmlUrl ? Promise.resolve(true) : api.artifactReady(resultHtml).catch(() => false),
       ]);
       if (!alive) return;
 

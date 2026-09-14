@@ -215,7 +215,10 @@ function Workbench() {
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
-  const reportReady = Boolean(artifacts.resultHtmlUrl);
+  const reportReady =
+    Boolean(artifacts.resultHtmlUrl) ||
+    Boolean(liveRun?.decision) ||
+    Object.keys(artifacts.reports).length > 0;
   const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
 
   return (
