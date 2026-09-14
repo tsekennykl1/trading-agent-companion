@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,12 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
   );
   const [tickerError, setTickerError] = useState<string | null>(null);
+
+  // The analysis date is filled in after hydration, so adopt it once it arrives.
+  useEffect(() => {
+    if (!defaultConfig.analysisDate) return;
+    setConfig((c) => (c.analysisDate ? c : { ...c, analysisDate: defaultConfig.analysisDate }));
+  }, [defaultConfig.analysisDate]);
 
   /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
   const resolveTicker = (): string | null => {

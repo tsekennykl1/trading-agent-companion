@@ -104,6 +104,43 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
 
 }
 
+/** Lightweight readiness payload from GET /runs/{id}/status. */
+export interface RunStatus {
+  runId: string;
+  status: RunRecord["status"];
+  decisionReady: boolean;
+  reportsReady: string[];
+  resultUrl?: string;
+  error?: string;
+  pollAfterMs?: number;
+  progressPercent?: number;
+  progressMessage?: string;
+}
+
+function readRunStatus(raw: unknown): RunStatus | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const rawStatus = o["status"];
+  if (typeof rawStatus !== "string") return null;
+  const progress = (o["progress"] ?? {}) as Record<string, unknown>;
+  const resultUrl = o["result_url"] ?? o["resultUrl"];
+  const reportsReady = o["reports_ready"] ?? o["reportsReady"];
+  const pollAfter = num(o["poll_after_ms"] ?? o["pollAfterMs"]);
+  const percent = num(progress["percent"]);
+  const message = progress["message"] ?? progress["stage"];
+  return {
+    runId: String(o["run_id"] ?? o["runId"] ?? ""),
+    status: canonicalStatus(rawStatus),
+    decisionReady: (o["decision_ready"] ?? o["decisionReady"]) === true,
+    reportsReady: Array.isArray(reportsReady) ? reportsReady.map(String) : [],
+    ...(typeof resultUrl === "string" && resultUrl ? { resultUrl: bridgeAssetUrl(resultUrl) } : {}),
+    ...(typeof o["error"] === "string" && o["error"] ? { error: o["error"] } : {}),
+    ...(pollAfter !== undefined ? { pollAfterMs: pollAfter } : {}),
+    ...(percent !== undefined ? { progressPercent: percent } : {}),
+    ...(typeof message === "string" && message ? { progressMessage: message } : {}),
+  };
+}
+
 export interface HealthResponse {
   status: string;
   engine_version?: string;
@@ -626,6 +663,15 @@ export const api = {
     return { run_id: id };
   },
   getRun: async (id: string) => normalizeRun(await request<unknown>(`/runs/${id}`)),
+  /**
+   * GET /runs/{id}/status — lightweight readiness poll. Returns null when the
+   * engine does not expose the endpoint, so the caller can fall back to
+   * polling the full run.
+   */
+  runStatus: async (id: string): Promise<RunStatus | null> => {
+    const raw = await getJson(`/runs/${id}/status`);
+    return readRunStatus(raw);
+  },
   listRuns: async () => {
     const raw = await request<unknown>("/runs");
     const items = Array.isArray(raw) ? raw : ((raw as { runs?: unknown[] }).runs ?? []);

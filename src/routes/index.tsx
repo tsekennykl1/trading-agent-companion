@@ -62,6 +62,27 @@ function Workbench() {
   }, []);
 
 
+  // Lightweight readiness poll (GET /runs/{id}/status). When the engine does
+  // not serve it, the full run poll below keeps its original cadence.
+  const statusSupported = useRef(true);
+  const statusQuery = useQuery({
+    queryKey: ["run-status", activeRunId],
+    queryFn: async () => {
+      if (!activeRunId) throw new Error("No active run selected");
+      const status = await api.runStatus(activeRunId);
+      if (!status) statusSupported.current = false;
+      return status;
+    },
+    enabled: !!activeRunId && statusSupported.current,
+    refetchInterval: (q) => {
+      const data = q.state.data;
+      if (!data) return false;
+      const done = data.status === "error" || (data.status === "completed" && (data.reportsReady.length > 0 || !!data.resultUrl));
+      return done ? false : (data.pollAfterMs ?? 2500);
+    },
+  });
+  const status = statusQuery.data ?? null;
+
   const runQuery = useQuery({
     queryKey: ["run", activeRunId],
     queryFn: () => {
@@ -73,10 +94,22 @@ function Workbench() {
       const data = q.state.data;
       const s = data?.status;
       if (s === "completed" || s === "error") return false;
-      // Honour the engine's suggested polling interval when it provides one.
+      // With the status endpoint available the heavy run payload is pulled
+      // rarely; otherwise honour the engine's suggested polling interval.
+      if (status) return 15000;
       return data?.pollAfterMs ?? 3000;
     },
   });
+
+  // Refresh the full run whenever the cheap status poll reports a change.
+  const statusSignature = status
+    ? `${status.status}|${status.decisionReady}|${status.reportsReady.length}|${status.resultUrl ?? ""}`
+    : "";
+  useEffect(() => {
+    if (!statusSignature || !activeRunId) return;
+    void runQuery.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusSignature, activeRunId]);
 
   // Elapsed time for the in-progress overlay
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -219,12 +252,16 @@ function Workbench() {
   // Strict readiness per the engine contract: the run must be completed AND the
   // engine must list finished detail reports (partial_result.reports_ready).
   // A partial result page or a bare decision is NOT enough.
-  const reportsReadyCount = liveRun?.partial?.reportsReady?.length ?? 0;
+  const reportsReadyCount = Math.max(
+    liveRun?.partial?.reportsReady?.length ?? 0,
+    status?.reportsReady.length ?? 0,
+  );
+  const engineStatus = status?.status ?? liveRun?.status;
   const reportReady =
-    run.source === "sample" ||
-    (liveRun?.status === "completed" &&
-      (reportsReadyCount > 0 || Boolean(artifacts.resultHtmlUrl)));
-  const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
+    engineStatus === "completed" &&
+    (reportsReadyCount > 0 || Boolean(status?.resultUrl) || Boolean(artifacts.resultHtmlUrl));
+  // The detail-report box only appears once an analysis has been started.
+  const showExportBar = startedAt !== null;
 
   return (
     <AppShell>
