@@ -4,10 +4,21 @@ import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { REPORT_SECTIONS, type RunRecord } from "@/lib/trading-agents/types";
 
-export function ReportsSection({ run }: { run: RunRecord }) {
-  const available = REPORT_SECTIONS.filter((s) => run.reports[s.key]?.trim());
-  const extra = Object.keys(run.reports).filter(
-    (k) => run.reports[k]?.trim() && !REPORT_SECTIONS.some((s) => s.key === k),
+export function ReportsSection({
+  run,
+  extraReports,
+}: {
+  run: RunRecord;
+  /** Reports fetched individually from the split report endpoints. */
+  extraReports?: Record<string, string>;
+}) {
+  const reports: Record<string, string> = { ...(extraReports ?? {}), ...run.reports };
+  for (const [key, value] of Object.entries(extraReports ?? {})) {
+    if (!reports[key]?.trim() && value?.trim()) reports[key] = value;
+  }
+  const available = REPORT_SECTIONS.filter((s) => reports[s.key]?.trim());
+  const extra = Object.keys(reports).filter(
+    (k) => reports[k]?.trim() && !REPORT_SECTIONS.some((s) => s.key === k),
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
