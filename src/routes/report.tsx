@@ -11,8 +11,8 @@ const DESCRIPTION =
 
 export const Route = createFileRoute("/report")({
   validateSearch: (search: Record<string, unknown>) => ({
-    url: typeof search.url === "string" ? search.url : "",
-    ticker: typeof search.ticker === "string" ? search.ticker : "",
+    url: typeof search["url"] === "string" ? search["url"] : "",
+    ticker: typeof search["ticker"] === "string" ? search["ticker"] : "",
   }),
   head: () => ({
     meta: [

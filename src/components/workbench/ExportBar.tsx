@@ -6,7 +6,7 @@ import { buildHtmlReport, buildMarkdownReport, downloadFile } from "@/lib/tradin
 import { useT } from "@/lib/i18n";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
-export function ExportBar({ run, reportUrl }: { run: RunRecord; reportUrl?: string }) {
+export function ExportBar({ run, reportUrl }: { run: RunRecord; reportUrl?: string | undefined }) {
   const t = useT();
   const slug = `${run.config.ticker.replace(/[^a-z0-9.]/gi, "_")}-${run.config.analysisDate}`;
 
