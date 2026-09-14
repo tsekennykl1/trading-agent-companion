@@ -631,9 +631,26 @@ export interface ChartRow {
   low?: number;
   close?: number;
   volume?: number;
+  volumeMa?: number;
   ema20?: number;
   ema50?: number;
+  ema12?: number;
+  ema26?: number;
+  sma20?: number;
+  sma50?: number;
+  sma200?: number;
   rsi14?: number;
+  macd?: number;
+  macdSignal?: number;
+  macdHist?: number;
+  bbUpper?: number;
+  bbMiddle?: number;
+  bbLower?: number;
+  atr14?: number;
+  stochK?: number;
+  stochD?: number;
+  obv?: number;
+  vwap?: number;
 }
 
 export interface PriceChartData {
@@ -646,6 +663,7 @@ export interface PriceChartData {
   /** Optional dated events published with the chart payload. */
   markers?: ChartMarker[];
 }
+
 
 const numberList = (value: unknown): number[] =>
   Array.isArray(value) ? (value.map((v) => num(v)).filter((v) => v !== undefined) as number[]) : [];
