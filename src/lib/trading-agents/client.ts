@@ -804,7 +804,10 @@ export function readScores(raw: unknown): DecisionScores | undefined {
 /** Maps a flat indicator field name (any casing/spelling) onto a ChartRow key. */
 function rowFieldFor(name: string): keyof ChartRow | undefined {
   const n = name.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (n.startsWith("volumema") || n.startsWith("volma") || n === "vma") return "volumeMa";
+  if (!n) return undefined;
+  // Volume moving average variants: volume_sma20, volume_ma_20, vol_ma...
+  if (/^(volume|vol)(sma|ma|avg)/.test(n) || /^(vma)/.test(n)) return "volumeMa";
+  if (n === "volume" || n === "vol") return "volume";
   if (n.includes("vwap")) return "vwap";
   if (n.includes("obv")) return "obv";
   if (n.includes("atr")) return "atr14";
@@ -833,7 +836,6 @@ const MULTI_SERIES: { match: (n: string) => boolean; fields: Record<string, keyo
     match: (n) => n.includes("macd"),
     fields: {
       macd: "macd",
-      value: "macd",
       line: "macd",
       signal: "macdSignal",
       macdsignal: "macdSignal",
@@ -843,7 +845,7 @@ const MULTI_SERIES: { match: (n: string) => boolean; fields: Record<string, keyo
     },
   },
   {
-    match: (n) => n.includes("bollinger") || n.startsWith("bb"),
+    match: (n) => n.includes("bollinger") || n.startsWith("bb") || n.includes("boll"),
     fields: { upper: "bbUpper", middle: "bbMiddle", lower: "bbLower", mid: "bbMiddle" },
   },
   {
@@ -852,8 +854,27 @@ const MULTI_SERIES: { match: (n: string) => boolean; fields: Record<string, keyo
   },
 ];
 
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
 const pointDate = (o: Record<string, unknown>) =>
   String(o["t"] ?? o["date"] ?? o["Date"] ?? o["time"] ?? o["timestamp"] ?? o["x"] ?? "").slice(0, 10);
+
+/**
+ * Resolves which ChartRow column an array of dated points belongs to, given the
+ * path it was found at. Handles both grouped families whose members are their
+ * own arrays (macd.signal, bollinger.upper, stochastic_14_3.k) and plain
+ * named series (overlays.sma20, subcharts.volume_sma20).
+ */
+function fieldForPath(path: string[]): keyof ChartRow | undefined {
+  const leaf = path.at(-1) ?? "";
+  const parent = path.at(-2) ?? "";
+  const family = MULTI_SERIES.find((m) => m.match(norm(parent)));
+  if (family) {
+    const sub = family.fields[norm(leaf)];
+    if (sub) return sub;
+  }
+  return rowFieldFor(leaf) ?? rowFieldFor(`${parent}_${leaf}`) ?? rowFieldFor(parent);
+}
 
 /**
  * Merges the engine's grouped indicator payload (indicators / overlays /
@@ -862,27 +883,28 @@ const pointDate = (o: Record<string, unknown>) =>
 function mergeIndicatorSeries(source: unknown, byDate: Map<string, ChartRow>, path: string[] = []): void {
   if (!source || typeof source !== "object") return;
   if (Array.isArray(source)) {
-    const name = path.join("_");
-    const n = name.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const multi = MULTI_SERIES.find((m) => m.match(n));
-    const simpleField = rowFieldFor(name) ?? rowFieldFor(path.at(-2) ?? "");
-    if (!multi && !simpleField) return;
+    const leafField = fieldForPath(path);
+    const multi = MULTI_SERIES.find((m) => m.match(norm(path.join("_"))));
+    if (!multi && !leafField) return;
     for (const item of source) {
       if (!item || typeof item !== "object") continue;
       const p = item as Record<string, unknown>;
       const date = pointDate(p);
       const row = byDate.get(date);
       if (!row) continue;
-      if (multi) {
-        for (const [key, value] of Object.entries(p)) {
-          const target = multi.fields[key.toLowerCase().replace(/[^a-z0-9]/g, "")];
-          const v = num(value);
-          if (target && v !== undefined) (row[target] as number | undefined) = v;
-        }
+      // Plain { time, value } points always win when the column is known.
+      const v = num(p["value"] ?? p["v"] ?? p["y"] ?? p["close"] ?? p["level"]);
+      if (leafField && v !== undefined) {
+        (row[leafField] as number | undefined) = v;
         continue;
       }
-      const v = num(p["value"] ?? p["v"] ?? p["y"] ?? p["close"] ?? p["level"]);
-      if (v !== undefined && simpleField) (row[simpleField] as number | undefined) = v;
+      if (multi) {
+        for (const [key, value] of Object.entries(p)) {
+          const target = multi.fields[norm(key)];
+          const n = num(value);
+          if (target && n !== undefined) (row[target] as number | undefined) = n;
+        }
+      }
     }
     return;
   }
@@ -890,6 +912,7 @@ function mergeIndicatorSeries(source: unknown, byDate: Map<string, ChartRow>, pa
     mergeIndicatorSeries(value, byDate, [...path, key]);
   }
 }
+
 
 /** Tolerant reader for the price-chart JSON artifact. */
 export function readPriceChart(raw: unknown): PriceChartData | null {
@@ -956,10 +979,11 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
   if (!rows.length) return null;
 
   const byDate = new Map(rows.map((r) => [r.date, r]));
-  for (const key of ["indicators", "overlays", "subcharts"]) {
-    mergeIndicatorSeries(o[key], byDate);
-    mergeIndicatorSeries(series[key], byDate);
+  for (const key of ["indicators", "overlays", "subcharts", "volume"]) {
+    mergeIndicatorSeries(o[key], byDate, [key]);
+    mergeIndicatorSeries(series[key], byDate, [key]);
   }
+
 
   const meta = (o["meta"] ?? {}) as Record<string, unknown>;
   const levels = readTradeLevels(o) ?? readTradeLevels(meta);
