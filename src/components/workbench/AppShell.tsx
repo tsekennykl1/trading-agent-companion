@@ -70,10 +70,12 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2 sm:ml-auto">
+          <div className="order-4 col-span-2 flex shrink-0 flex-wrap items-center gap-2 sm:order-none sm:col-auto sm:ml-auto">
+            {actions}
             <LanguageSwitch />
             <BridgeStatusBadge />
           </div>
+
         </div>
       </header>
 
