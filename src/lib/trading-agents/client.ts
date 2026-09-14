@@ -682,7 +682,16 @@ export interface ChartRow {
 export interface PriceChartData {
   ticker: string;
   analysisDate?: string;
-  meta?: { stockName?: string; stockCode?: string; rows?: number };
+  meta?: {
+    stockName?: string;
+    stockCode?: string;
+    rows?: number;
+    range?: string;
+    visibleStart?: string;
+    visibleEnd?: string;
+    /** e.g. "rolling_vwap_20" — used to label the VWAP series precisely. */
+    vwapMode?: string;
+  };
   rows: ChartRow[];
   /** Optional trade levels published with the chart payload. */
   levels?: TradeLevels;
