@@ -88,6 +88,9 @@ function Workbench() {
   // before it — so run discovery can never latch onto an earlier ticker's run.
   const requestedTicker = useRef<string | null>(null);
   const knownRunIds = useRef<Set<string>>(new Set());
+  // Some engines only serve per-run endpoints and have no run list. After the
+  // first failure we never ask for /runs again.
+  const runListSupported = useRef(true);
 
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
@@ -96,14 +99,17 @@ function Workbench() {
       setActiveRunId(null);
       setStartedAt(Date.now());
       setElapsed(0);
-      void api
-        .listRuns()
-        .then((runs) => {
-          knownRunIds.current = new Set(runs.map((r) => r.id));
-        })
-        .catch(() => {
-          knownRunIds.current = new Set();
-        });
+      knownRunIds.current = new Set();
+      if (runListSupported.current) {
+        void api
+          .listRuns()
+          .then((runs) => {
+            knownRunIds.current = new Set(runs.map((r) => r.id));
+          })
+          .catch(() => {
+            runListSupported.current = false;
+          });
+      }
     },
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
@@ -122,7 +128,7 @@ function Workbench() {
   // run id arrives up front and nothing (chart, reports, progress) is polled.
   // While the start request is still open, look the run up from the run list.
   useEffect(() => {
-    if (!startRun.isPending || activeRunId) return;
+    if (!startRun.isPending || activeRunId || !runListSupported.current) return;
     let alive = true;
     let timer: number | undefined;
     const discover = async () => {
@@ -138,7 +144,10 @@ function Workbench() {
           return;
         }
       } catch {
-        /* engine has no run list — keep waiting for the POST to answer */
+        // The engine does not expose a run list. Stop asking and rely on the
+        // run id from POST /runs plus the per-run endpoints.
+        runListSupported.current = false;
+        return;
       }
       if (alive) timer = window.setTimeout(() => void discover(), 4000);
     };
