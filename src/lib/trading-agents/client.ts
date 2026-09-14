@@ -750,6 +750,8 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
 
   if (!rows.length) return null;
   const meta = (o["meta"] ?? {}) as Record<string, unknown>;
+  const levels = readTradeLevels(o) ?? readTradeLevels(meta);
+  const markers = readChartMarkers(o).length ? readChartMarkers(o) : readChartMarkers(meta);
   return {
     ticker: String(o["ticker"] ?? meta["stock_code"] ?? ""),
     ...(typeof o["analysis_date"] === "string" ? { analysisDate: o["analysis_date"] } : {}),
@@ -759,8 +761,11 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
       ...(num(meta["rows"]) !== undefined ? { rows: num(meta["rows"])! } : {}),
     },
     rows,
+    ...(levels ? { levels } : {}),
+    ...(markers.length ? { markers } : {}),
   };
 }
+
 
 function reportText(value: unknown): string | null {
   if (typeof value === "string") return value.trim() ? value : null;
