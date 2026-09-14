@@ -53,13 +53,13 @@ const EN = {
   "ind.Panels": "Panels",
   "ind.Annotations": "Annotations",
 
-  "export.title": "Manager-facing report",
+  "export.title": "Detail Report",
   "export.body":
     "Executive summary, bull/bear points, agent contributions and the full audit trail.",
   "export.markdown": "Markdown",
   "export.html": "HTML",
   "export.print": "Print / PDF",
-  "export.open": "Open detailed report",
+  "export.open": "Detail Report",
   "export.openHint": "The full engine report opens on its own page.",
   "export.preparing": "Report in progress — exports unlock when it is ready.",
 
@@ -254,7 +254,7 @@ const ZH: Record<TKey, string> = {
   "ind.Panels": "副圖",
   "ind.Annotations": "標註",
 
-  "export.title": "管理層報告",
+  "export.title": "詳細報告",
   "export.body": "重點摘要、多空論點、各代理人貢獻與完整審計紀錄。",
   "export.markdown": "Markdown",
   "export.html": "HTML",

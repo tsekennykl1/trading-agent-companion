@@ -44,66 +44,42 @@ export function ExportBar({
     setTimeout(() => win.print(), 400);
   };
 
-  const dim = ready ? "" : "pointer-events-none opacity-40 cursor-not-allowed";
-
   return (
     <section className="panel px-4 py-3 sm:px-5" aria-busy={loading} aria-live="polite">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="min-w-0 flex-1 basis-48">
-          <p className="label-caps flex items-center gap-2 text-sm font-semibold">
+          <h2 className="flex items-center gap-2 font-display text-xl font-bold sm:text-2xl">
             {t("export.title")}
-            {loading && (
-              <Loader2
-                className="size-5 animate-spin text-primary motion-reduce:animate-none"
-                aria-hidden="true"
-              />
-            )}
-          </p>
+          </h2>
           <p className="line-clamp-2 text-xs text-muted-foreground">
             {ready ? t("export.body") : t("export.preparing")}
           </p>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
-          {loading && (
-            <span className="mr-1 flex items-center gap-1.5 text-xs font-medium text-primary">
-              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-              {t("export.preparing")}
-            </span>
-          )}
-          {reportUrl && ready && (
+        {!ready ? (
+          <div className="flex w-full items-center justify-center sm:w-auto" role="status">
+            <Loader2 className="size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+            <span className="sr-only">{t("export.preparing")}</span>
+          </div>
+        ) : (
+          <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
+            {reportUrl && (
             <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
                 <ScrollText className="size-4" /> {t("export.open")}
               </Link>
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!ready}
-            onClick={exportMarkdown}
-            className={`min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none ${dim}`}
-          >
-            <FileText className="size-4" /> {t("export.markdown")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!ready}
-            onClick={exportHtml}
-            className={`min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none ${dim}`}
-          >
-            <FileCode2 className="size-4" /> {t("export.html")}
-          </Button>
-          <Button
-            size="sm"
-            disabled={!ready}
-            onClick={printPdf}
-            className={`min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none ${dim}`}
-          >
-            <Printer className="size-4" /> {t("export.print")}
-          </Button>
-        </div>
+            )}
+            <Button variant="outline" size="sm" onClick={exportMarkdown} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+              <FileText className="size-4" /> {t("export.markdown")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportHtml} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+              <FileCode2 className="size-4" /> {t("export.html")}
+            </Button>
+            <Button size="sm" onClick={printPdf} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+              <Printer className="size-4" /> {t("export.print")}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

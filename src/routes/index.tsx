@@ -173,9 +173,7 @@ function Workbench() {
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
-  const reportReady =
-    Boolean(run.decision) ||
-    Object.values({ ...run.reports, ...(artifacts.reports ?? {}) }).some((v) => v?.trim());
+  const reportReady = Boolean(artifacts.resultHtmlUrl);
 
   return (
     <AppShell>
@@ -190,7 +188,7 @@ function Workbench() {
           run={run}
           reportUrl={artifacts.resultHtmlUrl}
           ready={reportReady}
-          loading={!reportReady && (analysisBusy || running)}
+          loading={!reportReady}
         />
       </div>
 

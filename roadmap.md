@@ -79,3 +79,12 @@
 - [x] Place report actions beside the page title and move the market chart upward.
 - [x] Put Annotations after OBV and remove its redundant All checkbox.
 - [x] Verify English/Traditional Chinese, desktop/mobile layouts, and a clean preview build.
+
+# Detail report controls and collapsible confidence
+
+- [x] Rename and enlarge the Detail Report heading.
+- [x] Hide report actions until the detailed report file is ready.
+- [x] Keep export actions at the top-right of the detail page.
+- [x] Add a Show/Hide control to Recommendation confidence.
+- [x] Enlarge and bold the New analysis heading.
+- [x] Verify ready/loading states, navigation back, responsive layouts, and a clean build.

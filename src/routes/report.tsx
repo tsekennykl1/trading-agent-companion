@@ -82,25 +82,26 @@ function ReportPage() {
     setTimeout(() => win.print(), 400);
   };
 
-  const dim = ready ? "" : "pointer-events-none opacity-40 cursor-not-allowed";
-
   const actions = (
-    <div className="flex flex-wrap items-center gap-1.5" aria-busy={loading} aria-live="polite">
-      {loading && (
-        <span className="mr-1 flex items-center gap-1.5 text-xs font-medium text-primary">
-          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+    <div className="flex flex-wrap items-center gap-1.5" aria-busy={!ready} aria-live="polite">
+      {!ready ? (
+        <span className="flex items-center gap-2 text-xs font-medium text-primary" role="status">
+          <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
           {t("report.loading")}
         </span>
+      ) : (
+        <>
+          <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" onClick={saveMarkdown}>
+            <FileText className="size-3.5" /> {t("export.markdown")}
+          </Button>
+          <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" onClick={saveHtml}>
+            <FileCode2 className="size-3.5" /> {t("export.html")}
+          </Button>
+          <Button size="sm" className="min-h-9 gap-1.5 sm:min-h-8" onClick={printPdf}>
+            <Printer className="size-3.5" /> {t("export.print")}
+          </Button>
+        </>
       )}
-      <Button size="sm" variant="outline" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={saveMarkdown}>
-        <FileText className="size-3.5" /> {t("export.markdown")}
-      </Button>
-      <Button size="sm" variant="outline" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={saveHtml}>
-        <FileCode2 className="size-3.5" /> {t("export.html")}
-      </Button>
-      <Button size="sm" className={`min-h-9 gap-1.5 sm:min-h-8 ${dim}`} disabled={!ready} onClick={printPdf}>
-        <Printer className="size-3.5" /> {t("export.print")}
-      </Button>
     </div>
   );
 

@@ -52,7 +52,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       }}
     >
       <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
-        <h2 className="text-lg font-semibold">{t("form.title")}</h2>
+        <h2 className="font-display text-xl font-bold sm:text-2xl">{t("form.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("form.subtitle")}</p>
       </header>
 
