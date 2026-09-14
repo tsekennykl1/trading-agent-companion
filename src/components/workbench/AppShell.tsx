@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="min-w-0 leading-tight">
               <span className="block truncate font-display text-base font-semibold">My Trading Agents</span>
               <span className="hidden truncate text-[11px] text-muted-foreground sm:block">
-                Workplace decision support for multi-agent financial analysis
+                {t("app.tagline")}
               </span>
             </span>
           </Link>
@@ -64,12 +64,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 activeOptions={{ exact: to === "/" }}
               >
                 <Icon className="size-3.5" />
-                {label}
+                {t(label)}
               </Link>
             ))}
           </nav>
 
-          <div className="shrink-0 sm:ml-auto">
+          <div className="flex shrink-0 items-center gap-2 sm:ml-auto">
+            <LanguageSwitch />
             <BridgeStatusBadge />
           </div>
         </div>
