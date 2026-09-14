@@ -3,7 +3,9 @@ import { FileCode2, FileText, Loader2, Printer, ScrollText } from "lucide-react"
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { buildHtmlReport, buildMarkdownReport, downloadFile } from "@/lib/trading-agents/report";
+import { useState } from "react";
 import { useT } from "@/lib/i18n";
+import { readableArtifact } from "@/components/workbench/DetailedReport";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
 export function ExportBar({
@@ -20,29 +22,50 @@ export function ExportBar({
   loading?: boolean;
 }) {
   const t = useT();
+  const [exporting, setExporting] = useState(false);
   const slug = `${run.config.ticker.replace(/[^a-z0-9.]/gi, "_")}-${run.config.analysisDate}`;
 
-  const exportMarkdown = () => {
-    downloadFile(`tradingagents-memo-${slug}.md`, buildMarkdownReport(run), "text/markdown");
-    toast.success("Markdown memo downloaded");
+  const fetchDetailedReport = async (): Promise<string> => {
+    if (!reportUrl) throw new Error("Detailed report URL is unavailable");
+    const response = await fetch(reportUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Detailed report responded ${response.status}`);
+    const markdown = readableArtifact(await response.text());
+    if (!markdown) throw new Error("Detailed report is empty");
+    return markdown;
   };
 
-  const exportHtml = () => {
-    downloadFile(`tradingagents-memo-${slug}.html`, buildHtmlReport(run), "text/html");
-    toast.success("HTML memo downloaded");
+  const withDetailedReport = async (action: (markdown: string) => void) => {
+    setExporting(true);
+    try {
+      action(await fetchDetailedReport());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Detailed report unavailable");
+    } finally {
+      setExporting(false);
+    }
   };
 
-  const printPdf = () => {
+  const exportMarkdown = () => void withDetailedReport((markdown) => {
+    downloadFile(`tradingagents-report-${slug}.md`, markdown, "text/markdown");
+    toast.success("Markdown report downloaded");
+  });
+
+  const exportHtml = () => void withDetailedReport((markdown) => {
+    downloadFile(`tradingagents-report-${slug}.html`, buildHtmlReport(run, markdown), "text/html");
+    toast.success("HTML report downloaded");
+  });
+
+  const printPdf = () => void withDetailedReport((markdown) => {
     const win = window.open("", "_blank");
     if (!win) {
       toast.error("Allow pop-ups to print the memo as PDF");
       return;
     }
-    win.document.write(buildHtmlReport(run));
+    win.document.write(buildHtmlReport(run, markdown));
     win.document.close();
     win.focus();
     setTimeout(() => win.print(), 400);
-  };
+  });
 
   return (
     <section className="panel px-4 py-3 sm:px-5" aria-busy={loading} aria-live="polite">
@@ -61,7 +84,7 @@ export function ExportBar({
             <span className="sr-only">{t("export.preparing")}</span>
           </div>
         ) : (
-          <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
+          <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto" aria-busy={exporting}>
             {reportUrl && (
             <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
@@ -69,13 +92,13 @@ export function ExportBar({
               </Link>
             </Button>
             )}
-            <Button variant="outline" size="sm" onClick={exportMarkdown} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+            <Button variant="outline" size="sm" disabled={exporting || !reportUrl} onClick={exportMarkdown} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <FileText className="size-4" /> {t("export.markdown")}
             </Button>
-            <Button variant="outline" size="sm" onClick={exportHtml} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+            <Button variant="outline" size="sm" disabled={exporting || !reportUrl} onClick={exportHtml} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <FileCode2 className="size-4" /> {t("export.html")}
             </Button>
-            <Button size="sm" onClick={printPdf} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+            <Button size="sm" disabled={exporting || !reportUrl} onClick={printPdf} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Printer className="size-4" /> {t("export.print")}
             </Button>
           </div>

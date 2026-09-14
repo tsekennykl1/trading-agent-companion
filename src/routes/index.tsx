@@ -260,6 +260,7 @@ function Workbench() {
   const reportReady =
     engineStatus === "completed" &&
     (reportsReadyCount > 0 || Boolean(status?.resultUrl) || Boolean(artifacts.resultHtmlUrl));
+  const detailReportUrl = status?.resultUrl ?? artifacts.resultHtmlUrl;
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = startedAt !== null;
 
@@ -279,7 +280,7 @@ function Workbench() {
         {showExportBar && (
           <ExportBar
             run={run}
-            reportUrl={canUseBrowserUrl(artifacts.resultHtmlUrl) ? artifacts.resultHtmlUrl : undefined}
+            reportUrl={canUseBrowserUrl(detailReportUrl) ? detailReportUrl : undefined}
             ready={reportReady}
             loading={!reportReady}
           />
