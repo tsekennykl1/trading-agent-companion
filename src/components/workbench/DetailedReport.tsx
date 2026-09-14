@@ -210,6 +210,7 @@ export function DetailedReport({
   ticker,
   expanded = false,
   onContent,
+  onLoadingChange,
 }: {
   url: string;
   ticker: string;
@@ -217,6 +218,8 @@ export function DetailedReport({
   expanded?: boolean;
   /** Receives the cleaned Markdown so a parent can offer downloads. */
   onContent?: (markdown: string) => void;
+  /** Notifies the parent when the loading state changes. */
+  onLoadingChange?: (loading: boolean) => void;
 }) {
   const t = useT();
   const [open, setOpen] = useState(expanded);
@@ -225,6 +228,12 @@ export function DetailedReport({
   const [failed, setFailed] = useState(false);
   const publish = useRef(onContent);
   publish.current = onContent;
+  const notifyLoading = useRef(onLoadingChange);
+  notifyLoading.current = onLoadingChange;
+
+  useEffect(() => {
+    notifyLoading.current?.(loading);
+  }, [loading]);
 
   useEffect(() => {
     const controller = new AbortController();
