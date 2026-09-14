@@ -1,20 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import { api, bridgeAssetUrl, type MarketData } from "./client";
-import type { RunRecord } from "./types";
+import { toast } from "sonner";
+import { api, bridgeAssetUrl, type MarketData, type PriceChartData } from "./client";
+import { REPORT_SECTIONS, type RunRecord } from "./types";
 
 export interface RunArtifacts {
   marketData: MarketData | null;
+  /** Structured chart data rendered client-side with React Plotly. */
+  chartData: PriceChartData | null;
+  /** Reports fetched one by one from the split report endpoints. */
+  reports: Record<string, string>;
   chartHtmlUrl?: string;
   chartPngUrl?: string;
   resultHtmlUrl?: string;
 }
 
-const EMPTY: RunArtifacts = { marketData: null };
+const EMPTY: RunArtifacts = { marketData: null, chartData: null, reports: {} };
+
+function reportLabel(key: string): string {
+  const known = REPORT_SECTIONS.find((s) => s.key === key);
+  if (known) return known.label;
+  return key.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 /**
- * Loads late-bound artifacts (market data, charts, rich result HTML) separately
- * from the run-status poll. A 404 simply means "not ready yet" and is retried;
- * once an artifact is found it is cached and no longer requested.
+ * Loads late-bound artifacts (market data, chart JSON, individual reports, rich
+ * result HTML) separately from the run-status poll. A 404 simply means "not
+ * ready yet" and is retried; each report is announced as soon as it arrives.
  */
 export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): RunArtifacts {
   const runId = run?.source === "engine" ? run.id : undefined;
@@ -29,15 +40,29 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
 
     let alive = true;
     let timer: number | undefined;
+    let firstPass = true;
 
     const chartHtml = bridgeAssetUrl(`/runs/${runId}/price-chart.html`);
     const chartPng = bridgeAssetUrl(`/runs/${runId}/price-chart.png`);
     const resultHtml = bridgeAssetUrl(`/runs/${runId}/result.html`);
 
+    const loadReports = async (have: Record<string, string>) => {
+      const index = await api.reportsIndex(runId);
+      const next = { ...have, ...index.contents };
+      const missing = index.names.filter((name) => !next[name]);
+      const fetched = await Promise.all(
+        missing.map(async (name) => [name, await api.report(runId, name)] as const),
+      );
+      for (const [name, content] of fetched) if (content) next[name] = content;
+      return next;
+    };
+
     const probe = async () => {
       const have = cache.current;
-      const [market, chartOk, resultOk] = await Promise.all([
+      const [market, chartData, reports, chartOk, resultOk] = await Promise.all([
         have.marketData ? Promise.resolve(have.marketData) : api.marketData(runId).catch(() => null),
+        have.chartData && terminal ? Promise.resolve(have.chartData) : api.priceChartJson(runId).catch(() => null),
+        loadReports(have.reports).catch(() => have.reports),
         have.chartHtmlUrl ? Promise.resolve(true) : api.artifactReady(chartHtml),
         have.resultHtmlUrl ? Promise.resolve(true) : terminal ? api.artifactReady(resultHtml) : Promise.resolve(false),
       ]);
@@ -45,13 +70,28 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
 
       const next: RunArtifacts = {
         marketData: market ?? have.marketData,
+        chartData: chartData ?? have.chartData,
+        reports,
         ...(chartOk ? { chartHtmlUrl: chartHtml, chartPngUrl: chartPng } : {}),
         ...(resultOk ? { resultHtmlUrl: resultHtml } : {}),
       };
+
+      const newReports = Object.keys(next.reports).filter((key) => !have.reports[key]);
       cache.current = next;
       setArtifacts(next);
 
-      const done = next.marketData && next.chartHtmlUrl && (!terminal || next.resultHtmlUrl);
+      if (!firstPass) {
+        for (const key of newReports) {
+          toast.success(`${reportLabel(key)} report is ready`, {
+            description: "Open it in the Agent reports section below.",
+            duration: 3000,
+            closeButton: true,
+          });
+        }
+      }
+      firstPass = false;
+
+      const done = terminal && next.chartData && next.resultHtmlUrl;
       if (!done) timer = window.setTimeout(() => void probe(), terminal ? 5000 : 4000);
     };
 
