@@ -99,7 +99,7 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
         ...(chartOk
           ? { chartHtmlUrl: chartHtml, chartPngUrl: chartPng }
           : have.chartHtmlUrl
-            ? { chartHtmlUrl: have.chartHtmlUrl, chartPngUrl: have.chartPngUrl }
+            ? { chartHtmlUrl: have.chartHtmlUrl, ...(have.chartPngUrl ? { chartPngUrl: have.chartPngUrl } : {}) }
             : legacyOk || have.chartPngLegacyUrl
               ? {
                   chartHtmlUrl: have.chartHtmlLegacyUrl ?? legacyHtml,
