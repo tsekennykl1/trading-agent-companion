@@ -979,10 +979,11 @@ export function readPriceChart(raw: unknown): PriceChartData | null {
   if (!rows.length) return null;
 
   const byDate = new Map(rows.map((r) => [r.date, r]));
-  for (const key of ["indicators", "overlays", "subcharts"]) {
-    mergeIndicatorSeries(o[key], byDate);
-    mergeIndicatorSeries(series[key], byDate);
+  for (const key of ["indicators", "overlays", "subcharts", "volume"]) {
+    mergeIndicatorSeries(o[key], byDate, [key]);
+    mergeIndicatorSeries(series[key], byDate, [key]);
   }
+
 
   const meta = (o["meta"] ?? {}) as Record<string, unknown>;
   const levels = readTradeLevels(o) ?? readTradeLevels(meta);
