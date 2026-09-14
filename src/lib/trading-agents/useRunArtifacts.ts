@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api, bridgeAssetUrl, type MarketData, type PriceChartData } from "./client";
 import { REPORT_SECTIONS, type RunRecord } from "./types";
-import { fill, useT } from "@/lib/i18n";
+import { fill, translate } from "@/lib/i18n";
 
 export interface RunArtifacts {
   marketData: MarketData | null;
@@ -46,9 +46,6 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
   const givenResult = partial?.resultHtmlUrl;
   const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
   const cache = useRef<RunArtifacts>(EMPTY);
-  const t = useT();
-  const tRef = useRef(t);
-  tRef.current = t;
 
   useEffect(() => {
     cache.current = EMPTY;
@@ -145,8 +142,8 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
 
       if (!firstPass) {
         for (const key of newReports) {
-          toast.success(fill(tRef.current("toast.reportReady"), { name: reportLabel(key) }), {
-            description: tRef.current("toast.reportReadyBody"),
+          toast.success(fill(translate("toast.reportReady"), { name: reportLabel(key) }), {
+            description: translate("toast.reportReadyBody"),
             duration: 3000,
             closeButton: true,
           });
