@@ -602,7 +602,101 @@ export interface PriceChartData {
   analysisDate?: string;
   meta?: { stockName?: string; stockCode?: string; rows?: number };
   rows: ChartRow[];
+  /** Optional trade levels published with the chart payload. */
+  levels?: TradeLevels;
+  /** Optional dated events published with the chart payload. */
+  markers?: ChartMarker[];
 }
+
+const numberList = (value: unknown): number[] =>
+  Array.isArray(value) ? (value.map((v) => num(v)).filter((v) => v !== undefined) as number[]) : [];
+
+/** Reads entry/stop/target/support/resistance from any snake- or camelCase shape. */
+export function readTradeLevels(raw: unknown): TradeLevels | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const nested = (o["levels"] ?? o["trade_levels"] ?? o["price_levels"]) as Record<string, unknown> | undefined;
+  const src = nested && typeof nested === "object" ? { ...o, ...nested } : o;
+  const pick = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = num(src[k]);
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+  const entry = pick("entry", "entry_price", "entryPrice", "entry_zone");
+  const stopLoss = pick("stop_loss", "stopLoss", "stop");
+  const takeProfit = pick("take_profit", "takeProfit", "target_price", "targetPrice", "target");
+  const support = numberList(src["support"] ?? src["support_levels"] ?? src["supports"]);
+  const resistance = numberList(src["resistance"] ?? src["resistance_levels"] ?? src["resistances"]);
+  if (entry === undefined && stopLoss === undefined && takeProfit === undefined && !support.length && !resistance.length) {
+    return undefined;
+  }
+  return {
+    ...(entry !== undefined ? { entry } : {}),
+    ...(stopLoss !== undefined ? { stopLoss } : {}),
+    ...(takeProfit !== undefined ? { takeProfit } : {}),
+    support,
+    resistance,
+  };
+}
+
+const MARKER_KINDS: ChartMarker["kind"][] = ["buy", "sell", "cross_up", "cross_down", "overbought", "oversold"];
+
+/** Reads dated signal events (buy/sell/crossover/RSI) when the engine sends them. */
+export function readChartMarkers(raw: unknown): ChartMarker[] {
+  const list =
+    (raw && typeof raw === "object" && (((raw as Record<string, unknown>)["markers"] ??
+      (raw as Record<string, unknown>)["events"] ??
+      (raw as Record<string, unknown>)["signals"]) as unknown)) ||
+    undefined;
+  if (!Array.isArray(list)) return [];
+  const out: ChartMarker[] = [];
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const date = String(o["date"] ?? o["timestamp"] ?? "").slice(0, 10);
+    if (!date) continue;
+    const rawKind = String(o["kind"] ?? o["type"] ?? o["signal"] ?? "").toLowerCase().replace(/[\s-]/g, "_");
+    const kind = MARKER_KINDS.find((k) => rawKind === k) ?? (rawKind.includes("buy") ? "buy" : rawKind.includes("sell") ? "sell" : undefined);
+    if (!kind) continue;
+    const price = num(o["price"] ?? o["close"] ?? o["value"]);
+    out.push({
+      date,
+      kind,
+      label: typeof o["label"] === "string" ? o["label"] : titleCase(kind),
+      ...(price !== undefined ? { price } : {}),
+    });
+  }
+  return out;
+}
+
+/** Reads bullishness / conviction / risk scores, normalising 0-1 to 0-100. */
+export function readScores(raw: unknown): DecisionScores | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const nested = (o["scores"] ?? o["sentiment"]) as Record<string, unknown> | undefined;
+  const src = nested && typeof nested === "object" ? { ...o, ...nested } : o;
+  const pick = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = num(src[k]);
+      if (v === undefined) continue;
+      const scaled = v > 0 && v <= 1 ? v * 100 : v;
+      return Math.min(100, Math.max(0, Math.round(scaled)));
+    }
+    return undefined;
+  };
+  const bullishness = pick("bullishness", "bullishness_score", "sentiment_score", "bullish_score");
+  const conviction = pick("conviction", "conviction_score");
+  const risk = pick("risk_score", "riskScore");
+  if (bullishness === undefined && conviction === undefined && risk === undefined) return undefined;
+  return {
+    ...(bullishness !== undefined ? { bullishness } : {}),
+    ...(conviction !== undefined ? { conviction } : {}),
+    ...(risk !== undefined ? { risk } : {}),
+  };
+}
+
 
 /** Tolerant reader for the price-chart JSON artifact. */
 export function readPriceChart(raw: unknown): PriceChartData | null {
