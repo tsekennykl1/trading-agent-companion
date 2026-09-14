@@ -88,6 +88,9 @@ function Workbench() {
   // before it — so run discovery can never latch onto an earlier ticker's run.
   const requestedTicker = useRef<string | null>(null);
   const knownRunIds = useRef<Set<string>>(new Set());
+  // Some engines only serve per-run endpoints and have no run list. After the
+  // first failure we never ask for /runs again.
+  const runListSupported = useRef(true);
 
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
