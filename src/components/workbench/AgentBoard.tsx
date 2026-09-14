@@ -29,6 +29,11 @@ const TEAM_KEYS: Record<string, TKey> = {
   Engine: "team.Engine",
 };
 
+function translatedValue(value: string, keys: Record<string, TKey>, t: (key: TKey) => string) {
+  const key = keys[value];
+  return key ? t(key) : value;
+}
+
 const ICONS = {
   completed: Check,
   in_progress: Loader2,
@@ -106,7 +111,7 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
           {Object.entries(teams).map(([team, list]) => (
             <div key={team} className="overflow-hidden rounded-md border border-rule">
                <div className="bg-muted/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-                 {TEAM_KEYS[team] ? t(TEAM_KEYS[team]) : team}
+                 {translatedValue(team, TEAM_KEYS, t)}
                </div>
               <div className="divide-y divide-rule">
                 {list.map((agent) => (
@@ -119,7 +124,7 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
                   >
                     <div className="min-w-0">
                       <p className={cn("break-words text-sm", agent.status === "pending" && "text-muted-foreground")}>
-                         {ROLE_KEYS[agent.agent] ? t(ROLE_KEYS[agent.agent]) : agent.agent}
+                         {translatedValue(agent.agent, ROLE_KEYS, t)}
                       </p>
                       <span className="inline-flex flex-wrap items-center gap-1.5 text-xs">
                         <StatusIcon status={agent.status} />

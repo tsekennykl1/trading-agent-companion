@@ -37,6 +37,11 @@ const TEAM_KEYS: Record<string, TKey> = {
   Engine: "team.Engine",
 };
 
+function translatedValue(value: string, keys: Record<string, TKey>, t: (key: TKey) => string) {
+  const key = keys[value];
+  return key ? t(key) : value;
+}
+
 export function ReportsSection({
   run,
   extraReports,
@@ -115,7 +120,9 @@ export function ReportsSection({
               <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold">
-                    {REPORT_LABEL_KEYS[section.key] ? t(REPORT_LABEL_KEYS[section.key]) : section.label}
+                    {translatedValue(section.key, REPORT_LABEL_KEYS, t) === section.key
+                      ? section.label
+                      : translatedValue(section.key, REPORT_LABEL_KEYS, t)}
                   </h3>
                   <p
                     className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
@@ -125,7 +132,7 @@ export function ReportsSection({
                     {!ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
-                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${TEAM_KEYS[section.team] ? t(TEAM_KEYS[section.team]) : section.team}`}
+                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
                   </p>
                 </div>
                 <Button

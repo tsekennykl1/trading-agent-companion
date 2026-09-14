@@ -79,10 +79,10 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
   useEffect(() => {
     if (data.length > 0) setOpen(true);
   }, [data.length]);
-  const localizedData = data.map((item) => ({
-    ...item,
-    agentLabel: AGENT_KEYS[item.agent] ? t(AGENT_KEYS[item.agent]) : item.agent,
-  }));
+  const localizedData = data.map((item) => {
+    const key = AGENT_KEYS[item.agent];
+    return { ...item, agentLabel: key ? t(key) : item.agent };
+  });
 
   return (
     <section className="panel h-full overflow-hidden">
