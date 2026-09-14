@@ -180,8 +180,22 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
               </div>
 
               {view === "interactive" && chartData ? (
-                <PlotlyPriceChart chart={chartData} height={isMobile ? 400 : 560} levels={levels} />
+                <>
+                  <IndicatorToggles
+                    rows={rows}
+                    hasLevels={Boolean(levels)}
+                    visible={visible}
+                    onToggle={toggleIndicator}
+                  />
+                  <PlotlyPriceChart
+                    chart={chartData}
+                    height={(isMobile ? 360 : 480) + panelCount * 90}
+                    levels={levels}
+                    visible={visible}
+                  />
+                </>
               ) : (
+
                 <img
                   src={chartPngUrl}
                   alt={`${run.config.ticker} price, volume and RSI`}
