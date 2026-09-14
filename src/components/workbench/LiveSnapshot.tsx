@@ -9,6 +9,7 @@ import { SignalReasons } from "@/components/workbench/SignalReasons";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
+import { useT } from "@/lib/i18n";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
@@ -32,6 +33,7 @@ const fmt = (v: number | undefined, digits = 2) =>
  * either one appears the moment it exists.
  */
 export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
+  const t = useT();
   const [view, setView] = useState<"interactive" | "image">("interactive");
   const isMobile = useIsMobile();
   const p = run.partial;
@@ -85,6 +87,9 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
 
   const toggleIndicator = (key: IndicatorKey, next: boolean) =>
     setVisible((prev) => (next ? [...new Set([...prev, key])] : prev.filter((k) => k !== key)));
+
+  const toggleMany = (keys: IndicatorKey[], next: boolean) =>
+    setVisible((prev) => (next ? [...new Set([...prev, ...keys])] : prev.filter((k) => !keys.includes(k))));
 
   const panelCount = useMemo(() => {
     const panels = new Set(
