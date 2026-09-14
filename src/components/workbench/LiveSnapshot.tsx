@@ -10,6 +10,7 @@ import { SignalReasons } from "@/components/workbench/SignalReasons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import { useT } from "@/lib/i18n";
+import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
