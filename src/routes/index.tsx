@@ -128,9 +128,12 @@ function Workbench() {
     const discover = async () => {
       try {
         const runs = await api.listRuns();
-        const latest = runs.at(-1) ?? runs[0];
-        if (alive && latest?.id) {
-          setActiveRunId(latest.id);
+        const want = requestedTicker.current;
+        const fresh = runs.filter((r) => !knownRunIds.current.has(r.id));
+        const match =
+          fresh.find((r) => !want || r.config.ticker.trim().toUpperCase() === want) ?? undefined;
+        if (alive && match?.id) {
+          setActiveRunId(match.id);
           setShowingSample(false);
           return;
         }
