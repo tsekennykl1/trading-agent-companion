@@ -222,7 +222,23 @@ export function bridgeAssetUrl(path: string): string {
 }
 
 function num(v: unknown): number | undefined {
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const normalized = v.replace(/,/g, "");
+    const match = normalized.match(/-?\d+(?:\.\d+)?/);
+    if (match) {
+      const parsed = Number(match[0]);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    for (const key of ["value", "price", "level", "mid", "lower", "min", "from"]) {
+      const parsed = num(o[key]);
+      if (parsed !== undefined) return parsed;
+    }
+  }
+  return undefined;
 }
 
 /** Read the engine's partial_result (plus nested summary_cards / chart_urls). */
@@ -525,10 +541,17 @@ export function normalizeRun(raw: unknown): RunRecord {
   // finished, so a completed run without a structured decision never leaves
   // the dashboard stuck on "Analysis in progress".
   if (rawDecision || status === "completed") {
-    const decisionSources = [d, result as Record<string, unknown> | undefined, riskSection, partial].filter(
-      Boolean,
-    ) as Record<string, unknown>[];
-    let levels: TradeLevels | undefined;
+    const decisionSources = [
+      d,
+      result?.raw_decision,
+      result as Record<string, unknown> | undefined,
+      state["portfolio_management_decision"],
+      state["final_trade_decision"],
+      riskSection,
+      partial["decision"],
+      partial,
+    ].filter((value): value is Record<string, unknown> => Boolean(value && typeof value === "object"));
+    let levels: TradeLevels | undefined = readTradeLevels(finalText);
     let scores: DecisionScores | undefined;
     for (const src of decisionSources) {
       levels = levels ?? readTradeLevels(src);
@@ -720,10 +743,31 @@ const numberList = (value: unknown): number[] =>
 
 /** Reads entry/stop/target/support/resistance from any snake- or camelCase shape. */
 export function readTradeLevels(raw: unknown): TradeLevels | undefined {
+  if (typeof raw === "string") {
+    const labelled = (labels: string[]) => {
+      const expression = new RegExp(`(?:${labels.join("|")})\\s*(?:price|level|zone)?\\s*[:=：-]?\\s*(?:HK\\$|USD\\$|\\$)?\\s*([0-9][0-9,]*(?:\\.[0-9]+)?)`, "i");
+      const match = raw.match(expression);
+      return match?.[1] ? num(match[1]) : undefined;
+    };
+    const entry = labelled(["entry", "entry price", "buy price", "進場價", "入場價"]);
+    const stopLoss = labelled(["stop loss", "stop-loss", "stop", "停損價", "止蝕價"]);
+    const takeProfit = labelled(["take profit", "take-profit", "target price", "target", "目標價", "止賺價"]);
+    if (entry === undefined && stopLoss === undefined && takeProfit === undefined) return undefined;
+    return {
+      ...(entry !== undefined ? { entry } : {}),
+      ...(stopLoss !== undefined ? { stopLoss } : {}),
+      ...(takeProfit !== undefined ? { takeProfit } : {}),
+      support: [],
+      resistance: [],
+    };
+  }
   if (!raw || typeof raw !== "object") return undefined;
   const o = raw as Record<string, unknown>;
-  const nested = (o["levels"] ?? o["trade_levels"] ?? o["price_levels"]) as Record<string, unknown> | undefined;
-  const src = nested && typeof nested === "object" ? { ...o, ...nested } : o;
+  const nestedKeys = ["levels", "trade_levels", "tradeLevels", "price_levels", "priceLevels", "targets", "recommendation"];
+  const nested = nestedKeys
+    .map((key) => o[key])
+    .find((value): value is Record<string, unknown> => Boolean(value && typeof value === "object" && !Array.isArray(value)));
+  const src = nested ? { ...o, ...nested } : o;
   const pick = (...keys: string[]) => {
     for (const k of keys) {
       const v = num(src[k]);
@@ -731,9 +775,9 @@ export function readTradeLevels(raw: unknown): TradeLevels | undefined {
     }
     return undefined;
   };
-  const entry = pick("entry", "entry_price", "entryPrice", "entry_zone");
-  const stopLoss = pick("stop_loss", "stopLoss", "stop");
-  const takeProfit = pick("take_profit", "takeProfit", "target_price", "targetPrice", "target");
+  const entry = pick("entry", "entry_price", "entryPrice", "entry_zone", "entryZone", "entry_limit", "entryLimit", "buy_price", "buyPrice");
+  const stopLoss = pick("stop_loss", "stopLoss", "stop_loss_price", "stopLossPrice", "stop", "sl", "risk_price", "riskPrice");
+  const takeProfit = pick("take_profit", "takeProfit", "take_profit_price", "takeProfitPrice", "target_price", "targetPrice", "target", "tp", "price_target", "priceTarget");
   const support = numberList(src["support"] ?? src["support_levels"] ?? src["supports"]);
   const resistance = numberList(src["resistance"] ?? src["resistance_levels"] ?? src["resistances"]);
   if (entry === undefined && stopLoss === undefined && takeProfit === undefined && !support.length && !resistance.length) {

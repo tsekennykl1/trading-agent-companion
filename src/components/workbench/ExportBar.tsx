@@ -40,6 +40,13 @@ export function ExportBar({ run, reportUrl }: { run: RunRecord; reportUrl?: stri
           <p className="text-sm text-muted-foreground">{t("export.body")}</p>
         </div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          {reportUrl && (
+            <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
+              <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
+                <ScrollText className="size-4" /> {t("export.open")}
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={exportMarkdown} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
             <FileText className="size-4" /> {t("export.markdown")}
           </Button>
@@ -52,16 +59,6 @@ export function ExportBar({ run, reportUrl }: { run: RunRecord; reportUrl?: stri
         </div>
       </div>
 
-      {reportUrl && (
-        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-rule pt-3">
-          <p className="mr-auto text-sm text-muted-foreground">{t("export.openHint")}</p>
-          <Button asChild size="sm" variant="secondary" className="min-h-10 gap-2 sm:min-h-8">
-            <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
-              <ScrollText className="size-4" /> {t("export.open")}
-            </Link>
-          </Button>
-        </div>
-      )}
     </section>
   );
 }

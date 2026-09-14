@@ -13,6 +13,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Decision, PricePoint, StancePoint } from "@/lib/trading-agents/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { fill, useT } from "@/lib/i18n";
@@ -56,35 +59,59 @@ export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: strin
 export function StanceChart({ data }: { data: StancePoint[] }) {
   const isMobile = useIsMobile();
   const t = useT();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (data.length > 0) setOpen(true);
+  }, [data.length]);
 
   return (
-    <section className="panel p-4 sm:p-5">
-      <h3 className="text-base font-semibold">{t("charts.stanceTitle")}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">{t("charts.stanceBody")}</p>
-      <div className="mt-4 h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" horizontal={false} />
-            <XAxis type="number" domain={[-100, 100]} tick={AXIS} tickLine={false} axisLine={{ stroke: "var(--rule)" }} />
-            <YAxis type="category" dataKey="agent" width={isMobile ? 82 : 124} tick={AXIS} tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} />
-            <Bar dataKey="score" name="Stance score" radius={[3, 3, 3, 3]} barSize={14}>
-              {data.map((d) => (
-                <Cell
-                  key={d.agent}
-                  fill={
-                    d.stance === "bullish"
-                      ? "var(--bull)"
-                      : d.stance === "bearish"
-                        ? "var(--bear)"
-                        : "var(--neutral)"
-                  }
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <section className="panel overflow-hidden">
+      <div className="flex items-start gap-3 p-4 sm:p-5">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-semibold">{t("charts.stanceTitle")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {data.length > 0 ? t("charts.stanceBody") : t("charts.stancePending")}
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={data.length === 0}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? t("common.hide") : t("common.show")}
+        </Button>
       </div>
+      {open && data.length > 0 && (
+        <div className="h-64 border-t border-rule px-3 pb-4 pt-3 sm:h-72 sm:px-5">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" horizontal={false} />
+              <XAxis type="number" domain={[-100, 100]} tick={AXIS} tickLine={false} axisLine={{ stroke: "var(--rule)" }} />
+              <YAxis type="category" dataKey="agent" width={isMobile ? 82 : 124} tick={AXIS} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} />
+              <Bar dataKey="score" name="Stance score" radius={[3, 3, 3, 3]} barSize={14}>
+                {data.map((d) => (
+                  <Cell
+                    key={d.agent}
+                    fill={
+                      d.stance === "bullish"
+                        ? "var(--bull)"
+                        : d.stance === "bearish"
+                          ? "var(--bear)"
+                          : "var(--neutral)"
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </section>
   );
 }

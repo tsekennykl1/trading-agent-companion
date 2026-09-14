@@ -263,20 +263,14 @@ function Workbench() {
             <AgentBoard agents={run.agents} stats={run.stats} compact />
           </div>
 
-          <div className="order-5 min-w-0">
-            {run.decision ? (
-              <ConfidenceChart decision={run.decision} stances={run.stances} />
-            ) : (
-              <section className="panel p-4 sm:p-5">
-                <h3 className="text-base font-semibold">{t("home.confidenceTitle")}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{t("home.confidenceBody")}</p>
-              </section>
-            )}
-          </div>
         </aside>
 
         <main className="contents min-w-0 xl:flex xl:flex-col xl:gap-6">
           <div className="order-3 min-w-0">
+            <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
+          </div>
+
+          <div className="order-4 min-w-0">
             <LiveSnapshot run={run} artifacts={artifacts} />
             {!chartReady && (
               <PriceChart
@@ -286,7 +280,7 @@ function Workbench() {
             )}
           </div>
 
-          <div className="order-4 min-w-0">
+          <div className="order-5 min-w-0">
             {run.decision ? (
               <DecisionPanel decision={run.decision} ticker={run.config.ticker} />
             ) : (
@@ -301,8 +295,17 @@ function Workbench() {
           </div>
 
           <div className="order-7 min-w-0 space-y-6">
-            <StanceChart data={run.stances} />
-            <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
+            <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
+              <StanceChart data={run.stances} />
+              {run.decision ? (
+                <ConfidenceChart decision={run.decision} stances={run.stances} />
+              ) : (
+                <section className="panel p-4 sm:p-5">
+                  <h3 className="text-base font-semibold">{t("home.confidenceTitle")}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{t("home.confidenceBody")}</p>
+                </section>
+              )}
+            </div>
             <ReportsSection run={run} extraReports={artifacts.reports} />
           </div>
         </main>
