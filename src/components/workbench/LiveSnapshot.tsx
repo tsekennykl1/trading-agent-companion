@@ -201,6 +201,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     levels={levels}
                     visible={visible}
                   />
+                  <ChartDataPanel chart={chartData} />
                 </>
               ) : (
 
