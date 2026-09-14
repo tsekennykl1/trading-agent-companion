@@ -552,11 +552,24 @@ export function normalizeRun(raw: unknown): RunRecord {
 
 export const api = {
   health: () => request<HealthResponse>("/health"),
-  startRun: (config: RunConfig) =>
-    request<{ run_id: string }>("/runs", {
+  /**
+   * POST /runs. Some engine builds answer with `{run_id}`, others with `{id}`,
+   * `{runId}` or the whole run object — accept any of them so polling (and the
+   * chart / report artifact fetches that depend on the id) always starts.
+   */
+  startRun: async (config: RunConfig): Promise<{ run_id: string }> => {
+    const raw = await request<unknown>("/runs", {
       method: "POST",
       body: JSON.stringify(runConfigPayload(config)),
-    }),
+    });
+    const obj = (raw ?? {}) as Record<string, unknown>;
+    const nested = (obj["run"] ?? {}) as Record<string, unknown>;
+    const id = [obj["run_id"], obj["runId"], obj["id"], nested["run_id"], nested["id"]].find(
+      (v): v is string => typeof v === "string" && v.trim().length > 0,
+    );
+    if (!id) throw new Error("The engine started a run but did not return a run id");
+    return { run_id: id };
+  },
   getRun: async (id: string) => normalizeRun(await request<unknown>(`/runs/${id}`)),
   listRuns: async () => {
     const raw = await request<unknown>("/runs");
