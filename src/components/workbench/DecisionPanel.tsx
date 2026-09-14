@@ -19,6 +19,7 @@ const TONE: Record<string, Tone> = {
 };
 
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
+  const t = useT();
   const [open, setOpen] = useState(true);
   const [bullOpen, setBullOpen] = useState(false);
   const [bearOpen, setBearOpen] = useState(false);
@@ -29,9 +30,9 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
     <section className="panel overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold">Portfolio management decision</h2>
+          <h2 className="text-base font-semibold">{t("decision.title")}</h2>
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            Available · {decision.action} recommendation for {ticker}
+            {fill(t("decision.subtitle"), { action: decision.action, ticker })}
           </p>
         </div>
         <Button
@@ -42,7 +43,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
           onClick={() => setOpen((value) => !value)}
         >
           {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-          {open ? "Hide" : "Show"}
+          {open ? t("common.hide") : t("common.show")}
         </Button>
       </div>
 
@@ -59,15 +60,15 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
               {decision.action}
             </span>
             <div className="min-w-0 text-sm">
-              <p className="font-medium break-words">{ticker} — portfolio management decision</p>
+              <p className="font-medium break-words">{fill(t("decision.heading"), { ticker })}</p>
               <p className="text-muted-foreground">
-                Confidence {decision.confidence}% · {decision.consensus} consensus across agents
+                {fill(t("decision.confidenceLine"), { c: decision.confidence, k: decision.consensus })}
               </p>
             </div>
             <div className="grid shrink-0 grid-cols-2 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
               {[
-                ["Entry", decision.entryPrice],
-                ["Stop loss", decision.stopLoss],
+                [t("decision.entry"), decision.entryPrice],
+                [t("decision.stopLoss"), decision.stopLoss],
               ].map(([label, value]) => (
                 <div key={String(label)}>
                   <p className="label-caps">{label}</p>
@@ -78,7 +79,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
           </div>
 
           <div className="px-4 py-4 sm:px-5 sm:py-5">
-            <p className="label-caps">Executive summary</p>
+            <p className="label-caps">{t("decision.summary")}</p>
             <div
               className="prose-report mt-3 text-sm"
               dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.executiveSummary) }}
@@ -86,7 +87,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
 
             {decision.positionSizing && (
               <div className="mt-4 rounded-md border border-rule bg-muted/50 p-3 text-sm">
-                <p className="label-caps">Position sizing</p>
+                <p className="label-caps">{t("decision.sizing")}</p>
                 <div
                   className="prose-report mt-2"
                   dangerouslySetInnerHTML={{ __html: markdownToHtml(decision.positionSizing) }}
@@ -96,14 +97,14 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
 
             <div className="mt-5 divide-y divide-rule border-y border-rule">
               <DecisionEvidence
-                title="Key bullish signals"
+                title={t("decision.bull")}
                 tone="bull"
                 points={decision.bullPoints}
                 open={bullOpen}
                 onToggle={() => setBullOpen((value) => !value)}
               />
               <DecisionEvidence
-                title="Key bearish risks"
+                title={t("decision.bear")}
                 tone="bear"
                 points={decision.bearPoints}
                 open={bearOpen}
@@ -116,6 +117,7 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
     </section>
   );
 }
+
 
 function DecisionEvidence({
   title,
