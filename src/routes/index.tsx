@@ -99,14 +99,17 @@ function Workbench() {
       setActiveRunId(null);
       setStartedAt(Date.now());
       setElapsed(0);
-      void api
-        .listRuns()
-        .then((runs) => {
-          knownRunIds.current = new Set(runs.map((r) => r.id));
-        })
-        .catch(() => {
-          knownRunIds.current = new Set();
-        });
+      knownRunIds.current = new Set();
+      if (runListSupported.current) {
+        void api
+          .listRuns()
+          .then((runs) => {
+            knownRunIds.current = new Set(runs.map((r) => r.id));
+          })
+          .catch(() => {
+            runListSupported.current = false;
+          });
+      }
     },
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
