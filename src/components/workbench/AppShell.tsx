@@ -101,9 +101,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </a>
             .
           </p>
-          <p className="mt-1">
-            Decision-support prototype for academic use. Not investment advice and not an autonomous trading system.
-          </p>
+          <p className="mt-1">{t("footer.disclaimer")}</p>
         </div>
       </footer>
     </div>
