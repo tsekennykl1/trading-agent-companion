@@ -396,7 +396,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [lang],
   );
 
+  // Mirrored outside React so non-component code (toasts fired from data
+  // loaders) can translate without adding a hook.
+  activeLang = lang;
+
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+}
+
+let activeLang: Lang = "en";
+
+/** Translate outside a component render. Prefer useT() inside components. */
+export function translate(key: TKey): string {
+  return DICTS[activeLang][key] ?? EN[key];
 }
 
 export function useLanguage(): LanguageValue {
@@ -406,6 +417,7 @@ export function useLanguage(): LanguageValue {
 export function useT(): (key: TKey) => string {
   return useContext(LanguageContext).t;
 }
+
 
 /** Fills {name} placeholders in a translated template. */
 export function fill(template: string, vars: Record<string, string | number>): string {
