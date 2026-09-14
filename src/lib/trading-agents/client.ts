@@ -6,10 +6,13 @@ import type {
   RunRecord,
   TradeLevels,
 } from "./types";
+import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
+
+export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
-export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8000";
+export const DEFAULT_BRIDGE_URL = API_BASE_URL || "http://127.0.0.1:8000";
 
 export function getBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_URL;
@@ -215,10 +218,15 @@ function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral";
   return { stance: "neutral", score: 0 };
 }
 
-/** Make an engine-relative artifact path absolute against the bridge URL. */
+/**
+ * Make an engine-relative artifact path absolute. A configured public asset
+ * base (VITE_PUBLIC_ASSET_BASE_URL / VITE_API_BASE_URL) wins over the locally
+ * stored bridge URL, so HTTPS deployments can serve artifacts over HTTPS.
+ */
 export function bridgeAssetUrl(path: string): string {
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${getBridgeUrl().replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+  if (isAbsoluteUrl(path)) return path;
+  const base = PUBLIC_ASSET_BASE_URL || getBridgeUrl();
+  return joinUrl(base.replace(/\/$/, ""), path);
 }
 
 function num(v: unknown): number | undefined {

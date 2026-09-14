@@ -10,6 +10,7 @@ import { SignalReasons } from "@/components/workbench/SignalReasons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import { useT } from "@/lib/i18n";
+import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
@@ -57,7 +58,9 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
   const warnings = p?.warnings ?? [];
 
-  const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+  // Drop artifact URLs the browser cannot load (http asset on an https page).
+  const rawChartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+  const chartPngUrl = canUseBrowserUrl(rawChartPngUrl) ? rawChartPngUrl : undefined;
   const levels = chartData?.levels ?? run.decision?.levels;
   const allReports = { ...run.reports, ...(artifacts?.reports ?? {}) };
 
@@ -255,7 +258,7 @@ function ArtifactLinks({ run, artifacts }: { run: RunRecord; artifacts: RunArtif
   const p = run.partial;
   const items: { label: string; url: string }[] = [];
   const add = (label: string, url?: string) => {
-    if (url && !items.some((i) => i.url === url)) items.push({ label, url });
+    if (url && canUseBrowserUrl(url) && !items.some((i) => i.url === url)) items.push({ label, url });
   };
   add(t("links.marketJson"), artifacts?.marketDataUrl ?? p?.marketDataUrl);
   add(t("links.chartJson"), artifacts?.chartJsonUrl ?? p?.chartJsonUrl);
