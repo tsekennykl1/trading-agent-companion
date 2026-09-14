@@ -504,17 +504,48 @@ export function normalizeRun(raw: unknown): RunRecord {
   // finished, so a completed run without a structured decision never leaves
   // the dashboard stuck on "Analysis in progress".
   if (rawDecision || status === "completed") {
+    const decisionSources = [d, result as Record<string, unknown> | undefined, riskSection, partial].filter(
+      Boolean,
+    ) as Record<string, unknown>[];
+    let levels: TradeLevels | undefined;
+    let scores: DecisionScores | undefined;
+    for (const src of decisionSources) {
+      levels = levels ?? readTradeLevels(src);
+      scores = scores ?? readScores(src);
+    }
+    const str = (...keys: string[]) => {
+      for (const src of decisionSources) {
+        for (const k of keys) {
+          const v = src[k];
+          if (typeof v === "string" && v.trim()) return v.trim();
+        }
+      }
+      return undefined;
+    };
+    const riskLevel = str("risk_level", "riskLevel", "risk");
+    const horizon = str("horizon", "time_horizon", "timeframe", "timeHorizon");
+    const rationale = str("rationale", "reasoning", "why");
+
     record.decision = {
       action,
       rating: actionText,
       confidence,
       consensus: confidence >= 70 ? "High" : confidence >= 40 ? "Medium" : "Low",
       ...(d?.position_size ? { positionSizing: titleCase(d.position_size) } : {}),
+      ...(levels?.entry !== undefined ? { entryPrice: levels.entry } : {}),
+      ...(levels?.stopLoss !== undefined ? { stopLoss: levels.stopLoss } : {}),
+      ...(levels?.takeProfit !== undefined ? { takeProfit: levels.takeProfit } : {}),
+      ...(levels ? { levels } : {}),
+      ...(scores ? { scores } : {}),
+      ...(riskLevel ? { riskLevel: titleCase(riskLevel) } : {}),
+      ...(horizon ? { horizon } : {}),
+      ...(rationale ? { rationale } : {}),
       executiveSummary: summaryText,
       bullPoints: summaryText ? [summaryText] : [],
       bearPoints: keyRisks,
     };
   }
+
 
   return record;
 }
