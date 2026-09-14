@@ -89,14 +89,36 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
             </Label>
-            <Input
-              id="ticker"
-              value={config.ticker}
-              onChange={(e) => update("ticker", e.target.value.toUpperCase())}
-              placeholder="0700.HK"
-              required
-              className="font-mono"
-            />
+            <div className="flex min-w-0 gap-2">
+              <Input
+                id="ticker"
+                value={config.ticker}
+                onChange={(e) => {
+                  update("ticker", e.target.value.toUpperCase());
+                  setTickerError(null);
+                }}
+                placeholder={market === "HK" ? "0700" : "AAPL"}
+                required
+                aria-invalid={!!tickerError}
+                className="font-mono"
+              />
+              <Select
+                value={market}
+                onValueChange={(v) => {
+                  setMarket(v as "HK" | "Other");
+                  setTickerError(null);
+                }}
+              >
+                <SelectTrigger className="w-28 shrink-0" aria-label={t("form.market")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="HK">{t("form.marketHK")}</SelectItem>
+                  <SelectItem value="Other">{t("form.marketOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
           </div>
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="date" className="label-caps">
