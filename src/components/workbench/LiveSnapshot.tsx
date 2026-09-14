@@ -110,47 +110,56 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
         )}
 
         {chartData || chartPngUrl ? (
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant={view === "interactive" ? "default" : "outline"}
-                className="min-h-9"
-                disabled={!chartData}
-                onClick={() => setView("interactive")}
-              >
-                <LineChart className="size-4" /> Interactive
-              </Button>
-              <Button
-                size="sm"
-                variant={view === "image" ? "default" : "outline"}
-                className="min-h-9"
-                disabled={!chartPngUrl}
-                onClick={() => setView("image")}
-              >
-                <ImageIcon className="size-4" /> Image
-              </Button>
-              {chartPngUrl && (
-                <a
-                  href={chartPngUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={view === "interactive" ? "default" : "outline"}
+                  className="min-h-9"
+                  disabled={!chartData}
+                  onClick={() => setView("interactive")}
                 >
-                  Open image <ExternalLink className="size-3.5" />
-                </a>
+                  <LineChart className="size-4" /> Interactive
+                </Button>
+                <Button
+                  size="sm"
+                  variant={view === "image" ? "default" : "outline"}
+                  className="min-h-9"
+                  disabled={!chartPngUrl}
+                  onClick={() => setView("image")}
+                >
+                  <ImageIcon className="size-4" /> Image
+                </Button>
+                {chartPngUrl && (
+                  <a
+                    href={chartPngUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    Open image <ExternalLink className="size-3.5" />
+                  </a>
+                )}
+              </div>
+
+              {view === "interactive" && chartData ? (
+                <PlotlyPriceChart chart={chartData} height={isMobile ? 400 : 560} levels={levels} />
+              ) : (
+                <img
+                  src={chartPngUrl}
+                  alt={`${run.config.ticker} price, volume and RSI`}
+                  className="min-h-[22rem] w-full rounded-md border border-rule bg-surface object-contain min-[480px]:min-h-[26rem] sm:min-h-[30rem] xl:min-h-[36rem]"
+                  loading="lazy"
+                />
               )}
             </div>
 
-            {view === "interactive" && chartData ? (
-              <PlotlyPriceChart chart={chartData} height={isMobile ? 400 : 560} />
-            ) : (
-              <img
-                src={chartPngUrl}
-                alt={`${run.config.ticker} price, volume and RSI`}
-                className="min-h-[22rem] w-full rounded-md border border-rule bg-surface object-contain min-[480px]:min-h-[26rem] sm:min-h-[30rem] xl:min-h-[36rem]"
-                loading="lazy"
-              />
+            {(run.decision || Object.keys(allReports).length > 0) && (
+              <div className="min-w-0 space-y-4">
+                {run.decision && <DecisionCard decision={run.decision} ticker={run.config.ticker} />}
+                <SignalReasons reports={allReports} />
+              </div>
             )}
           </div>
         ) : (
@@ -161,6 +170,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
             </p>
           )
         )}
+
       </div>
     </section>
   );
