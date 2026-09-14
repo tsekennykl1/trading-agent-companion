@@ -209,34 +209,45 @@ export function DetailedReport({
   url,
   ticker,
   expanded = false,
+  onContent,
 }: {
   url: string;
   ticker: string;
   /** Rendered on its own page: always open, no collapse control. */
   expanded?: boolean;
+  /** Receives the cleaned Markdown so a parent can offer downloads. */
+  onContent?: (markdown: string) => void;
 }) {
   const t = useT();
   const [open, setOpen] = useState(expanded);
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const publish = useRef(onContent);
+  publish.current = onContent;
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setFailed(false);
     setSource("");
+    publish.current?.("");
 
     fetch(url, { cache: "no-store", signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error("Report unavailable");
         return response.text();
       })
-      .then((text) => setSource(readableArtifact(text)))
+      .then((text) => {
+        const markdown = readableArtifact(text);
+        setSource(markdown);
+        publish.current?.(markdown);
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setFailed(true);
       })
+
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
