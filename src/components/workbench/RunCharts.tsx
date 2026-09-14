@@ -71,10 +71,12 @@ export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: strin
   );
 }
 
-export function StanceChart({ data }: { data: StancePoint[] }) {
+export function StanceChart({ data: dataProp }: { data?: StancePoint[] }) {
   const isMobile = useIsMobile();
   const t = useT();
   const [open, setOpen] = useState(false);
+  const data = dataProp ?? [];
+
 
   useEffect(() => {
     if (data.length > 0) setOpen(true);
@@ -135,9 +137,10 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
   );
 }
 
-export function ConfidenceChart({ decision, stances }: { decision: Decision; stances: StancePoint[] }) {
+export function ConfidenceChart({ decision, stances: stancesProp }: { decision: Decision; stances?: StancePoint[] }) {
   const t = useT();
   const [open, setOpen] = useState(true);
+  const stances = stancesProp ?? [];
   const counts = stances.reduce(
     (acc, s) => ({ ...acc, [s.stance]: (acc[s.stance] ?? 0) + 1 }),
     { bullish: 0, bearish: 0, neutral: 0 },

@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Activity, BookOpen, LayoutDashboard, Languages, Plug } from "lucide-react";
+import { Activity, BookOpen, History, LayoutDashboard, Languages, Plug } from "lucide-react";
 import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
 import { useLanguage } from "@/lib/i18n";
 
 const NAV = [
   { to: "/", label: "nav.workbench", icon: LayoutDashboard },
+  { to: "/history", label: "nav.history", icon: History },
   { to: "/setup", label: "nav.setup", icon: Plug },
   { to: "/about", label: "nav.about", icon: BookOpen },
 ] as const;

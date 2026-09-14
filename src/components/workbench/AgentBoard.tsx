@@ -56,9 +56,30 @@ function StatusIcon({ status }: { status: AgentProgress["status"] }) {
   );
 }
 
-export function AgentBoard({ agents, stats, compact = false }: { agents: AgentProgress[]; stats: RunStats; compact?: boolean }) {
+const EMPTY_STATS: RunStats = {
+  llmCalls: 0,
+  toolCalls: 0,
+  tokensIn: 0,
+  tokensOut: 0,
+  reportsDone: 0,
+  reportsTotal: 0,
+  runtimeSeconds: 0,
+};
+
+export function AgentBoard({
+  agents: agentsProp,
+  stats: statsProp,
+  compact = false,
+}: {
+  agents: AgentProgress[];
+  stats?: RunStats;
+  compact?: boolean;
+}) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
+  // An engine payload can omit progress counters entirely; never crash on it.
+  const agents = agentsProp ?? [];
+  const stats = statsProp ?? EMPTY_STATS;
   const teams = agents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
     return acc;

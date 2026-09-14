@@ -643,6 +643,41 @@ def get_run(run_id: str) -> dict[str, Any]:
     return public_view(RUNS[run_id])
 
 
+@app.get("/runs/{run_id}/status")
+def run_status(run_id: str) -> dict[str, Any]:
+    """Lightweight readiness poll: no reports, no chart payloads, no history.
+
+    The dashboard polls this instead of the full run so it can tell when the
+    decision and the detailed reports are actually finished.
+    """
+    if run_id not in RUNS:
+        raise HTTPException(status_code=404, detail="Unknown run")
+    record = RUNS[run_id]
+    partial = record.get("partial_result") or record.get("partialResult") or {}
+    reports = partial.get("reports") or record.get("reports") or {}
+    reports_ready = partial.get("reports_ready")
+    if not isinstance(reports_ready, list):
+        reports_ready = [name for name, body in reports.items() if body]
+    decision_ready = partial.get("decision_ready")
+    if decision_ready is None:
+        decision_ready = bool(record.get("decision"))
+    return {
+        "run_id": run_id,
+        "status": record.get("status"),
+        "created_at": record.get("createdAt") or record.get("created_at"),
+        "updated_at": record.get("updatedAt") or record.get("updated_at"),
+        "started_at": record.get("startedAt") or record.get("started_at"),
+        "completed_at": record.get("completedAt") or record.get("completed_at"),
+        "progress": record.get("progress"),
+        "error": record.get("error"),
+        "cancel_requested": run_id in CANCELLED,
+        "poll_after_ms": record.get("poll_after_ms") or record.get("pollAfterMs"),
+        "decision_ready": bool(decision_ready),
+        "reports_ready": [str(name) for name in reports_ready],
+        "result_url": partial.get("result_url") or partial.get("resultUrl"),
+    }
+
+
 @app.get("/runs/{run_id}/chart.html")
 def chart_html(run_id: str) -> HTMLResponse:
     """Interactive Plotly chart generated in Python, embedded by the dashboard."""
