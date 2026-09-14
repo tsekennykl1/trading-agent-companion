@@ -244,7 +244,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
 }
 
 /** Direct links to whatever files the engine has published for this run. */
-function ArtifactLinks({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
+function ArtifactLinks({ run, artifacts }: { run: RunRecord; artifacts: RunArtifacts | undefined }) {
   const p = run.partial;
   const items: { label: string; url: string }[] = [];
   const add = (label: string, url?: string) => {
