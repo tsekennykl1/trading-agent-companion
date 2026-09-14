@@ -2,8 +2,40 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
-import { useT } from "@/lib/i18n";
+import { useT, type TKey } from "@/lib/i18n";
 import { REPORT_SECTIONS, type RunRecord } from "@/lib/trading-agents/types";
+
+const REPORT_LABEL_KEYS: Record<string, TKey> = {
+  market_report: "analyst.Market Analyst",
+  sentiment_report: "analyst.Sentiment Analyst",
+  news_report: "analyst.News Analyst",
+  fundamentals_report: "analyst.Fundamentals Analyst",
+  bull_report: "role.Bull Researcher",
+  bear_report: "role.Bear Researcher",
+  investment_plan: "role.Research Manager",
+  trader_plan: "role.Trader",
+  risk_aggressive: "role.Aggressive Analyst",
+  risk_conservative: "role.Conservative Analyst",
+  risk_neutral: "role.Neutral Analyst",
+  final_decision: "role.Portfolio Manager",
+  company_of_interest: "role.Company Of Interest",
+  asset_type: "role.Asset Type",
+  instrument_context: "role.Instrument Context",
+  trade_date: "role.Trade Date",
+  sender: "role.Sender",
+  trader_investment_plan: "role.Trader Investment Plan",
+  final_trade_decision: "role.Final Trade Decision",
+  engine_log: "role.Engine Log",
+};
+
+const TEAM_KEYS: Record<string, TKey> = {
+  "Analyst Team": "team.Analyst Team",
+  "Research Team": "team.Research Team",
+  "Trading Team": "team.Trading Team",
+  "Risk Team": "team.Risk Team",
+  "Portfolio Management": "team.Portfolio Management",
+  Engine: "team.Engine",
+};
 
 export function ReportsSection({
   run,
@@ -82,7 +114,9 @@ export function ReportsSection({
             <section key={section.key}>
               <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold">{section.label}</h3>
+                  <h3 className="text-sm font-semibold">
+                    {REPORT_LABEL_KEYS[section.key] ? t(REPORT_LABEL_KEYS[section.key]) : section.label}
+                  </h3>
                   <p
                     className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
                       ready ? "text-bull" : running ? "text-primary" : "text-bear"
@@ -91,7 +125,7 @@ export function ReportsSection({
                     {!ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
-                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${section.team}`}
+                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${TEAM_KEYS[section.team] ? t(TEAM_KEYS[section.team]) : section.team}`}
                   </p>
                 </div>
                 <Button

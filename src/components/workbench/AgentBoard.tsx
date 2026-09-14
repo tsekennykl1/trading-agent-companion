@@ -5,6 +5,30 @@ import type { AgentProgress, RunStats } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+const ROLE_KEYS: Record<string, TKey> = {
+  "Market Analyst": "analyst.Market Analyst",
+  "Sentiment Analyst": "analyst.Sentiment Analyst",
+  "News Analyst": "analyst.News Analyst",
+  "Fundamentals Analyst": "analyst.Fundamentals Analyst",
+  "Bull Researcher": "role.Bull Researcher",
+  "Bear Researcher": "role.Bear Researcher",
+  "Research Manager": "role.Research Manager",
+  Trader: "role.Trader",
+  "Aggressive Analyst": "role.Aggressive Analyst",
+  "Conservative Analyst": "role.Conservative Analyst",
+  "Neutral Analyst": "role.Neutral Analyst",
+  "Portfolio Manager": "role.Portfolio Manager",
+};
+
+const TEAM_KEYS: Record<string, TKey> = {
+  "Analyst Team": "team.Analyst Team",
+  "Research Team": "team.Research Team",
+  "Trading Team": "team.Trading Team",
+  "Risk Team": "team.Risk Team",
+  "Portfolio Management": "team.Portfolio Management",
+  Engine: "team.Engine",
+};
+
 const ICONS = {
   completed: Check,
   in_progress: Loader2,
@@ -81,7 +105,9 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
         <div className="mt-4 space-y-3">
           {Object.entries(teams).map(([team, list]) => (
             <div key={team} className="overflow-hidden rounded-md border border-rule">
-              <div className="bg-muted/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">{team}</div>
+               <div className="bg-muted/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                 {TEAM_KEYS[team] ? t(TEAM_KEYS[team]) : team}
+               </div>
               <div className="divide-y divide-rule">
                 {list.map((agent) => (
                   <div
@@ -93,7 +119,7 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
                   >
                     <div className="min-w-0">
                       <p className={cn("break-words text-sm", agent.status === "pending" && "text-muted-foreground")}>
-                        {agent.agent}
+                         {ROLE_KEYS[agent.agent] ? t(ROLE_KEYS[agent.agent]) : agent.agent}
                       </p>
                       <span className="inline-flex flex-wrap items-center gap-1.5 text-xs">
                         <StatusIcon status={agent.status} />

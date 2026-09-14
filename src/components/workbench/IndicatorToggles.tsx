@@ -3,8 +3,6 @@ import type { ChartRow } from "@/lib/trading-agents/client";
 import { availableIndicators, type IndicatorKey, type IndicatorSpec } from "@/lib/trading-agents/indicators";
 import { useT } from "@/lib/i18n";
 
-const GROUPS: IndicatorSpec["group"][] = ["Overlays", "Panels", "Annotations"];
-
 function Tick({
   id,
   label,
@@ -51,6 +49,40 @@ export function IndicatorToggles({
 
   const allKeys = specs.map((s) => s.key);
   const allOn = allKeys.every((k) => visible.includes(k));
+  const overlays = specs.filter((s) => s.group === "Overlays");
+  const panels = specs.filter((s) => s.group === "Panels");
+  const annotations = specs.filter((s) => s.group === "Annotations");
+
+  const renderGroup = (group: IndicatorSpec["group"], list: IndicatorSpec[], showAll = true) => {
+    if (!list.length) return null;
+    const keys = list.map((s) => s.key);
+    const groupOn = keys.every((k) => visible.includes(k));
+    return (
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="text-xs font-semibold whitespace-nowrap">{t(`ind.${group}` as "ind.Overlays")}</span>
+        {showAll && (
+          <>
+            <Tick
+              id={`ind-group-${group}`}
+              label={t("ind.all")}
+              checked={groupOn}
+              onChange={(next) => onToggleMany(keys, next)}
+            />
+            <span className="text-rule">|</span>
+          </>
+        )}
+        {list.map((spec) => (
+          <Tick
+            key={spec.key}
+            id={`ind-${spec.key}`}
+            label={spec.label}
+            checked={visible.includes(spec.key)}
+            onChange={(next) => onToggle(spec.key, next)}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="rounded-md border border-rule bg-surface px-3 py-2">
@@ -68,35 +100,11 @@ export function IndicatorToggles({
       </div>
 
       <div className="mt-1.5 space-y-1.5">
-        {GROUPS.map((group) => {
-          const list = specs.filter((s) => s.group === group);
-          if (!list.length) return null;
-          const keys = list.map((s) => s.key);
-          const groupOn = keys.every((k) => visible.includes(k));
-          return (
-            <div key={group} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-rule/60 pt-1.5">
-              <span className="text-xs font-semibold whitespace-nowrap">
-                {t(`ind.${group}` as "ind.Overlays")}
-              </span>
-              <Tick
-                id={`ind-group-${group}`}
-                label={t("ind.all")}
-                checked={groupOn}
-                onChange={(next) => onToggleMany(keys, next)}
-              />
-              <span className="text-rule">|</span>
-              {list.map((spec) => (
-                <Tick
-                  key={spec.key}
-                  id={`ind-${spec.key}`}
-                  label={spec.label}
-                  checked={visible.includes(spec.key)}
-                  onChange={(next) => onToggle(spec.key, next)}
-                />
-              ))}
-            </div>
-          );
-        })}
+        <div className="border-t border-rule/60 pt-1.5">{renderGroup("Overlays", overlays)}</div>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-t border-rule/60 pt-1.5">
+          {renderGroup("Panels", panels)}
+          {renderGroup("Annotations", annotations, false)}
+        </div>
       </div>
     </div>
   );
