@@ -169,6 +169,11 @@ const EN = {
   "links.legacyHtml": "Legacy chart HTML",
 
   "toast.started": "Analysis started on your local engine",
+  "toast.rejected": "The engine rejected the run settings",
+  "toast.unreachable": "Could not reach the engine",
+  "toast.checkSetup": "Check the connection on the Connect engine page.",
+  "toast.stopRequested": "Stop requested",
+  "toast.stopFailed": "Could not stop the run",
   "toast.reportReady": "{name} report is ready",
   "toast.reportReadyBody": "Open it in the Agent reports section below.",
 } as const;
@@ -338,6 +343,11 @@ const ZH: Record<TKey, string> = {
   "links.legacyHtml": "舊版圖表 HTML",
 
   "toast.started": "已在本機引擎啟動分析",
+  "toast.rejected": "引擎拒絕了此次分析設定",
+  "toast.unreachable": "無法連接引擎",
+  "toast.checkSetup": "請於「連接引擎」頁面檢查連線設定。",
+  "toast.stopRequested": "已送出停止要求",
+  "toast.stopFailed": "無法停止此次分析",
   "toast.reportReady": "{name} 報告已完成",
   "toast.reportReadyBody": "可於下方「代理人報告」區開啟。",
 };
