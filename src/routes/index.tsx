@@ -183,8 +183,26 @@ function Workbench() {
             {t("home.intro")}
           </p>
         </div>
-        <ExportBar run={run} reportUrl={artifacts.resultHtmlUrl} />
+        <ExportBar
+          run={run}
+          reportUrl={artifacts.resultHtmlUrl}
+          ready={reportReady}
+          loading={!reportReady && (analysisBusy || running)}
+        />
       </div>
+
+      {!chartReady && (
+        <div className="mb-6 min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
+          <RunForm
+            key={`top-${defaultConfig.analysisDate}`}
+            defaultConfig={defaultConfig}
+            running={running && !showingSample}
+            disabled={startRun.isPending}
+            onRun={(c) => startRun.mutate(c)}
+            onCancel={cancelRun}
+          />
+        </div>
+      )}
 
       <div className="mb-6 min-w-0">
         <LiveSnapshot run={run} artifacts={artifacts} />
