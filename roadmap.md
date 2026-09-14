@@ -71,3 +71,11 @@
 - [x] Add collapsed summary, bullish, and bearish report controls.
 - [x] Parse and display entry, target, and stop from common backend response shapes.
 - [x] Verify desktop/mobile presentation and a clean preview build.
+
+# Translate report roles and tighten dashboard layout
+
+- [x] Translate standard report titles, agent roles, and team names with the interface language.
+- [x] Align stance and confidence panels and enlarge their charts.
+- [x] Place report actions beside the page title and move the market chart upward.
+- [x] Put Annotations after OBV and remove its redundant All checkbox.
+- [ ] Verify English/Traditional Chinese, desktop/mobile layouts, and a clean preview build.
