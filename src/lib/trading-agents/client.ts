@@ -1,4 +1,12 @@
-import type { Action, RunConfig, RunRecord } from "./types";
+import type {
+  Action,
+  ChartMarker,
+  DecisionScores,
+  RunConfig,
+  RunRecord,
+  TradeLevels,
+} from "./types";
+
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
 export const DEFAULT_BRIDGE_URL = "http://127.0.0.1:8000";
