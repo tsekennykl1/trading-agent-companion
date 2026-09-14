@@ -74,40 +74,36 @@ export function AgentBoard({ agents, stats, compact = false }: { agents: AgentPr
           </div>
         </div>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-md border border-rule">
-          <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
-            <thead className="bg-muted/70 text-xs text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2 font-medium">Team</th>
-                <th className="px-3 py-2 font-medium">Agent</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 text-right font-medium">Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-rule">
-              {Object.entries(teams).flatMap(([team, list]) =>
-                list.map((agent, index) => (
-                  <tr key={`${team}-${agent.agent}`} className={cn(agent.status === "in_progress" && "bg-primary/8")}>
-                    <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
-                      {index === 0 ? team : ""}
-                    </td>
-                    <td className={cn("px-3 py-2", agent.status === "pending" && "text-muted-foreground")}>
-                      {agent.agent}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="inline-flex items-center gap-2 capitalize">
+        <div className="mt-4 space-y-3">
+          {Object.entries(teams).map(([team, list]) => (
+            <div key={team} className="overflow-hidden rounded-md border border-rule">
+              <div className="bg-muted/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">{team}</div>
+              <div className="divide-y divide-rule">
+                {list.map((agent) => (
+                  <div
+                    key={`${team}-${agent.agent}`}
+                    className={cn(
+                      "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-3 py-2",
+                      agent.status === "in_progress" && "bg-primary/8",
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <p className={cn("break-words text-sm", agent.status === "pending" && "text-muted-foreground")}>
+                        {agent.agent}
+                      </p>
+                      <span className="inline-flex flex-wrap items-center gap-1.5 text-xs capitalize">
                         <StatusIcon status={agent.status} />
                         {agent.note === "Not selected" ? "Not selected" : agent.status.replace("_", " ")}
                       </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-right font-mono text-[11px] text-muted-foreground">
+                    </div>
+                    <span className="shrink-0 whitespace-nowrap pt-0.5 text-right font-mono text-[11px] text-muted-foreground">
                       {agent.time ?? "—"}
-                    </td>
-                  </tr>
-                )),
-              )}
-            </tbody>
-          </table>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
