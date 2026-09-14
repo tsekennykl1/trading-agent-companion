@@ -115,13 +115,11 @@ function Workbench() {
     onSuccess: (data) => {
       setActiveRunId(data.run_id);
       setShowingSample(false);
-      toast.success("Analysis started on your local engine");
+      toast.success(t("toast.started"));
     },
     onError: (e: Error) =>
-      toast.error(/responded 4\d\d/.test(e.message) ? "The engine rejected the run settings" : "Could not reach the engine", {
-        description: /responded 4\d\d/.test(e.message)
-          ? e.message
-          : `${e.message}. Check the connection on the Connect engine page.`,
+      toast.error(/responded 4\d\d/.test(e.message) ? t("toast.rejected") : t("toast.unreachable"), {
+        description: /responded 4\d\d/.test(e.message) ? e.message : `${e.message}. ${t("toast.checkSetup")}`,
       }),
   });
 
@@ -163,8 +161,8 @@ function Workbench() {
     if (!activeRunId) return;
     api
       .cancelRun(activeRunId)
-      .then(() => toast.message("Stop requested"))
-      .catch(() => toast.error("Could not stop the run"));
+      .then(() => toast.message(t("toast.stopRequested")))
+      .catch(() => toast.error(t("toast.stopFailed")));
   };
 
   const liveRun = runQuery.data as RunRecord | undefined;

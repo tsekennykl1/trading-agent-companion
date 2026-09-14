@@ -82,7 +82,102 @@ const EN = {
   "reports.none": "No report sections are available.",
   "reports.writing": "Reports are still being written by the agents.",
   "reports.produced": "No reports were produced for this run.",
+
+  "common.show": "Show",
+  "common.hide": "Hide",
+
+  "form.title": "New analysis",
+  "form.subtitle": "Choose the market, date, research depth, and specialists for this run.",
+  "form.ticker": "Ticker",
+  "form.date": "Analysis date",
+  "form.depth": "Research depth",
+  "form.depthShallow": "Shallow — quick, few debate rounds",
+  "form.depthMedium": "Medium — balanced debate",
+  "form.depthDeep": "Deep — extended debate rounds",
+  "form.language": "Report language",
+  "form.languageHint": "The engine writes its reports in this language.",
+  "form.team": "Analyst team",
+  "form.selected": "{n} of {m} selected",
+  "form.run": "Run analysis",
+  "form.stop": "Stop run",
+  "form.working": "Agents are working…",
+  "form.needAnalyst": "Select at least one analyst.",
+
+  "lang.English": "English",
+  "lang.Traditional Chinese": "Traditional Chinese",
+  "lang.Simplified Chinese": "Simplified Chinese",
+
+  "analyst.Market Analyst": "Market Analyst",
+  "analyst.Sentiment Analyst": "Sentiment Analyst",
+  "analyst.News Analyst": "News Analyst",
+  "analyst.Fundamentals Analyst": "Fundamentals Analyst",
+
+  "agents.title": "Agent progress",
+  "agents.count": "{n}/{m} agents",
+  "agents.completed": "Completed",
+  "agents.in progress": "In progress",
+  "agents.pending": "Pending",
+  "agents.error": "Error",
+  "agents.notSelected": "Not selected",
+  "agents.showDetails": "Show details",
+  "agents.hideDetails": "Hide details",
+  "stats.llmCalls": "LLM calls",
+  "stats.toolCalls": "Tool calls",
+  "stats.tokensIn": "Tokens in",
+  "stats.tokensOut": "Tokens out",
+  "stats.reports": "Reports",
+  "stats.runtime": "Runtime",
+
+  "decision.title": "Portfolio management decision",
+  "decision.subtitle": "Available · {action} recommendation for {ticker}",
+  "decision.heading": "{ticker} — portfolio management decision",
+  "decision.confidenceLine": "Confidence {c}% · {k} consensus across agents",
+  "decision.entry": "Entry",
+  "decision.stopLoss": "Stop loss",
+  "decision.summary": "Executive summary",
+  "decision.sizing": "Position sizing",
+  "decision.bull": "Key bullish signals",
+  "decision.bear": "Key bearish risks",
+  "decision.signals": "{n} signals available",
+  "decision.notAvailable": "Not available",
+
+  "charts.priceTitle": "Price trend and moving averages — {ticker}",
+  "charts.priceBody": "Close versus 10-EMA, 20-SMA and 50-SMA over the analysis window.",
+  "charts.stanceTitle": "Agent stance and consensus",
+  "charts.stanceBody":
+    "Interpretive score derived from each agent's output: −100 fully bearish to +100 fully bullish.",
+  "charts.confTitle": "Recommendation confidence",
+  "charts.confBody": "Confidence and agreement are interpretive proxies computed from agent alignment.",
+  "charts.confidence": "confidence",
+  "charts.bullAgents": "Bullish agents",
+  "charts.neutralAgents": "Neutral agents",
+  "charts.bearAgents": "Bearish agents",
+  "charts.consensus": "Consensus level",
+
+  "data.title": "Chart data ({rows} sessions · {series} series)",
+  "data.received": "Series received",
+  "data.missing": "Not sent by the engine",
+  "data.date": "Date",
+  "data.tail": "Showing the 20 most recent sessions, newest first.",
+
+  "links.marketJson": "Market data JSON",
+  "links.chartJson": "Price chart JSON",
+  "links.chartPng": "Price chart PNG",
+  "links.chartHtml": "Price chart HTML",
+  "links.resultHtml": "Result HTML",
+  "links.legacyPng": "Legacy chart PNG",
+  "links.legacyHtml": "Legacy chart HTML",
+
+  "toast.started": "Analysis started on your local engine",
+  "toast.rejected": "The engine rejected the run settings",
+  "toast.unreachable": "Could not reach the engine",
+  "toast.checkSetup": "Check the connection on the Connect engine page.",
+  "toast.stopRequested": "Stop requested",
+  "toast.stopFailed": "Could not stop the run",
+  "toast.reportReady": "{name} report is ready",
+  "toast.reportReadyBody": "Open it in the Agent reports section below.",
 } as const;
+
 
 export type TKey = keyof typeof EN;
 
@@ -162,7 +257,101 @@ const ZH: Record<TKey, string> = {
   "reports.none": "目前沒有任何報告章節。",
   "reports.writing": "代理人仍在撰寫報告。",
   "reports.produced": "此次分析沒有產生報告。",
+
+  "common.show": "展開",
+  "common.hide": "收合",
+
+  "form.title": "新增分析",
+  "form.subtitle": "選擇標的、日期、研究深度與參與的分析師。",
+  "form.ticker": "股票代號",
+  "form.date": "分析日期",
+  "form.depth": "研究深度",
+  "form.depthShallow": "淺層 — 快速，辯論回合較少",
+  "form.depthMedium": "中等 — 平衡的辯論",
+  "form.depthDeep": "深入 — 延長辯論回合",
+  "form.language": "報告語言",
+  "form.languageHint": "引擎將以此語言撰寫報告。",
+  "form.team": "分析師團隊",
+  "form.selected": "已選 {n}／共 {m}",
+  "form.run": "執行分析",
+  "form.stop": "停止分析",
+  "form.working": "代理人分析中…",
+  "form.needAnalyst": "請至少選擇一位分析師。",
+
+  "lang.English": "英文",
+  "lang.Traditional Chinese": "繁體中文",
+  "lang.Simplified Chinese": "簡體中文",
+
+  "analyst.Market Analyst": "市場分析師",
+  "analyst.Sentiment Analyst": "情緒分析師",
+  "analyst.News Analyst": "新聞分析師",
+  "analyst.Fundamentals Analyst": "基本面分析師",
+
+  "agents.title": "代理人進度",
+  "agents.count": "{n}／{m} 位代理人",
+  "agents.completed": "已完成",
+  "agents.in progress": "進行中",
+  "agents.pending": "等待中",
+  "agents.error": "錯誤",
+  "agents.notSelected": "未選取",
+  "agents.showDetails": "顯示明細",
+  "agents.hideDetails": "隱藏明細",
+  "stats.llmCalls": "LLM 呼叫",
+  "stats.toolCalls": "工具呼叫",
+  "stats.tokensIn": "輸入 Token",
+  "stats.tokensOut": "輸出 Token",
+  "stats.reports": "報告",
+  "stats.runtime": "執行時間",
+
+  "decision.title": "投資組合管理決策",
+  "decision.subtitle": "已產生 · 對 {ticker} 的{action}建議",
+  "decision.heading": "{ticker} — 投資組合管理決策",
+  "decision.confidenceLine": "信心度 {c}% · 代理人共識：{k}",
+  "decision.entry": "進場價",
+  "decision.stopLoss": "停損價",
+  "decision.summary": "重點摘要",
+  "decision.sizing": "部位配置",
+  "decision.bull": "主要看多訊號",
+  "decision.bear": "主要看空風險",
+  "decision.signals": "共 {n} 項訊號",
+  "decision.notAvailable": "未提供",
+
+  "charts.priceTitle": "價格走勢與移動平均 — {ticker}",
+  "charts.priceBody": "分析期間的收盤價與 10-EMA、20-SMA、50-SMA 比較。",
+  "charts.stanceTitle": "代理人立場與共識",
+  "charts.stanceBody": "依各代理人輸出推導的評分：−100 為極度看空，+100 為極度看多。",
+  "charts.confTitle": "建議信心度",
+  "charts.confBody": "信心度與一致性為依代理人立場推算的參考指標。",
+  "charts.confidence": "信心度",
+  "charts.bullAgents": "看多代理人",
+  "charts.neutralAgents": "中立代理人",
+  "charts.bearAgents": "看空代理人",
+  "charts.consensus": "共識程度",
+
+  "data.title": "圖表資料（{rows} 個交易日 · {series} 條序列）",
+  "data.received": "已接收序列",
+  "data.missing": "引擎未提供",
+  "data.date": "日期",
+  "data.tail": "顯示最近 20 個交易日，由新到舊。",
+
+  "links.marketJson": "市場資料 JSON",
+  "links.chartJson": "價格圖表 JSON",
+  "links.chartPng": "價格圖表 PNG",
+  "links.chartHtml": "價格圖表 HTML",
+  "links.resultHtml": "結果 HTML",
+  "links.legacyPng": "舊版圖表 PNG",
+  "links.legacyHtml": "舊版圖表 HTML",
+
+  "toast.started": "已在本機引擎啟動分析",
+  "toast.rejected": "引擎拒絕了此次分析設定",
+  "toast.unreachable": "無法連接引擎",
+  "toast.checkSetup": "請於「連接引擎」頁面檢查連線設定。",
+  "toast.stopRequested": "已送出停止要求",
+  "toast.stopFailed": "無法停止此次分析",
+  "toast.reportReady": "{name} 報告已完成",
+  "toast.reportReadyBody": "可於下方「代理人報告」區開啟。",
 };
+
 
 const DICTS: Record<Lang, Record<TKey, string>> = { en: EN, zh: ZH };
 
@@ -217,3 +406,11 @@ export function useLanguage(): LanguageValue {
 export function useT(): (key: TKey) => string {
   return useContext(LanguageContext).t;
 }
+
+/** Fills {name} placeholders in a translated template. */
+export function fill(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in vars ? String(vars[key]) : match,
+  );
+}
+

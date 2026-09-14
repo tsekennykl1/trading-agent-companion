@@ -257,13 +257,13 @@ function ArtifactLinks({ run, artifacts }: { run: RunRecord; artifacts: RunArtif
   const add = (label: string, url?: string) => {
     if (url && !items.some((i) => i.url === url)) items.push({ label, url });
   };
-  add("Market data JSON", artifacts?.marketDataUrl ?? p?.marketDataUrl);
-  add("Price chart JSON", artifacts?.chartJsonUrl ?? p?.chartJsonUrl);
-  add("Price chart PNG", artifacts?.chartPngLegacyUrl ? undefined : (artifacts?.chartPngUrl ?? p?.chartPngUrl));
-  add("Price chart HTML", artifacts?.chartHtmlLegacyUrl ? undefined : (artifacts?.chartHtmlUrl ?? p?.chartHtmlUrl));
-  add("Result HTML", artifacts?.resultHtmlUrl ?? p?.resultHtmlUrl);
-  add("Legacy chart PNG", artifacts?.chartPngLegacyUrl ?? p?.chartPngLegacyUrl);
-  add("Legacy chart HTML", artifacts?.chartHtmlLegacyUrl ?? p?.chartHtmlLegacyUrl);
+  add(t("links.marketJson"), artifacts?.marketDataUrl ?? p?.marketDataUrl);
+  add(t("links.chartJson"), artifacts?.chartJsonUrl ?? p?.chartJsonUrl);
+  add(t("links.chartPng"), artifacts?.chartPngLegacyUrl ? undefined : (artifacts?.chartPngUrl ?? p?.chartPngUrl));
+  add(t("links.chartHtml"), artifacts?.chartHtmlLegacyUrl ? undefined : (artifacts?.chartHtmlUrl ?? p?.chartHtmlUrl));
+  add(t("links.resultHtml"), artifacts?.resultHtmlUrl ?? p?.resultHtmlUrl);
+  add(t("links.legacyPng"), artifacts?.chartPngLegacyUrl ?? p?.chartPngLegacyUrl);
+  add(t("links.legacyHtml"), artifacts?.chartHtmlLegacyUrl ?? p?.chartHtmlLegacyUrl);
 
   if (!items.length) return null;
 

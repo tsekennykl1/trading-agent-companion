@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import type { Decision, PricePoint, StancePoint } from "@/lib/trading-agents/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { fill, useT } from "@/lib/i18n";
 
 const AXIS = { stroke: "var(--muted-foreground)", fontSize: 11 };
 
@@ -28,13 +29,12 @@ const tooltipStyle = {
 
 export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: string }) {
   const isMobile = useIsMobile();
+  const t = useT();
 
   return (
     <section className="panel p-4 sm:p-5">
-      <h3 className="text-base font-semibold">Price trend and moving averages — {ticker}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Close versus 10-EMA, 20-SMA and 50-SMA over the analysis window.
-      </p>
+      <h3 className="text-base font-semibold">{fill(t("charts.priceTitle"), { ticker })}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{t("charts.priceBody")}</p>
       <div className="mt-4 h-56 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: isMobile ? 2 : 8, left: isMobile ? -28 : -12, bottom: 0 }}>
@@ -55,13 +55,12 @@ export function PriceChart({ data, ticker }: { data: PricePoint[]; ticker: strin
 
 export function StanceChart({ data }: { data: StancePoint[] }) {
   const isMobile = useIsMobile();
+  const t = useT();
 
   return (
     <section className="panel p-4 sm:p-5">
-      <h3 className="text-base font-semibold">Agent stance and consensus</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Interpretive score derived from each agent's output: −100 fully bearish to +100 fully bullish.
-      </p>
+      <h3 className="text-base font-semibold">{t("charts.stanceTitle")}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{t("charts.stanceBody")}</p>
       <div className="mt-4 h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
@@ -91,6 +90,7 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
 }
 
 export function ConfidenceChart({ decision, stances }: { decision: Decision; stances: StancePoint[] }) {
+  const t = useT();
   const counts = stances.reduce(
     (acc, s) => ({ ...acc, [s.stance]: (acc[s.stance] ?? 0) + 1 }),
     { bullish: 0, bearish: 0, neutral: 0 },
@@ -102,10 +102,8 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
 
   return (
     <section className="panel p-4 sm:p-5">
-      <h3 className="text-base font-semibold">Recommendation confidence</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Confidence and agreement are interpretive proxies computed from agent alignment.
-      </p>
+      <h3 className="text-base font-semibold">{t("charts.confTitle")}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{t("charts.confBody")}</p>
       <div className="mt-3 flex flex-col items-center gap-3 min-[380px]:flex-row min-[380px]:gap-4 sm:gap-6">
         <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
@@ -122,28 +120,28 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-display text-3xl font-semibold">{confidence}%</span>
-            <span className="label-caps">confidence</span>
+            <span className="label-caps">{t("charts.confidence")}</span>
           </div>
         </div>
 
         <dl className="w-full space-y-2 text-sm min-[380px]:w-auto">
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-bull" />
-            <dt className="text-muted-foreground">Bullish agents</dt>
+            <dt className="text-muted-foreground">{t("charts.bullAgents")}</dt>
             <dd className="font-mono">{counts.bullish}</dd>
           </div>
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-neutral" />
-            <dt className="text-muted-foreground">Neutral agents</dt>
+            <dt className="text-muted-foreground">{t("charts.neutralAgents")}</dt>
             <dd className="font-mono">{counts.neutral}</dd>
           </div>
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-bear" />
-            <dt className="text-muted-foreground">Bearish agents</dt>
+            <dt className="text-muted-foreground">{t("charts.bearAgents")}</dt>
             <dd className="font-mono">{counts.bearish}</dd>
           </div>
           <div className="mt-3 border-t border-rule pt-2">
-            <dt className="label-caps">Consensus level</dt>
+            <dt className="label-caps">{t("charts.consensus")}</dt>
             <dd className="font-medium">{decision.consensus}</dd>
           </div>
         </dl>

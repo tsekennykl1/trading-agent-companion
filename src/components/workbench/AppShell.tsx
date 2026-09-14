@@ -36,10 +36,11 @@ function LanguageSwitch() {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-background">
+
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
         <div className="mx-auto grid max-w-[95%] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
@@ -69,10 +70,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2 sm:ml-auto">
+          <div className="order-4 col-span-2 flex shrink-0 flex-wrap items-center gap-2 sm:order-none sm:col-auto sm:ml-auto">
+            {actions}
             <LanguageSwitch />
             <BridgeStatusBadge />
           </div>
+
         </div>
       </header>
 

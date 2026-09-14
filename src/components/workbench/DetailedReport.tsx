@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
@@ -9,6 +9,29 @@ function titleCase(value: string): string {
 }
 
 const WRAPPER_KEYS = new Set(["body", "content", "data", "document", "html", "markdown", "report", "result", "text"]);
+
+/** Machine-only sections: never useful to a reader of the report. */
+const SYSTEM_KEYS = new Set([
+  "artifacts",
+  "artifact",
+  "artifact_urls",
+  "chart_urls",
+  "urls",
+  "raw",
+  "raw_data",
+  "rawdata",
+  "raw_output",
+  "raw_response",
+  "run_id",
+  "runid",
+  "logs",
+  "log",
+  "payload",
+  "request",
+]);
+
+const isSystemKey = (key: string): boolean =>
+  SYSTEM_KEYS.has(key.trim().toLowerCase().replace(/[\s-]+/g, "_"));
 
 function isEmptyValue(value: unknown): boolean {
   if (value === null || value === undefined || value === "") return true;
@@ -33,9 +56,21 @@ function decodeQuotedValue(value: string): string {
 /** Recover readable content from Markdown mixed with incomplete JSON fragments. */
 function cleanJsonLikeMarkdown(source: string): string {
   const output: string[] = [];
+  // While > 0 we are inside a machine-only block and drop everything.
+  let skipDepth = 0;
 
   for (const rawLine of source.split("\n")) {
     const trimmed = rawLine.trim();
+
+    if (skipDepth > 0) {
+      for (const character of trimmed) {
+        if (character === "{" || character === "[") skipDepth += 1;
+        else if (character === "}" || character === "]") skipDepth -= 1;
+      }
+      if (skipDepth < 0) skipDepth = 0;
+      continue;
+    }
+
     if (/^[{}\[\],]+$/.test(trimmed)) continue;
 
     const field = /^"?([A-Za-z][\w -]*)"?\s*:\s*(.*)$/.exec(trimmed);
@@ -48,9 +83,14 @@ function cleanJsonLikeMarkdown(source: string): string {
     const rawValue = field[2]?.trim() ?? "";
     if (!key || /^(?:""|''|null|undefined|\[\]|\{\})[,]?$/.test(rawValue)) continue;
     if (/^[{\[][,]?$/.test(rawValue)) {
+      if (isSystemKey(key)) {
+        skipDepth = 1;
+        continue;
+      }
       if (!WRAPPER_KEYS.has(key.toLowerCase())) output.push(`## ${titleCase(key)}`, "");
       continue;
     }
+    if (isSystemKey(key)) continue;
 
     const decodedValue = decodeQuotedValue(rawValue);
     if (!decodedValue) continue;
@@ -60,6 +100,7 @@ function cleanJsonLikeMarkdown(source: string): string {
 
   return output.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
+
 
 function htmlToMarkdown(source: string): string {
   const document = new DOMParser().parseFromString(source, "text/html");
@@ -141,7 +182,10 @@ function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): str
       .join(primitiveList ? "\n" : "\n\n");
   }
 
-  const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => !isEmptyValue(item));
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    ([key, item]) => !isEmptyValue(item) && !isSystemKey(key),
+  );
+
   if (entries.length === 1) {
     const [key, item] = entries[0] ?? [];
     if (key && WRAPPER_KEYS.has(key.toLowerCase())) return valueToMarkdown(item, headingDepth, decodeDepth + 1);
@@ -165,34 +209,45 @@ export function DetailedReport({
   url,
   ticker,
   expanded = false,
+  onContent,
 }: {
   url: string;
   ticker: string;
   /** Rendered on its own page: always open, no collapse control. */
   expanded?: boolean;
+  /** Receives the cleaned Markdown so a parent can offer downloads. */
+  onContent?: (markdown: string) => void;
 }) {
   const t = useT();
   const [open, setOpen] = useState(expanded);
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const publish = useRef(onContent);
+  publish.current = onContent;
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setFailed(false);
     setSource("");
+    publish.current?.("");
 
     fetch(url, { cache: "no-store", signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error("Report unavailable");
         return response.text();
       })
-      .then((text) => setSource(readableArtifact(text)))
+      .then((text) => {
+        const markdown = readableArtifact(text);
+        setSource(markdown);
+        publish.current?.(markdown);
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setFailed(true);
       })
+
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
