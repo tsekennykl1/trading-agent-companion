@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ExternalLink, ImageIcon, LineChart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
