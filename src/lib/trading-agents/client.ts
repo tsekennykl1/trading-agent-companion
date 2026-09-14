@@ -634,8 +634,7 @@ export const api = {
 /** GET helper that treats "not ready" (404) and network errors as null. */
 async function getJson(path: string): Promise<unknown> {
   try {
-    const base = getBridgeUrl().replace(/\/$/, "");
-    const res = await fetch(`${base}${path}`, { cache: "no-store" });
+    const res = await fetch(bridgeAssetUrl(path), { cache: "no-store" });
     if (!res.ok) return null;
     const text = await res.text();
     if (!text.trim()) return null;
