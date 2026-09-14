@@ -33,6 +33,23 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     ...defaultConfig,
     language: defaultConfig.language || "English",
   });
+  const [market, setMarket] = useState<"HK" | "Other">(
+    /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
+  );
+  const [tickerError, setTickerError] = useState<string | null>(null);
+
+  /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
+  const resolveTicker = (): string | null => {
+    const raw = config.ticker.trim().toUpperCase();
+    if (market !== "HK") return raw;
+    const digits = raw.replace(/\.HK$/i, "");
+    if (!/^\d{1,4}$/.test(digits)) {
+      setTickerError(t("form.hkDigits"));
+      return null;
+    }
+    setTickerError(null);
+    return `${digits.padStart(4, "0")}.HK`;
+  };
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
