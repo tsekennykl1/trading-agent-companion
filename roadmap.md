@@ -87,4 +87,4 @@
 - [x] Keep export actions at the top-right of the detail page.
 - [x] Add a Show/Hide control to Recommendation confidence.
 - [x] Enlarge and bold the New analysis heading.
-- [ ] Verify ready/loading states, navigation back, responsive layouts, and a clean build.
+- [x] Verify ready/loading states, navigation back, responsive layouts, and a clean build.
