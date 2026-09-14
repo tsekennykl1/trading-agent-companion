@@ -26,21 +26,34 @@ const fmt = (v: number | undefined, digits = 2) =>
  */
 export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
   const [view, setView] = useState<"interactive" | "image">("interactive");
+  const isMobile = useIsMobile();
   const p = run.partial;
   const market = artifacts?.marketData ?? null;
+  const chartData = artifacts?.chartData ?? null;
+  const lastRow = chartData?.rows.at(-1);
+  const prevRow = chartData?.rows.at(-2);
   const running = run.status === "running" || run.status === "queued";
 
-  const latestPrice = p?.latestPrice ?? market?.latestPrice;
-  const latestRsi14 = p?.latestRsi14 ?? market?.latestRsi14;
-  const latestEma20 = p?.latestEma20 ?? market?.latestEma20;
-  const latestEma50 = p?.latestEma50 ?? market?.latestEma50;
-  const changePct = p?.changePct ?? market?.changePct;
-  const pricePoints = p?.pricePoints ?? (market?.prices.length || undefined);
-  const stockName = p?.stockName ?? market?.stockName;
+  const latestPrice = p?.latestPrice ?? market?.latestPrice ?? lastRow?.close;
+  const latestRsi14 = p?.latestRsi14 ?? market?.latestRsi14 ?? lastRow?.rsi14;
+  const latestEma20 = p?.latestEma20 ?? market?.latestEma20 ?? lastRow?.ema20;
+  const latestEma50 = p?.latestEma50 ?? market?.latestEma50 ?? lastRow?.ema50;
+  const changePct =
+    p?.changePct ??
+    market?.changePct ??
+    (lastRow?.close !== undefined && prevRow?.close
+      ? ((lastRow.close - prevRow.close) / prevRow.close) * 100
+      : undefined);
+  const pricePoints = p?.pricePoints ?? (market?.prices.length || chartData?.rows.length || undefined);
+  const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
   const warnings = p?.warnings ?? [];
 
-  const chartHtmlUrl = artifacts?.chartHtmlUrl ?? p?.chartHtmlUrl;
   const chartPngUrl = artifacts?.chartPngUrl ?? p?.chartPngUrl;
+
+  useEffect(() => {
+    if (!chartData && chartPngUrl) setView("image");
+    if (chartData) setView("interactive");
+  }, [chartData, chartPngUrl]);
 
   const hasMarket =
     p?.marketDataReady ||
@@ -48,7 +61,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
     latestRsi14 !== undefined ||
     latestEma20 !== undefined;
 
-  if (!hasMarket && !chartHtmlUrl && warnings.length === 0 && !running) return null;
+  if (!hasMarket && !chartData && !chartPngUrl && warnings.length === 0 && !running) return null;
 
   return (
     <section className="panel overflow-hidden">
