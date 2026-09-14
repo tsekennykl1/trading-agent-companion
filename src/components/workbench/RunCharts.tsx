@@ -137,6 +137,7 @@ export function StanceChart({ data }: { data: StancePoint[] }) {
 
 export function ConfidenceChart({ decision, stances }: { decision: Decision; stances: StancePoint[] }) {
   const t = useT();
+  const [open, setOpen] = useState(true);
   const counts = stances.reduce(
     (acc, s) => ({ ...acc, [s.stance]: (acc[s.stance] ?? 0) + 1 }),
     { bullish: 0, bearish: 0, neutral: 0 },
@@ -147,10 +148,18 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
   const confidence = decision.confidence > 0 || stances.length === 0 ? decision.confidence : agreement;
 
   return (
-    <section className="panel flex h-full flex-col p-4 sm:p-5">
-      <h3 className="text-base font-semibold">{t("charts.confTitle")}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">{t("charts.confBody")}</p>
-      <div className="mt-3 flex flex-1 flex-col items-center justify-center gap-3 min-[380px]:flex-row min-[380px]:gap-4 sm:gap-6">
+    <section className="panel flex h-full flex-col overflow-hidden">
+      <div className="flex items-start gap-3 p-4 sm:p-5">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-semibold">{t("charts.confTitle")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{t("charts.confBody")}</p>
+        </div>
+        <Button type="button" size="sm" variant="ghost" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+          {open ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+          {open ? t("common.hide") : t("common.show")}
+        </Button>
+      </div>
+      {open && <div className="flex min-h-72 flex-1 flex-col items-center justify-center gap-3 border-t border-rule px-4 py-3 min-[380px]:flex-row min-[380px]:gap-4 sm:min-h-80 sm:gap-6 sm:px-5">
         <div className="relative h-48 w-48 shrink-0 sm:h-52 sm:w-52">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
@@ -191,7 +200,7 @@ export function ConfidenceChart({ decision, stances }: { decision: Decision; sta
             <dd className="font-medium">{decision.consensus}</dd>
           </div>
         </dl>
-      </div>
+      </div>}
     </section>
   );
 }
