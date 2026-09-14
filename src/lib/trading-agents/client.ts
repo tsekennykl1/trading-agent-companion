@@ -273,6 +273,11 @@ function readPartial(
           chartPngUrl: bridgeAssetUrl(png ?? `/runs/${runId}/price-chart.png`),
         }
       : {}),
+    ...(chartJson ? { chartJsonUrl: bridgeAssetUrl(chartJson) } : {}),
+    ...(marketDataUrl ? { marketDataUrl: bridgeAssetUrl(marketDataUrl) } : {}),
+    ...(resultUrl ? { resultHtmlUrl: bridgeAssetUrl(resultUrl) } : {}),
+    ...(legacyPng ? { chartPngLegacyUrl: bridgeAssetUrl(legacyPng) } : {}),
+    ...(legacyHtml ? { chartHtmlLegacyUrl: bridgeAssetUrl(legacyHtml) } : {}),
     warnings,
   };
 }
