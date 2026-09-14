@@ -215,10 +215,13 @@ function Workbench() {
   const analysisBusy =
     startRun.isPending || (!showingSample && !!activeRunId && (!liveRun || running));
   const latestStep = analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined;
+  // Strict readiness per the engine contract: the run is completed AND the
+  // engine lists finished detail reports (partial_result.reports_ready), or
+  // the rich result page already exists. A bare decision is not enough.
   const reportReady =
+    run.source === "sample" ||
     Boolean(artifacts.resultHtmlUrl) ||
-    Boolean(liveRun?.decision) ||
-    Object.keys(artifacts.reports).length > 0;
+    (liveRun?.status === "completed" && (liveRun.partial?.reportsReady?.length ?? 0) > 0);
   const showExportBar = startRun.isPending || activeRunId !== null || reportReady;
 
   return (
