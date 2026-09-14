@@ -226,8 +226,8 @@ export function markdownToHtml(md: string): string {
   return out.join("\n");
 }
 
-export function buildHtmlReport(run: RunRecord): string {
-  const body = markdownToHtml(buildMarkdownReport(run));
+export function buildHtmlReport(run: RunRecord, detailedMarkdown?: string): string {
+  const body = markdownToHtml(detailedMarkdown?.trim() || buildMarkdownReport(run));
   return `<!doctype html>
 <html lang="en">
 <head>

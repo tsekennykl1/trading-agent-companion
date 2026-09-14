@@ -230,7 +230,7 @@ function stripSystemSections(source: string): string {
   return output.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function readableArtifact(source: string): string {
+export function readableArtifact(source: string): string {
   return stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0)));
 }
 
