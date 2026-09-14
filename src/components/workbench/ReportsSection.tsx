@@ -25,14 +25,14 @@ export function ReportsSection({
   const running = run.status === "running" || run.status === "queued";
   const sectionRows = REPORT_SECTIONS.map((section) => ({
     ...section,
-    content: run.reports[section.key]?.trim() ?? "",
+    content: reports[section.key]?.trim() ?? "",
   }));
   sectionRows.push(
     ...extra.map((key) => ({
       key,
       label: key.replace(/[_-]/g, " ").replace(/\b\w/g, (character) => character.toUpperCase()),
       team: "Engine",
-      content: run.reports[key]?.trim() ?? "",
+      content: reports[key]?.trim() ?? "",
     })),
   );
   const readyKeys = sectionRows.filter((section) => Boolean(section.content)).map((section) => section.key);
