@@ -181,7 +181,7 @@ function Workbench() {
     <AppShell>
       <div className="mb-5 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)] xl:items-start sm:mb-6">
         <div className="min-w-0 pt-1">
-          <h1 className="font-display text-2xl font-semibold sm:text-3xl">{t("home.title")}</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             {t("home.intro")}
           </p>

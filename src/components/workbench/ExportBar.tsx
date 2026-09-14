@@ -44,17 +44,17 @@ export function ExportBar({
     setTimeout(() => win.print(), 400);
   };
 
-  const dim = ready ? "" : "pointer-events-none opacity-45";
+  const dim = ready ? "" : "pointer-events-none opacity-40 cursor-not-allowed";
 
   return (
-    <section className="panel px-4 py-3 sm:px-5">
+    <section className="panel px-4 py-3 sm:px-5" aria-busy={loading} aria-live="polite">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="min-w-0 flex-1 basis-48">
-          <p className="label-caps flex items-center gap-2">
+          <p className="label-caps flex items-center gap-2 text-sm font-semibold">
             {t("export.title")}
             {loading && (
               <Loader2
-                className="size-3.5 animate-spin text-primary motion-reduce:animate-none"
+                className="size-5 animate-spin text-primary motion-reduce:animate-none"
                 aria-hidden="true"
               />
             )}
@@ -63,7 +63,13 @@ export function ExportBar({
             {ready ? t("export.body") : t("export.preparing")}
           </p>
         </div>
-        <div className="flex w-full flex-wrap gap-1.5 sm:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
+          {loading && (
+            <span className="mr-1 flex items-center gap-1.5 text-xs font-medium text-primary">
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              {t("export.preparing")}
+            </span>
+          )}
           {reportUrl && ready && (
             <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
