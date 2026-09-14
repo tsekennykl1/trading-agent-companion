@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, FileCode2, FileText, Printer } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { DetailedReport } from "@/components/workbench/DetailedReport";
 import { Button } from "@/components/ui/button";
+import { downloadFile, markdownToHtml } from "@/lib/trading-agents/report";
 import { useT } from "@/lib/i18n";
 
 const TITLE = "Detailed analysis report — My Trading Agents";
@@ -27,26 +30,84 @@ export const Route = createFileRoute("/report")({
   component: ReportPage,
 });
 
+function standaloneHtml(title: string, markdown: string): string {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${title}</title>
+<style>
+  body { font-family: "IBM Plex Sans", system-ui, sans-serif; color: #16202c; margin: 0 auto; max-width: 52rem; padding: 2.5rem 1.5rem; line-height: 1.65; }
+  h1, h2, h3, h4 { font-family: "IBM Plex Serif", Georgia, serif; line-height: 1.25; margin: 1.8em 0 0.5em; }
+  h1 { font-size: 1.7rem; } h2 { font-size: 1.3rem; } h3 { font-size: 1.1rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.92rem; }
+  th, td { border: 1px solid #d9dee5; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+  th { background: #f3f5f8; }
+  ul, ol { padding-left: 1.2rem; }
+  @media print { body { padding: 0; } }
+</style></head>
+<body><h1>${title}</h1>${markdownToHtml(markdown)}</body></html>`;
+}
+
 function ReportPage() {
-  const { url, ticker } = Route.useSearch();
+  const search = Route.useSearch();
+  const url = search.url;
+  const ticker = search.ticker;
   const t = useT();
+  const [markdown, setMarkdown] = useState("");
+
+  const ready = markdown.trim().length > 0;
+  const title = `${t("report.title")}${ticker ? ` — ${ticker}` : ""}`;
+  const slug = (ticker || "run").replace(/[^a-z0-9.]/gi, "_");
+
+  const saveMarkdown = () => {
+    downloadFile(`tradingagents-report-${slug}.md`, `# ${title}\n\n${markdown}`, "text/markdown");
+    toast.success(t("export.markdown"));
+  };
+
+  const saveHtml = () => {
+    downloadFile(`tradingagents-report-${slug}.html`, standaloneHtml(title, markdown), "text/html");
+    toast.success(t("export.html"));
+  };
+
+  const printPdf = () => {
+    const win = window.open("", "_blank");
+    if (!win) {
+      toast.error("Allow pop-ups to print the report as PDF");
+      return;
+    }
+    win.document.write(standaloneHtml(title, markdown));
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  };
+
+  const actions = (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={saveMarkdown}>
+        <FileText className="size-3.5" /> {t("export.markdown")}
+      </Button>
+      <Button size="sm" variant="outline" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={saveHtml}>
+        <FileCode2 className="size-3.5" /> {t("export.html")}
+      </Button>
+      <Button size="sm" className="min-h-9 gap-1.5 sm:min-h-8" disabled={!ready} onClick={printPdf}>
+        <Printer className="size-3.5" /> {t("export.print")}
+      </Button>
+    </div>
+  );
 
   return (
-    <AppShell>
+    <AppShell actions={url ? actions : undefined}>
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Button asChild size="sm" variant="outline" className="min-h-9 gap-2">
           <Link to="/">
             <ArrowLeft className="size-4" /> {t("report.back")}
           </Link>
         </Button>
-        <h1 className="font-display text-xl font-semibold sm:text-2xl">
-          {t("report.title")}
-          {ticker ? ` — ${ticker}` : ""}
-        </h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">{title}</h1>
       </div>
 
       {url ? (
-        <DetailedReport url={url} ticker={ticker || "run"} expanded />
+        <DetailedReport url={url} ticker={ticker || "run"} expanded onContent={setMarkdown} />
       ) : (
         <p className="panel px-4 py-6 text-sm text-muted-foreground sm:px-5">{t("report.missing")}</p>
       )}
