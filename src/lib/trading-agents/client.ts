@@ -613,8 +613,8 @@ export const api = {
   },
 
   /** GET /runs/{id}/price-chart.json — structured chart data for React Plotly. */
-  priceChartJson: async (id: string): Promise<PriceChartData | null> => {
-    const raw = await getJson(`/runs/${id}/price-chart.json`);
+  priceChartJson: async (id: string, url?: string): Promise<PriceChartData | null> => {
+    const raw = await getJson(url ?? `/runs/${id}/price-chart.json`);
     return readPriceChart(raw);
   },
 
