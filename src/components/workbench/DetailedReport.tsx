@@ -182,7 +182,10 @@ function valueToMarkdown(value: unknown, headingDepth = 2, decodeDepth = 0): str
       .join(primitiveList ? "\n" : "\n\n");
   }
 
-  const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => !isEmptyValue(item));
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    ([key, item]) => !isEmptyValue(item) && !isSystemKey(key),
+  );
+
   if (entries.length === 1) {
     const [key, item] = entries[0] ?? [];
     if (key && WRAPPER_KEYS.has(key.toLowerCase())) return valueToMarkdown(item, headingDepth, decodeDepth + 1);
