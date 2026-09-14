@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { FileCode2, FileText, Loader2, Printer, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { buildHtmlReport, buildMarkdownReport, downloadFile } from "@/lib/trading-agents/report";
+import { buildHtmlReport, downloadFile } from "@/lib/trading-agents/report";
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { readableArtifact } from "@/components/workbench/DetailedReport";
