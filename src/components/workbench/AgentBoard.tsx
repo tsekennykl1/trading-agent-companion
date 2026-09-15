@@ -126,9 +126,18 @@ export function AgentBoard({
     .map((stage) => ({ stage, timing: timingByStage.get(stage.id) }));
   const slowestMs = Math.max(0, ...timingRows.map(({ timing }) => timing?.durationMs ?? 0));
   const stageLabel = (roles: string[]) => roles.map((role) => translatedValue(role, ROLE_KEYS, t)).join(" + ");
-  const clock = (value?: string) => value
-    ? new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(value))
-    : "—";
+  const clock = (value?: string) => {
+    if (!value) return "—";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    // English AM/PM everywhere, so timings never mix locale formats.
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(parsed);
+  };
   const duration = (ms?: number) => ms === undefined ? "—" : formatElapsed(Math.max(0, Math.round(ms / 1000)));
 
   return (
