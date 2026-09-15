@@ -166,7 +166,27 @@ function HistoryPage() {
                         )}
                       </span>
                     </td>
+                    <td className="px-4 py-2.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        onClick={() => setOpenRunId(open ? null : run.id)}
+                        aria-expanded={open}
+                      >
+                        <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+                        {open ? t("history.hideDetails") : t("history.showDetails")}
+                      </Button>
+                    </td>
                   </tr>
+                  {open && (
+                    <tr className="border-b border-rule/60 bg-muted/20">
+                      <td colSpan={7} className="p-0">
+                        <RunHistoryDetails run={run} />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
             </tbody>
