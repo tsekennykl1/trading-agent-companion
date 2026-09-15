@@ -709,6 +709,27 @@ export function normalizeRun(raw: unknown): RunRecord {
     const horizon = str("horizon", "time_horizon", "timeframe", "timeHorizon");
     const rationale = str("rationale", "reasoning", "why");
 
+    // Evidence: prefer the decision-level narratives (portfolio manager, trader,
+    // research manager, risk debate) and only fall back to analyst reports.
+    const decisionReportKeys = [
+      "final_decision",
+      "trader_plan",
+      "investment_plan",
+      "bull_report",
+      "bear_report",
+      "risk_aggressive",
+      "risk_conservative",
+      "risk_neutral",
+    ];
+    const pickReports = (keys: string[]) =>
+      Object.fromEntries(keys.filter((k) => reports[k]).map((k) => [k, reports[k] as string]));
+    const decisionReports = pickReports(decisionReportKeys);
+    const analystReports = pickReports(["market_report", "sentiment_report", "news_report", "fundamentals_report"]);
+    const primary = extractReasons(decisionReports);
+    const secondary = extractReasons(analystReports);
+    const decisionBull = primary.bullish.length ? primary.bullish : secondary.bullish;
+    const decisionBear = primary.bearish.length ? primary.bearish : secondary.bearish;
+
     record.decision = {
       action,
       rating: actionText,
