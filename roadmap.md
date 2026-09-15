@@ -109,3 +109,10 @@
 - [x] Open Final Trade Decision automatically when content is available.
 - [x] Cache the latest engine run and retrieved artifacts in browser storage.
 - [x] Verify restoration, refresh behavior, responsive layout, and a clean build.
+
+# Agent report ordering and defaults
+
+- [x] Move Company of Interest to the top of Agent Reports.
+- [x] Open Company of Interest and Final Trade Decision by default.
+- [x] Keep every other report collapsed by default.
+- [x] Verify report ordering, default visibility, responsive layout, and a clean build.
