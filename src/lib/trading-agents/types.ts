@@ -108,6 +108,9 @@ export interface RunPartial {
   decisionReady?: boolean;
   /** Names of the detail reports the engine has finished. */
   reportsReady?: string[];
+  /** Monotonic backend revision used to avoid redundant heavy fetches. */
+  version?: number;
+  artifactsReady?: Record<string, boolean>;
   stockName?: string;
   latestPrice?: number;
   latestRsi14?: number;

@@ -13,11 +13,11 @@ import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
-import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
+import { api, bridgeAssetUrl, EngineHttpError } from "@/lib/trading-agents/client";
 import { finalReportReady, reportsReadyFor } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
-import { loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
+import { clearCachedAnalysis, loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 import { useT } from "@/lib/i18n";
@@ -105,13 +105,25 @@ function Workbench() {
 
   // Refresh the full run whenever the cheap status poll reports a change.
   const statusSignature = status
-    ? `${status.status}|${status.decisionReady}|${status.reportsReady.length}|${status.resultUrl ?? ""}`
+    ? status.version !== undefined
+      ? String(status.version)
+      : `${status.status}|${status.decisionReady}|${status.reportsReady.length}|${status.resultUrl ?? ""}`
     : "";
   useEffect(() => {
     if (!statusSignature || !activeRunId) return;
     void runQuery.refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusSignature, activeRunId]);
+
+  useEffect(() => {
+    const error = statusQuery.error ?? runQuery.error;
+    if (!(error instanceof EngineHttpError) || (error.status !== 404 && error.status !== 410)) return;
+    clearCachedAnalysis();
+    setCachedRun(null);
+    setCachedArtifacts(null);
+    setActiveRunId(null);
+    setShowingSample(true);
+  }, [statusQuery.error, runQuery.error]);
 
   // Elapsed time for the in-progress overlay
   const [startedAt, setStartedAt] = useState<number | null>(null);

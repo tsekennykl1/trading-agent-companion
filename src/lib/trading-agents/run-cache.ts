@@ -49,3 +49,8 @@ export function saveCachedAnalysis(
     // Storage may be unavailable or full; live data remains in React state.
   }
 }
+
+export function clearCachedAnalysis(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(CACHE_KEY);
+}

@@ -116,3 +116,11 @@
 - [x] Open Company of Interest and Final Trade Decision by default.
 - [x] Keep every other report collapsed by default.
 - [x] Verify report ordering, default visibility, responsive layout, and a clean build.
+
+# Reliable progressive analysis pipeline
+
+- [x] Add lightweight versioned readiness polling with conditional requests.
+- [x] Add progressive report publication and final readiness ordering.
+- [x] Replace per-run daemon threads with a durable bounded worker queue.
+- [x] Add canonical secure artifact URL configuration and deployment guidance.
+- [x] Refresh frontend data only when the backend version changes and expire removed cached runs.

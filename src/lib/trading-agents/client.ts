@@ -25,6 +25,13 @@ export function setBridgeUrl(url: string) {
   window.localStorage.setItem(STORAGE_KEY, url.replace(/\/$/, ""));
 }
 
+export class EngineHttpError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "EngineHttpError";
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const base = getBridgeUrl().replace(/\/$/, "");
   const res = await fetch(`${base}${path}`, {
@@ -33,7 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`Engine responded ${res.status}${text ? `: ${formatErrorDetail(text)}` : ""}`);
+    throw new EngineHttpError(res.status, `Engine responded ${res.status}${text ? `: ${formatErrorDetail(text)}` : ""}`);
   }
   return (await res.json()) as T;
 }
@@ -116,6 +123,9 @@ export interface RunStatus {
   pollAfterMs?: number;
   progressPercent?: number;
   progressMessage?: string;
+  version?: number;
+  artifactsReady?: Record<string, boolean>;
+  attemptCount?: number;
 }
 
 function readRunStatus(raw: unknown): RunStatus | null {
@@ -129,6 +139,10 @@ function readRunStatus(raw: unknown): RunStatus | null {
   const pollAfter = num(o["poll_after_ms"] ?? o["pollAfterMs"]);
   const percent = num(progress["percent"]);
   const message = progress["message"] ?? progress["stage"];
+  const artifactsReadyRaw = o["artifacts_ready"] ?? o["artifactsReady"];
+  const artifactsReady = artifactsReadyRaw && typeof artifactsReadyRaw === "object"
+    ? Object.fromEntries(Object.entries(artifactsReadyRaw as Record<string, unknown>).map(([key, value]) => [key, value === true]))
+    : undefined;
   return {
     runId: String(o["run_id"] ?? o["runId"] ?? ""),
     status: canonicalStatus(rawStatus),
@@ -139,8 +153,15 @@ function readRunStatus(raw: unknown): RunStatus | null {
     ...(pollAfter !== undefined ? { pollAfterMs: pollAfter } : {}),
     ...(percent !== undefined ? { progressPercent: percent } : {}),
     ...(typeof message === "string" && message ? { progressMessage: message } : {}),
+    ...(num(o["version"]) !== undefined ? { version: num(o["version"]) } : {}),
+    ...(artifactsReady ? { artifactsReady } : {}),
+    ...(num(o["attempt_count"] ?? o["attemptCount"]) !== undefined
+      ? { attemptCount: num(o["attempt_count"] ?? o["attemptCount"]) }
+      : {}),
   };
 }
+
+const statusCache = new Map<string, { etag?: string; value: RunStatus }>();
 
 export interface HealthResponse {
   status: string;
@@ -670,8 +691,25 @@ export const api = {
    * polling the full run.
    */
   runStatus: async (id: string): Promise<RunStatus | null> => {
-    const raw = await getJson(`/runs/${id}/status`);
-    return readRunStatus(raw);
+    const cached = statusCache.get(id);
+    try {
+      const res = await fetch(bridgeAssetUrl(`/runs/${id}/status`), {
+        cache: "no-store",
+        headers: cached?.etag ? { "If-None-Match": cached.etag } : undefined,
+      });
+      if (res.status === 304) return cached?.value ?? null;
+      if (res.status === 404 || res.status === 410) {
+        statusCache.delete(id);
+        throw new EngineHttpError(res.status, `Run ${id} is no longer available`);
+      }
+      if (!res.ok) return null;
+      const value = readRunStatus(await res.json());
+      if (value) statusCache.set(id, { etag: res.headers.get("etag") ?? undefined, value });
+      return value;
+    } catch (error) {
+      if (error instanceof EngineHttpError) throw error;
+      return null;
+    }
   },
   listRuns: async () => {
     const raw = await request<unknown>("/runs");
