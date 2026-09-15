@@ -35,6 +35,16 @@ export interface RunStats {
   reportsDone: number;
   reportsTotal: number;
   runtimeSeconds: number;
+  stageTimings?: StageTiming[];
+}
+
+export interface StageTiming {
+  stage: string;
+  status: "pending" | "in_progress" | "completed" | "error";
+  startedAt?: string;
+  endedAt?: string;
+  durationMs?: number;
+  attempts?: number;
 }
 
 /** Actionable price levels the engine may attach to a decision or chart. */

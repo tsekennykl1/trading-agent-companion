@@ -134,8 +134,8 @@
 
 # Stage timing and concurrent risk review
 
-- [ ] Record live start, end, duration, status, and execution state for every selected stage.
-- [ ] Show a compact stage timing panel on the workbench and identify the slowest completed stage.
-- [ ] Keep each run's selected stages immutable while preserving the next-run form choices across refreshes.
-- [ ] Execute the three risk viewpoints concurrently within each debate round and merge them deterministically.
-- [ ] Test timing persistence, stage accuracy, parallel speed, responsive layout, and clean frontend/backend builds.
+- [x] Record live start, end, duration, status, and execution state for every selected stage.
+- [x] Show a compact stage timing panel on the workbench and identify the slowest completed stage.
+- [x] Keep each run's selected stages immutable while preserving the next-run form choices across refreshes.
+- [x] Execute the three risk viewpoints concurrently within each debate round and merge them deterministically.
+- [x] Test timing persistence, stage accuracy, parallel speed, responsive layout, and clean frontend/backend builds.
