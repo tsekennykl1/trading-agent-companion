@@ -202,6 +202,14 @@ function Setup() {
           ))}
         </ol>
 
+        <h2 className="mt-10 text-xl font-semibold">Build your .env</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Pick your AI provider, paste its key, and copy the finished file. Model names come straight from
+          the engine's own list, so they are always valid. Market and economic data keys are pre-filled with
+          working starter keys.
+        </p>
+        <EnvBuilder />
+
         <h2 className="mt-10 text-xl font-semibold">AI model keys</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           DeepSeek is only one of the supported providers. Add the key for whichever provider you pick to
