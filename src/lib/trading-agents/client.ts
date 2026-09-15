@@ -139,6 +139,8 @@ function readRunStatus(raw: unknown): RunStatus | null {
   const pollAfter = num(o["poll_after_ms"] ?? o["pollAfterMs"]);
   const percent = num(progress["percent"]);
   const message = progress["message"] ?? progress["stage"];
+  const version = num(o["version"]);
+  const attemptCount = num(o["attempt_count"] ?? o["attemptCount"]);
   const artifactsReadyRaw = o["artifacts_ready"] ?? o["artifactsReady"];
   const artifactsReady = artifactsReadyRaw && typeof artifactsReadyRaw === "object"
     ? Object.fromEntries(Object.entries(artifactsReadyRaw as Record<string, unknown>).map(([key, value]) => [key, value === true]))
@@ -153,11 +155,9 @@ function readRunStatus(raw: unknown): RunStatus | null {
     ...(pollAfter !== undefined ? { pollAfterMs: pollAfter } : {}),
     ...(percent !== undefined ? { progressPercent: percent } : {}),
     ...(typeof message === "string" && message ? { progressMessage: message } : {}),
-    ...(num(o["version"]) !== undefined ? { version: num(o["version"]) } : {}),
+    ...(version !== undefined ? { version } : {}),
     ...(artifactsReady ? { artifactsReady } : {}),
-    ...(num(o["attempt_count"] ?? o["attemptCount"]) !== undefined
-      ? { attemptCount: num(o["attempt_count"] ?? o["attemptCount"]) }
-      : {}),
+    ...(attemptCount !== undefined ? { attemptCount } : {}),
   };
 }
 
@@ -695,7 +695,7 @@ export const api = {
     try {
       const res = await fetch(bridgeAssetUrl(`/runs/${id}/status`), {
         cache: "no-store",
-        headers: cached?.etag ? { "If-None-Match": cached.etag } : undefined,
+        ...(cached?.etag ? { headers: { "If-None-Match": cached.etag } } : {}),
       });
       if (res.status === 304) return cached?.value ?? null;
       if (res.status === 404 || res.status === 410) {
@@ -704,7 +704,8 @@ export const api = {
       }
       if (!res.ok) return null;
       const value = readRunStatus(await res.json());
-      if (value) statusCache.set(id, { etag: res.headers.get("etag") ?? undefined, value });
+      const etag = res.headers.get("etag");
+      if (value) statusCache.set(id, { ...(etag ? { etag } : {}), value });
       return value;
     } catch (error) {
       if (error instanceof EngineHttpError) throw error;
