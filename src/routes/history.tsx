@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Fragment, useState } from "react";
+import { CheckCircle2, ChevronDown, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { RunHistoryDetails } from "@/components/workbench/RunHistoryDetails";
 import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady } from "@/lib/trading-agents/report-readiness";
