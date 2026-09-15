@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Activity, BookOpen, History, LayoutDashboard, Languages, Plug } from "lucide-react";
+import { Activity, BookOpen, History, LayoutDashboard, Languages } from "lucide-react";
 import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
 import { useLanguage } from "@/lib/i18n";
@@ -7,8 +7,6 @@ import { useLanguage } from "@/lib/i18n";
 const NAV = [
   { to: "/", label: "nav.workbench", icon: LayoutDashboard },
   { to: "/history", label: "nav.history", icon: History },
-  { to: "/setup", label: "nav.setup", icon: Plug },
-  { to: "/about", label: "nav.about", icon: BookOpen },
 ] as const;
 
 function LanguageSwitch() {
@@ -105,7 +103,16 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             </a>
             .
           </p>
-          <p className="mt-1">{t("footer.disclaimer")}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-1.5 font-medium text-foreground underline underline-offset-2 hover:text-primary"
+            >
+              <BookOpen className="size-3.5" aria-hidden="true" />
+              {t("nav.about")}
+            </Link>
+            <p>{t("footer.disclaimer")}</p>
+          </div>
         </div>
       </footer>
     </div>

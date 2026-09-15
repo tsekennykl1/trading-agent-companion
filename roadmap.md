@@ -88,3 +88,10 @@
 - [x] Add a Show/Hide control to Recommendation confidence.
 - [x] Enlarge and bold the New analysis heading.
 - [x] Verify ready/loading states, navigation back, responsive layouts, and a clean build.
+
+# Final report controls and navigation cleanup
+
+- [x] Allow completed reports from the connected local engine to expose their report controls.
+- [x] Remove Connect engine and About from the main navigation.
+- [x] Use the clickable connection badge as the setup entry point and move About to the footer.
+- [x] Verify completed/loading report states and desktop/mobile layout.
