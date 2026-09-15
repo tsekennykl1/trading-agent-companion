@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api, bridgeAssetUrl, type MarketData, type PriceChartData } from "./client";
-import { REPORT_SECTIONS, type RunRecord } from "./types";
+import { DEFAULT_STAGES, REPORT_SECTIONS, STAGE_OPTIONS, type RunRecord } from "./types";
 import { fill, translate } from "@/lib/i18n";
 
 export interface RunArtifacts {
@@ -42,6 +42,10 @@ export function useRunArtifacts(
 ): RunArtifacts {
   const runId = run?.source === "engine" ? run.id : undefined;
   const terminal = run?.status === "completed" || run?.status === "error";
+  const selectedStages = new Set(run?.config.stages ?? DEFAULT_STAGES);
+  const selectedReportKeys = new Set(
+    STAGE_OPTIONS.filter((stage) => selectedStages.has(stage.id)).flatMap((stage) => stage.reportKeys),
+  );
   const partial = run?.partial;
   const givenChartJson = partial?.chartJsonUrl;
   const givenMarketData = partial?.marketDataUrl;
@@ -72,7 +76,10 @@ export function useRunArtifacts(
     const loadReports = async (have: Record<string, string>) => {
       const index = await api.reportsIndex(runId);
       const next = { ...have, ...index.contents };
-      const missing = index.names.filter((name) => !next[name]);
+      const missing = index.names.filter((name) => {
+        const knownStageReport = STAGE_OPTIONS.some((stage) => stage.reportKeys.includes(name));
+        return !next[name] && (!knownStageReport || selectedReportKeys.has(name));
+      });
       const fetched = await Promise.all(
         missing.map(async (name) => [name, await api.report(runId, name)] as const),
       );

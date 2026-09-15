@@ -22,17 +22,18 @@ interface Props {
   compact?: boolean;
   onRun: (config: RunConfig) => void;
   onCancel: () => void;
+  onConfigChange?: (config: RunConfig) => void;
 }
 
 /** Values sent to the engine stay English; only the labels are translated. */
 const REPORT_LANGUAGES = ["English", "Traditional Chinese", "Simplified Chinese"] as const;
 
-export function RunForm({ defaultConfig, running, disabled, compact = false, onRun, onCancel }: Props) {
+export function RunForm({ defaultConfig, running, disabled, compact = false, onRun, onCancel, onConfigChange }: Props) {
   const t = useT();
   const [config, setConfig] = useState<RunConfig>({
     ...defaultConfig,
     language: defaultConfig.language || "English",
-    stages: defaultConfig.stages?.length ? defaultConfig.stages : DEFAULT_STAGES,
+    stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
   const [market, setMarket] = useState<"HK" | "Other">(
     /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
@@ -42,8 +43,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   // The analysis date is filled in after hydration, so adopt it once it arrives.
   useEffect(() => {
     if (!defaultConfig.analysisDate) return;
-    setConfig((c) => (c.analysisDate ? c : { ...c, analysisDate: defaultConfig.analysisDate }));
-  }, [defaultConfig.analysisDate]);
+    setConfig({
+      ...defaultConfig,
+      language: defaultConfig.language || "English",
+      stages: defaultConfig.stages ?? DEFAULT_STAGES,
+    });
+    setMarket(/\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other");
+  }, [defaultConfig]);
 
   /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
   const resolveTicker = (): string | null => {
@@ -59,7 +65,11 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   };
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
-    setConfig((c) => ({ ...c, [key]: value }));
+    setConfig((current) => {
+      const next = { ...current, [key]: value };
+      onConfigChange?.(next);
+      return next;
+    });
 
   const stages = config.stages ?? DEFAULT_STAGES;
   const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
@@ -76,10 +86,16 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         : checked
           ? Array.from(new Set([...c.analysts, analyst]))
           : c.analysts.filter((a) => a !== analyst);
-      return { ...c, stages: next, analysts };
+      const nextConfig = { ...c, stages: next, analysts };
+      onConfigChange?.(nextConfig);
+      return nextConfig;
     });
 
-  const stageLabel = (roles: string[]) => roles.map((role) => t(`role.${role}` as TKey)).join(" + ");
+  const stageLabel = (stage: (typeof STAGE_OPTIONS)[number]) => {
+    if (stage.id === "research_debate") return t("form.researchDebate");
+    if (stage.id === "risk_debate") return t("form.riskDebate");
+    return stage.roles.map((role) => t(`role.${role}` as TKey)).join(" + ");
+  };
 
   return (
     <form
@@ -88,8 +104,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         e.preventDefault();
         const ticker = resolveTicker();
         if (!ticker) return;
-        setConfig((c) => ({ ...c, ticker }));
-        onRun({ ...config, ticker });
+        const submitted = { ...config, ticker };
+        setConfig(submitted);
+        onConfigChange?.(submitted);
+        onRun(submitted);
       }}
     >
       <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
@@ -118,7 +136,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                 }}
-                placeholder={market === "HK" ? "700" : "AAPL"}
+                placeholder="700"
                 required
                 aria-invalid={!!tickerError}
                 className="font-mono"
@@ -196,11 +214,11 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               {fill(t("form.selected"), { n: config.analysts.length, m: ANALYST_OPTIONS.length })}
             </span>
           </div>
-          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-4")}>
+          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "lg:grid-cols-4")}>
             {analystStages.map((stage) => (
               <label
                 key={stage.id}
-                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
+                className="flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-rule px-2.5 py-1.5 text-sm leading-snug transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
               >
                 <Checkbox
                   checked={stages.includes(stage.id)}
@@ -222,17 +240,17 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               })}
             </span>
           </div>
-          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-3")}>
+          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "lg:grid-cols-3")}>
             {decisionStages.map((stage) => (
               <label
                 key={stage.id}
-                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
+                className="flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-rule px-2.5 py-1.5 text-sm leading-snug transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
               >
                 <Checkbox
                   checked={stages.includes(stage.id)}
                   onCheckedChange={(c) => toggleStage(stage.id, c === true)}
                 />
-                <span className="min-w-0">{stageLabel(stage.roles)}</span>
+                <span className="min-w-0">{stageLabel(stage)}</span>
               </label>
             ))}
           </div>
