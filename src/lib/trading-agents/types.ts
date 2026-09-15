@@ -89,6 +89,8 @@ export interface RunConfig {
   deepModel: string;
   researchDepth: "Shallow" | "Medium" | "Deep";
   analysts: string[];
+  /** Ids of the research/decision stages the engine should run. */
+  stages?: string[];
   language: string;
 }
 
@@ -162,6 +164,58 @@ export const ANALYST_OPTIONS = [
   "News Analyst",
   "Fundamentals Analyst",
 ] as const;
+
+/**
+ * Every stage the engine can run. Analyst stages mirror ANALYST_OPTIONS; the
+ * rest are the research, trading, risk and portfolio stages. Each stage owns the
+ * report keys it produces, so the reports list can mark skipped stages.
+ */
+export interface StageOption {
+  id: string;
+  /** Analyst name when this stage is one of the four analysts. */
+  analyst?: string;
+  /** Role labels composed into the checkbox label (translated at render time). */
+  roles: string[];
+  reportKeys: string[];
+}
+
+export const STAGE_OPTIONS: StageOption[] = [
+  { id: "market", analyst: "Market Analyst", roles: ["Market Analyst"], reportKeys: ["market_report"] },
+  { id: "social", analyst: "Sentiment Analyst", roles: ["Sentiment Analyst"], reportKeys: ["sentiment_report"] },
+  { id: "news", analyst: "News Analyst", roles: ["News Analyst"], reportKeys: ["news_report"] },
+  {
+    id: "fundamentals",
+    analyst: "Fundamentals Analyst",
+    roles: ["Fundamentals Analyst"],
+    reportKeys: ["fundamentals_report"],
+  },
+  {
+    id: "research_debate",
+    roles: ["Bull Researcher", "Bear Researcher"],
+    reportKeys: ["bull_report", "bear_report"],
+  },
+  { id: "research_manager", roles: ["Research Manager"], reportKeys: ["investment_plan"] },
+  { id: "trader", roles: ["Trader"], reportKeys: ["trader_plan"] },
+  {
+    id: "risk_debate",
+    roles: ["Aggressive Analyst", "Conservative Analyst", "Neutral Analyst"],
+    reportKeys: ["risk_aggressive", "risk_conservative", "risk_neutral"],
+  },
+  {
+    id: "portfolio_manager",
+    roles: ["Portfolio Manager"],
+    reportKeys: ["final_decision", "final_trade_decision"],
+  },
+];
+
+export const DEFAULT_STAGES = [
+  "market",
+  "research_debate",
+  "research_manager",
+  "trader",
+  "risk_debate",
+  "portfolio_manager",
+];
 
 export const PROVIDER_OPTIONS = [
   "DeepSeek",
