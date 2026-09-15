@@ -45,6 +45,14 @@ const COMPANY_CONTEXT_KEYS = [
   "sender",
 ] as const;
 
+const ANALYST_BY_REPORT_KEY: Record<string, string> = {
+  market_report: "Market Analyst",
+  sentiment_report: "Sentiment Analyst",
+  news_report: "News Analyst",
+  fundamentals_report: "Fundamentals Analyst",
+};
+
+
 function translatedValue(value: string, keys: Record<string, TKey>, t: (key: TKey) => string) {
   const key = keys[value];
   return key ? t(key) : value;
@@ -105,8 +113,23 @@ export function ReportsSection({
       content: reports[key]?.trim() ?? "",
     })),
   );
-  const readyKeys = sectionRows.filter((section) => Boolean(section.content)).map((section) => section.key);
+
+  // Analyst reports the user did not request sink to the bottom, just above the final decision.
+  const selectedAnalysts = new Set(run.config.analysts ?? []);
+  const isUnselected = (key: string) => {
+    const analyst = ANALYST_BY_REPORT_KEY[key];
+    return Boolean(analyst) && selectedAnalysts.size > 0 && !selectedAnalysts.has(analyst!);
+  };
+  const isFinal = (key: string) => key === "final_decision" || key === "final_trade_decision";
+  const orderedRows = [
+    ...sectionRows.filter((s) => !isUnselected(s.key) && !isFinal(s.key)),
+    ...sectionRows.filter((s) => isUnselected(s.key)),
+    ...sectionRows.filter((s) => !isUnselected(s.key) && isFinal(s.key)),
+  ];
+
+  const readyKeys = orderedRows.filter((section) => Boolean(section.content)).map((section) => section.key);
   const allReadyOpen = readyKeys.length > 0 && readyKeys.every((key) => openSections[key]);
+
 
   const toggleAll = () => {
     setOpenSections(
@@ -143,9 +166,10 @@ export function ReportsSection({
       </header>
 
       <div className="divide-y divide-rule">
-        {sectionRows.map((section) => {
+        {orderedRows.map((section) => {
           const ready = Boolean(section.content);
           const open = Boolean(openSections[section.key]);
+          const unselected = isUnselected(section.key);
           return (
             <section key={section.key}>
               <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
@@ -157,15 +181,16 @@ export function ReportsSection({
                   </h3>
                   <p
                     className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
-                      ready ? "text-bull" : running ? "text-primary" : "text-bear"
+                      unselected ? "text-bear" : ready ? "text-bull" : running ? "text-primary" : "text-bear"
                     }`}
                   >
-                    {!ready && running && (
+                    {!unselected && !ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
-                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
+                    {`${unselected ? t("agents.notSelected") : ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
                   </p>
                 </div>
+
                 <Button
                   type="button"
                   size="sm"
