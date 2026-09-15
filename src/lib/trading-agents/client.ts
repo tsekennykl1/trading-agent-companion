@@ -604,7 +604,18 @@ export function normalizeRun(raw: unknown): RunRecord {
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
-  const summaryText = d?.summary ?? result?.summary ?? (finalText || "");
+  // Executive summary: prefer an engine-provided summary, then fall back to the
+  // decision-level narratives so the panel is never left with just a ticker.
+  const meaningful = (value: unknown): string | undefined =>
+    typeof value === "string" && value.trim().length > 24 ? value.trim() : undefined;
+  const summaryText =
+    meaningful(d?.summary) ??
+    meaningful(result?.summary) ??
+    meaningful(finalText) ??
+    meaningful(reports["final_decision"]) ??
+    meaningful(reports["trader_plan"]) ??
+    meaningful(reports["investment_plan"]) ??
+    (typeof d?.summary === "string" ? d.summary : typeof result?.summary === "string" ? result.summary : finalText);
 
   const counters = raw.timings?.counters ?? {};
   const stageDurations = raw.timings?.stage_durations_ms ?? {};
