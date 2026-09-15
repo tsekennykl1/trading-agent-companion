@@ -848,7 +848,69 @@ export const api = {
     const raw = await getJson(`/runs/${id}/reports/${encodeURIComponent(name)}`);
     return readReportContent(raw);
   },
+
+  /** GET /providers — active LLM plus every provider with a key saved. */
+  providers: () => request<ProvidersResponse>("/providers"),
+  /** GET /providers/credit — key validity and, where published, remaining credit. */
+  providerCredit: (provider?: string) =>
+    request<ProviderCredit>(`/providers/credit${provider ? `?provider=${encodeURIComponent(provider)}` : ""}`),
+  /** POST /providers/active — switch the engine to another configured provider. */
+  setActiveProvider: (provider: string, deepModel?: string, quickModel?: string) =>
+    request<{ active: ActiveProvider; credit: ProviderCredit; restart_required?: boolean }>(
+      "/providers/active",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          provider,
+          ...(deepModel ? { deep_model: deepModel } : {}),
+          ...(quickModel ? { quick_model: quickModel } : {}),
+        }),
+      },
+    ),
 };
+
+export type ProviderCreditStatus =
+  | "valid"
+  | "invalid"
+  | "missing_key"
+  | "no_key_required"
+  | "unreachable"
+  | "unknown";
+
+export interface ProviderCredit {
+  provider: string;
+  label: string;
+  status: ProviderCreditStatus;
+  supports_balance: boolean;
+  balance: number | null;
+  currency: string | null;
+  checked_at?: string;
+  message?: string;
+}
+
+export interface ActiveProvider {
+  provider: string | null;
+  deep_model: string | null;
+  quick_model: string | null;
+  configured: boolean;
+}
+
+export interface ProviderSummary {
+  provider: string;
+  label: string;
+  configured: boolean;
+  supports_balance: boolean;
+  env_keys: string[];
+  deep_models: string[];
+  quick_models: string[];
+  default_deep_model: string;
+  default_quick_model: string;
+}
+
+export interface ProvidersResponse {
+  active: ActiveProvider;
+  providers: ProviderSummary[];
+}
 
 /** GET helper that treats "not ready" (404) and network errors as null. */
 async function getJson(path: string): Promise<unknown> {
