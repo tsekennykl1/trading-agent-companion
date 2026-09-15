@@ -27,6 +27,16 @@ function Stat({ label, value }: { label: string; value: string }) {
 const fmt = (v: number | undefined, digits = 2) =>
   typeof v === "number" ? v.toFixed(digits) : "—";
 
+const RANGE_OPTIONS: { label: string; months: number | null }[] = [
+  { label: "1M", months: 1 },
+  { label: "3M", months: 3 },
+  { label: "6M", months: 6 },
+  { label: "1Y", months: 12 },
+  { label: "2Y", months: 24 },
+  { label: "3Y", months: 36 },
+  { label: "All", months: null },
+];
+
 /**
  * Renders whatever the engine has already produced — market snapshot, warnings
  * and the interactive chart — while the slow AI analysis is still running.
@@ -237,7 +247,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     onToggleMany={toggleMany}
                   />
                   <PlotlyPriceChart
-                    chart={chartData}
+                    chart={rangedChart}
                     height={(isMobile ? 360 : 480) + panelCount * 90}
                     levels={levels}
                     visible={visible}
