@@ -6,10 +6,10 @@ const STORAGE_KEY = "ta-language";
 
 /** Every user-facing string in the workbench chrome. */
 const EN = {
-  "nav.workbench": "Workbench",
+  "nav.workbench": "Dashboard",
   "nav.setup": "Connect engine",
   "nav.about": "About the project",
-  "nav.history": "Run history",
+  "nav.history": "History",
   "history.title": "Run history",
   "history.intro": "Past analyses from the connected engine, with status, decision and report readiness.",
   "history.refresh": "Refresh",
@@ -44,6 +44,8 @@ const EN = {
   "home.engineOffline": "Your engine is not reachable right now.",
   "home.backToLive": "Back to live run",
   "home.newAnalysis": "New Analysis",
+  "home.hideForm": "Hide New Analysis",
+  "home.showForm": "Show New Analysis",
   "home.runError": "The engine reported an error during this run.",
   "home.confidenceTitle": "Recommendation confidence",
   "home.confidenceBody": "Available once the run completes.",
@@ -246,10 +248,10 @@ const EN = {
 export type TKey = keyof typeof EN;
 
 const ZH: Record<TKey, string> = {
-  "nav.workbench": "分析工作台",
+  "nav.workbench": "儀表板",
   "nav.setup": "連接引擎",
   "nav.about": "關於本專案",
-  "nav.history": "分析紀錄",
+  "nav.history": "歷史紀錄",
   "history.title": "分析紀錄",
   "history.intro": "已連接引擎的歷史分析，包含狀態、決策與報告完成情況。",
   "history.refresh": "重新整理",
@@ -284,6 +286,8 @@ const ZH: Record<TKey, string> = {
   "home.engineOffline": "目前無法連接您的引擎。",
   "home.backToLive": "返回即時分析",
   "home.newAnalysis": "新增分析",
+  "home.hideForm": "隱藏新增分析",
+  "home.showForm": "顯示新增分析",
   "home.runError": "引擎在此次分析中回報了錯誤。",
   "home.confidenceTitle": "建議信心度",
   "home.confidenceBody": "分析完成後即可查看。",

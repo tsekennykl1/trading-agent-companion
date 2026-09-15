@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { FlaskConical, Info, Loader2, Plus } from "lucide-react";
+import { Eye, EyeOff, FlaskConical, Info, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { RunForm } from "@/components/workbench/RunForm";
@@ -58,6 +58,7 @@ function Workbench() {
     stages: DEFAULT_STAGES,
   });
   const [showFormAtTop, setShowFormAtTop] = useState(false);
+  const [sidebarFormOpen, setSidebarFormOpen] = useState(true);
 
   useEffect(() => {
     const analysisDate = new Date().toISOString().slice(0, 10);
@@ -122,11 +123,12 @@ function Workbench() {
       const data = q.state.data;
       const s = data?.status;
       if (s === "completed" || s === "error") return false;
-      // With the status endpoint available the heavy run payload is pulled
-      // rarely; otherwise honour the engine's suggested polling interval.
-      if (status) return 15000;
+      // With the cheap status endpoint available the heavy run payload is only
+      // refetched when the status version changes — no timed polling at all.
+      if (status) return false;
       return data?.pollAfterMs ?? 3000;
     },
+    staleTime: 2000,
   });
 
   // Refresh the full run whenever the cheap status poll reports a change.
@@ -296,6 +298,14 @@ function Workbench() {
   );
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = startedAt !== null;
+  // While an analysis is loading the form only takes up space; it comes back
+  // with the Show button or the New Analysis button at the top of the page.
+  useEffect(() => {
+    if (analysisBusy) setSidebarFormOpen(false);
+  }, [analysisBusy]);
+  // On the single-column layout the progress panel drops to the bottom of the
+  // page once everything has finished.
+  const allDone = !analysisBusy && (engineStatus === "completed" || run.status === "completed");
   const headerGridCols =
     showExportBar && chartReady && !showFormAtTop
       ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
@@ -319,7 +329,10 @@ function Workbench() {
             <Button
               size="lg"
               className="w-full gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:w-auto sm:min-w-[10rem]"
-              onClick={() => setShowFormAtTop(true)}
+              onClick={() => {
+                setShowFormAtTop(true);
+                setSidebarFormOpen(true);
+              }}
             >
               <Plus className="size-5" aria-hidden="true" />
               {t("home.newAnalysis")}
@@ -363,17 +376,30 @@ function Workbench() {
       <div className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
           {chartReady && !showFormAtTop && (
-            <div className="order-1 min-w-0">
-              <RunForm
-                key={defaultConfig.analysisDate}
-                defaultConfig={defaultConfig}
-                running={running && !showingSample}
-                disabled={startRun.isPending}
-                compact
-                onConfigChange={rememberConfig}
-                onRun={(c) => startRun.mutate(c)}
-                onCancel={cancelRun}
-              />
+            <div className="order-1 min-w-0 space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                aria-expanded={sidebarFormOpen}
+                onClick={() => setSidebarFormOpen((v) => !v)}
+              >
+                {sidebarFormOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {sidebarFormOpen ? t("home.hideForm") : t("home.showForm")}
+              </Button>
+              {sidebarFormOpen && (
+                <RunForm
+                  key={defaultConfig.analysisDate}
+                  defaultConfig={defaultConfig}
+                  running={running && !showingSample}
+                  disabled={startRun.isPending}
+                  compact
+                  onConfigChange={rememberConfig}
+                  onRun={(c) => startRun.mutate(c)}
+                  onCancel={cancelRun}
+                />
+              )}
             </div>
           )}
 
@@ -399,7 +425,7 @@ function Workbench() {
             </div>
           )}
 
-          <div className="order-6 min-w-0">
+          <div className={`${allDone ? "order-9" : "order-6"} min-w-0 xl:order-none`}>
             <AgentBoard
               agents={run.agents}
               stats={run.stats}

@@ -245,8 +245,8 @@ export function AgentBoard({
             <h3 className="text-sm font-semibold">{t("agents.stageTiming")}</h3>
             {slowestMs > 0 && <span className="text-[11px] text-muted-foreground">{t("agents.slowest")} · {duration(slowestMs)}</span>}
           </div>
-          <div className="overflow-x-auto rounded-md border border-rule">
-            <div className="min-w-[34rem] divide-y divide-rule">
+          <div className="rounded-md border border-rule">
+            <div className="divide-y divide-rule">
               {timingRows.map(({ stage, timing }) => {
                 const status = timing?.status ?? "pending";
                 const isSlowest = status === "completed" && timing?.durationMs === slowestMs && slowestMs > 0;
@@ -260,14 +260,16 @@ export function AgentBoard({
                     ? new Date(timing.endedAt).getTime() - new Date(timing.startedAt).getTime()
                     : undefined);
                 return (
-                  <div key={stage.id} className={cn("grid grid-cols-[minmax(11rem,1fr)_7rem_7rem_5rem] items-center gap-3 px-3 py-2 text-xs", isSlowest && "bg-accent/10")}>
+                  <div key={stage.id} className={cn("min-w-0 px-3 py-2 text-xs", isSlowest && "bg-accent/10")}>
                     <span className="flex min-w-0 items-center gap-2">
                       <StatusIcon status={status} />
-                      <span className="truncate font-medium">{stageLabel(stage.roles)}</span>
+                      <span className="break-words font-medium">{stageLabel(stage.roles)}</span>
                     </span>
-                    <span><span className="text-muted-foreground">{t("agents.started")}</span><br /><span className="font-mono">{clock(timing?.startedAt)}</span></span>
-                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(endedAt)}</span></span>
-                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(endedMs)}</span></span>
+                    <div className="mt-1.5 grid grid-cols-3 gap-2 pl-5.5">
+                      <span className="min-w-0"><span className="block text-muted-foreground">{t("agents.started")}</span><span className="block truncate font-mono">{clock(timing?.startedAt)}</span></span>
+                      <span className="min-w-0"><span className="block text-muted-foreground">{t("agents.ended")}</span><span className="block truncate font-mono">{clock(endedAt)}</span></span>
+                      <span className="min-w-0 text-right"><span className="block text-muted-foreground">{t("agents.duration")}</span><span className="block truncate font-mono font-medium">{duration(endedMs)}</span></span>
+                    </div>
                   </div>
                 );
               })}
