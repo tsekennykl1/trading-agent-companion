@@ -80,6 +80,7 @@ export function ReportsSection({
       && !REPORT_SECTIONS.some((s) => s.key === k),
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    company_of_interest: true,
     final_decision: true,
     final_trade_decision: true,
   });
@@ -90,7 +91,7 @@ export function ReportsSection({
     content: reports[section.key]?.trim() ?? "",
   }));
   if (companyContext.length > 0) {
-    sectionRows.push({
+    sectionRows.unshift({
       key: "company_of_interest",
       label: "Company of Interest",
       team: "Engine",
