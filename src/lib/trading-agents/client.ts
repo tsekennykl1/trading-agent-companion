@@ -9,6 +9,7 @@ import type {
 import { STAGE_OPTIONS } from "./types";
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
 import { normalizeReportsReady } from "./report-readiness";
+import { extractReasons } from "./signals";
 
 export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 
@@ -604,7 +605,18 @@ export function normalizeRun(raw: unknown): RunRecord {
   const action: Action = (["Buy", "Overweight", "Hold", "Underweight", "Sell", "Review"] as const).find(
     (a) => a === actionText,
   ) ?? "Review";
-  const summaryText = d?.summary ?? result?.summary ?? (finalText || "");
+  // Executive summary: prefer an engine-provided summary, then fall back to the
+  // decision-level narratives so the panel is never left with just a ticker.
+  const meaningful = (value: unknown): string | undefined =>
+    typeof value === "string" && value.trim().length > 24 ? value.trim() : undefined;
+  const summaryText =
+    meaningful(d?.summary) ??
+    meaningful(result?.summary) ??
+    meaningful(finalText) ??
+    meaningful(reports["final_decision"]) ??
+    meaningful(reports["trader_plan"]) ??
+    meaningful(reports["investment_plan"]) ??
+    (typeof d?.summary === "string" ? d.summary : typeof result?.summary === "string" ? result.summary : finalText);
 
   const counters = raw.timings?.counters ?? {};
   const stageDurations = raw.timings?.stage_durations_ms ?? {};
@@ -698,6 +710,27 @@ export function normalizeRun(raw: unknown): RunRecord {
     const horizon = str("horizon", "time_horizon", "timeframe", "timeHorizon");
     const rationale = str("rationale", "reasoning", "why");
 
+    // Evidence: prefer the decision-level narratives (portfolio manager, trader,
+    // research manager, risk debate) and only fall back to analyst reports.
+    const decisionReportKeys = [
+      "final_decision",
+      "trader_plan",
+      "investment_plan",
+      "bull_report",
+      "bear_report",
+      "risk_aggressive",
+      "risk_conservative",
+      "risk_neutral",
+    ];
+    const pickReports = (keys: string[]) =>
+      Object.fromEntries(keys.filter((k) => reports[k]).map((k) => [k, reports[k] as string]));
+    const decisionReports = pickReports(decisionReportKeys);
+    const analystReports = pickReports(["market_report", "sentiment_report", "news_report", "fundamentals_report"]);
+    const primary = extractReasons(decisionReports);
+    const secondary = extractReasons(analystReports);
+    const decisionBull = primary.bullish.length ? primary.bullish : secondary.bullish;
+    const decisionBear = primary.bearish.length ? primary.bearish : secondary.bearish;
+
     record.decision = {
       action,
       rating: actionText,
@@ -713,8 +746,8 @@ export function normalizeRun(raw: unknown): RunRecord {
       ...(horizon ? { horizon } : {}),
       ...(rationale ? { rationale } : {}),
       executiveSummary: summaryText,
-      bullPoints: summaryText ? [summaryText] : [],
-      bearPoints: keyRisks,
+      bullPoints: decisionBull,
+      bearPoints: decisionBear.length ? decisionBear : keyRisks,
     };
   }
 
