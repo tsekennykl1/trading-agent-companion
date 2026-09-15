@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, CircleDashed, Eye, EyeOff, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { AgentProgress, RunProgress, RunStats } from "@/lib/trading-agents/types";
+import { STAGE_OPTIONS, type AgentProgress, type RunProgress, type RunStats } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +75,7 @@ export function AgentBoard({
   ticker,
   elapsed = 0,
   latestStep,
+  selectedStages,
 }: {
   agents: AgentProgress[];
   stats?: RunStats;
@@ -84,6 +85,7 @@ export function AgentBoard({
   ticker?: string | undefined;
   elapsed?: number;
   latestStep?: string | undefined;
+  selectedStages?: string[] | undefined;
 }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
@@ -114,6 +116,16 @@ export function AgentBoard({
     const remainder = seconds % 60;
     return minutes > 0 ? `${minutes}m ${String(remainder).padStart(2, "0")}s` : `${remainder}s`;
   };
+  const timingByStage = new Map((stats.stageTimings ?? []).map((item) => [item.stage, item]));
+  const timingRows = STAGE_OPTIONS
+    .filter((stage) => selectedStages === undefined || selectedStages.includes(stage.id))
+    .map((stage) => ({ stage, timing: timingByStage.get(stage.id) }));
+  const slowestMs = Math.max(0, ...timingRows.map(({ timing }) => timing?.durationMs ?? 0));
+  const stageLabel = (roles: string[]) => roles.map((role) => translatedValue(role, ROLE_KEYS, t)).join(" + ");
+  const clock = (value?: string) => value
+    ? new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(value))
+    : "—";
+  const duration = (ms?: number) => ms === undefined ? "—" : formatElapsed(Math.max(0, Math.round(ms / 1000)));
 
   return (
     <section className="panel p-4 sm:p-5">
@@ -211,6 +223,34 @@ export function AgentBoard({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {timingRows.length > 0 && (
+        <div className="mt-4 border-t border-rule pt-4">
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <h3 className="text-sm font-semibold">{t("agents.stageTiming")}</h3>
+            {slowestMs > 0 && <span className="text-[11px] text-muted-foreground">{t("agents.slowest")} · {duration(slowestMs)}</span>}
+          </div>
+          <div className="overflow-x-auto rounded-md border border-rule">
+            <div className="min-w-[34rem] divide-y divide-rule">
+              {timingRows.map(({ stage, timing }) => {
+                const status = timing?.status ?? "pending";
+                const isSlowest = status === "completed" && timing?.durationMs === slowestMs && slowestMs > 0;
+                return (
+                  <div key={stage.id} className={cn("grid grid-cols-[minmax(11rem,1fr)_7rem_7rem_5rem] items-center gap-3 px-3 py-2 text-xs", isSlowest && "bg-accent/10")}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <StatusIcon status={status} />
+                      <span className="truncate font-medium">{stageLabel(stage.roles)}</span>
+                    </span>
+                    <span><span className="text-muted-foreground">{t("agents.started")}</span><br /><span className="font-mono">{clock(timing?.startedAt)}</span></span>
+                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(timing?.endedAt)}</span></span>
+                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(timing?.durationMs)}</span></span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
