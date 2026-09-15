@@ -35,7 +35,11 @@ function reportLabel(key: string): string {
  * the legacy chart.* names as a migration fallback. A 404 simply means "not
  * ready yet" and is retried; each report is announced as soon as it arrives.
  */
-export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): RunArtifacts {
+export function useRunArtifacts(
+  run: RunRecord | undefined,
+  enabled: boolean,
+  restored?: RunArtifacts | null,
+): RunArtifacts {
   const runId = run?.source === "engine" ? run.id : undefined;
   const terminal = run?.status === "completed" || run?.status === "error";
   const partial = run?.partial;
@@ -48,8 +52,9 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
   const cache = useRef<RunArtifacts>(EMPTY);
 
   useEffect(() => {
-    cache.current = EMPTY;
-    setArtifacts(EMPTY);
+    const initial = restored && runId ? restored : EMPTY;
+    cache.current = initial;
+    setArtifacts(initial);
     if (!runId || !enabled) return;
 
     let alive = true;
@@ -160,7 +165,7 @@ export function useRunArtifacts(run: RunRecord | undefined, enabled: boolean): R
       alive = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult]);
+  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult, restored]);
 
   return artifacts;
 }

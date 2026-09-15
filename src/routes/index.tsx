@@ -17,6 +17,7 @@ import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady, reportsReadyFor } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
+import { loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 import { useT } from "@/lib/i18n";
@@ -46,6 +47,8 @@ function Workbench() {
 
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [showingSample, setShowingSample] = useState(true);
+  const [cachedRun, setCachedRun] = useState<RunRecord | null>(null);
+  const [cachedArtifacts, setCachedArtifacts] = useState<ReturnType<typeof loadCachedAnalysis>["artifacts"] | null>(null);
   const [defaultConfig, setDefaultConfig] = useState<RunConfig>({
     ...SAMPLE_RUN.config,
     analysisDate: "",
@@ -119,46 +122,17 @@ function Workbench() {
     return () => window.clearInterval(id);
   }, [startedAt]);
 
-  // Restore an in-flight or completed run when the user returns to the workbench
-  // (for example after viewing the detail report and clicking Back to Dashboard).
+  // Restore the latest engine snapshot after hydration, then let the active
+  // queries refresh it in the background when the engine is reachable.
   useEffect(() => {
-    try {
-      const savedRunId = sessionStorage.getItem("ta-active-run-id");
-      const savedStartedAt = sessionStorage.getItem("ta-started-at");
-      if (savedRunId) {
-        setActiveRunId(savedRunId);
-        setShowingSample(false);
-        if (savedStartedAt) setStartedAt(Number(savedStartedAt));
-      }
-    } catch {
-      // sessionStorage may be unavailable in some environments.
-    }
+    const cached = loadCachedAnalysis();
+    if (!cached) return;
+    setCachedRun(cached.run);
+    setCachedArtifacts(cached.artifacts);
+    setActiveRunId(cached.run.id);
+    setShowingSample(false);
+    setStartedAt(cached.startedAt ?? Date.parse(cached.run.startedAt));
   }, []);
-
-  // Persist the active run so it survives route navigation within the same tab.
-  const persistInitialMount = useRef(true);
-  useEffect(() => {
-    // Skip the very first mount so the restore effect above can read sessionStorage
-    // before this effect has a chance to clear it with the initial null state.
-    if (persistInitialMount.current) {
-      persistInitialMount.current = false;
-      return;
-    }
-    try {
-      if (activeRunId) {
-        sessionStorage.setItem("ta-active-run-id", activeRunId);
-      } else {
-        sessionStorage.removeItem("ta-active-run-id");
-      }
-      if (startedAt !== null) {
-        sessionStorage.setItem("ta-started-at", String(startedAt));
-      } else {
-        sessionStorage.removeItem("ta-started-at");
-      }
-    } catch {
-      // ignore
-    }
-  }, [activeRunId, startedAt]);
 
   // What the user asked for on this attempt, plus the runs that already existed
   // before it — so run discovery can never latch onto an earlier ticker's run.
@@ -173,6 +147,9 @@ function Workbench() {
     onMutate: (config: RunConfig) => {
       requestedTicker.current = config.ticker.trim().toUpperCase();
       setActiveRunId(null);
+      setCachedRun(null);
+      setCachedArtifacts(null);
+      setShowingSample(false);
       setStartedAt(Date.now());
       setElapsed(0);
       knownRunIds.current = new Set();
@@ -240,9 +217,20 @@ function Workbench() {
       .catch(() => toast.error(t("toast.stopFailed")));
   };
 
-  const liveRun = runQuery.data as RunRecord | undefined;
+  const fetchedRun = runQuery.data as RunRecord | undefined;
+  const liveRun = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
-  const artifacts = useRunArtifacts(run, run.source === "engine");
+  const artifacts = useRunArtifacts(
+    run,
+    run.source === "engine",
+    cachedRun?.id === run.id ? cachedArtifacts : null,
+  );
+  useEffect(() => {
+    if (run.source !== "engine") return;
+    setCachedRun(run);
+    setCachedArtifacts(artifacts);
+    saveCachedAnalysis(run, artifacts, startedAt);
+  }, [run, artifacts, startedAt]);
   const chartReady = Boolean(artifacts.chartData || artifacts.chartPngUrl || run.partial?.chartsReady);
   const running = run.status === "running" || run.status === "queued";
   const analysisBusy =
