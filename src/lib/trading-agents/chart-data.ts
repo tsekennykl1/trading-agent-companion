@@ -237,10 +237,6 @@ const MULTI_SERIES: { match: (n: string) => boolean; fields: Record<string, keyo
   },
 ];
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-const pointDate = (o: Record<string, unknown>) =>
-  String(o["t"] ?? o["date"] ?? o["Date"] ?? o["time"] ?? o["timestamp"] ?? o["x"] ?? "").slice(0, 10);
 
 /**
  * Resolves which ChartRow column an array of dated points belongs to, given the
