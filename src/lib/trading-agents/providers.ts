@@ -176,5 +176,5 @@ export const DEFAULT_FRONTEND_ORIGINS =
   "http://localhost:8080,https://trading-agent-companion.lovable.app";
 
 export function providerById(id: string): ProviderSpec {
-  return PROVIDERS.find((p) => p.id === id) ?? PROVIDERS[0];
+  return PROVIDERS.find((p) => p.id === id) ?? (PROVIDERS[0] as ProviderSpec);
 }
