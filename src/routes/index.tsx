@@ -122,11 +122,12 @@ function Workbench() {
       const data = q.state.data;
       const s = data?.status;
       if (s === "completed" || s === "error") return false;
-      // With the status endpoint available the heavy run payload is pulled
-      // rarely; otherwise honour the engine's suggested polling interval.
-      if (status) return 15000;
+      // With the cheap status endpoint available the heavy run payload is only
+      // refetched when the status version changes — no timed polling at all.
+      if (status) return false;
       return data?.pollAfterMs ?? 3000;
     },
+    staleTime: 2000,
   });
 
   // Refresh the full run whenever the cheap status poll reports a change.
