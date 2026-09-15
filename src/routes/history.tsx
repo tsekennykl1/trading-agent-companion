@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
+import { formatDateTime } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
@@ -35,22 +36,8 @@ function statusTone(status: RunRecord["status"]): string {
   return "text-primary";
 }
 
-function formatTime(value: string | undefined): string {
-  if (!value) return "—";
-  const parsed = new Date(value);
-  // Always English AM/PM, never locale-dependent 上午/下午.
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      }).format(parsed);
-}
+// Shared helper: always English AM/PM, never locale-dependent 上午/下午.
+const formatTime = formatDateTime;
 
 function HistoryPage() {
   const t = useT();
