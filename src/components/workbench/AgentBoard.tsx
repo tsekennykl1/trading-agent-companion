@@ -96,7 +96,9 @@ export function AgentBoard({
   const agents = agentsProp ?? [];
   const stats = statsProp ?? EMPTY_STATS;
   // Completed rows stay tucked away by default; active, pending, and error rows remain visible.
-  const listedAgents = showCompleted ? agents : agents.filter((a) => a.status !== "completed");
+  // Engine log rows are noise once they finish, so they always drop out.
+  const visibleAgents = agents.filter((a) => !(a.team === "Engine" && a.status === "completed"));
+  const listedAgents = showCompleted ? visibleAgents : visibleAgents.filter((a) => a.status !== "completed");
   const teams = listedAgents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
     return acc;
