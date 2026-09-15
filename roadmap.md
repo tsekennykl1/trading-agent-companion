@@ -115,4 +115,4 @@
 - [x] Move Company of Interest to the top of Agent Reports.
 - [x] Open Company of Interest and Final Trade Decision by default.
 - [x] Keep every other report collapsed by default.
-- [ ] Verify report ordering, default visibility, responsive layout, and a clean build.
+- [x] Verify report ordering, default visibility, responsive layout, and a clean build.
