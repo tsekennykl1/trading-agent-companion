@@ -81,7 +81,6 @@ export function ReportsSection({
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company_of_interest: true,
-    final_decision: true,
     final_trade_decision: true,
   });
 
