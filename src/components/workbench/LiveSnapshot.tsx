@@ -36,6 +36,8 @@ const fmt = (v: number | undefined, digits = 2) =>
 export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
   const t = useT();
   const [view, setView] = useState<"interactive" | "image">("interactive");
+  // null = full history; otherwise show only the last N months of rows.
+  const [rangeMonths, setRangeMonths] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const p = run.partial;
   const market = artifacts?.marketData ?? null;
