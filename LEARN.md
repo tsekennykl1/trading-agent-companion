@@ -82,15 +82,20 @@ type. The rest of the app then only ever sees the clean type.
 
 ## 5. How the dashboard works (`src/routes/index.tsx`)
 
-1. `useSavedRunConfig()` restores the last form you used.
-2. `startRun` (a mutation) posts the config; the engine replies with a run id.
-3. Two queries then poll:
-   - `run-status` — cheap readiness check,
-   - `run` — the full payload, re-fetched only when the status changes.
-4. `useRunArtifacts(run)` fetches the chart and report files.
-5. `run` is either the live engine run or `SAMPLE_RUN` when nothing has started.
-6. Everything below is presentation: `LiveSnapshot`, `AgentBoard`,
-   `DecisionPanel`, charts, `ReportsSection`, `ExportBar`.
+The page itself is now almost pure layout. The moving parts live in two hooks:
+
+- `useSavedRunConfig()` restores the last form you used.
+- `useAnalysisRun()` (`src/hooks/useAnalysisRun.ts`) does the rest:
+  1. `start(config)` posts the config; the engine replies with a run id.
+  2. Two queries then poll — `run-status` (cheap readiness check) and `run`
+     (the full payload, re-fetched only when the status changes).
+  3. `useRunArtifacts(run)` fetches the chart and report files.
+  4. It returns the run to show (live engine run, cached run, or `SAMPLE_RUN`)
+     plus simple flags: `analysisBusy`, `chartReady`, `reportReady`, `allDone`.
+
+Everything below that is presentation: `LiveSnapshot`, `AgentBoard`,
+`DecisionPanel`, charts, `ReportsSection`, `ExportBar`.
+
 
 ## 6. Reading any component
 
