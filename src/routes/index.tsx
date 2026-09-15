@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady, reportsReadyFor } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
-import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
+import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
@@ -48,7 +48,7 @@ function Workbench() {
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [showingSample, setShowingSample] = useState(true);
   const [cachedRun, setCachedRun] = useState<RunRecord | null>(null);
-  const [cachedArtifacts, setCachedArtifacts] = useState<ReturnType<typeof loadCachedAnalysis>["artifacts"] | null>(null);
+  const [cachedArtifacts, setCachedArtifacts] = useState<RunArtifacts | null>(null);
   const [defaultConfig, setDefaultConfig] = useState<RunConfig>({
     ...SAMPLE_RUN.config,
     analysisDate: "",
@@ -228,7 +228,6 @@ function Workbench() {
   useEffect(() => {
     if (run.source !== "engine") return;
     setCachedRun(run);
-    setCachedArtifacts(artifacts);
     saveCachedAnalysis(run, artifacts, startedAt);
   }, [run, artifacts, startedAt]);
   const chartReady = Boolean(artifacts.chartData || artifacts.chartPngUrl || run.partial?.chartsReady);
