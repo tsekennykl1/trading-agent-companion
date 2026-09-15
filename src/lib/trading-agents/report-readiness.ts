@@ -34,7 +34,7 @@ export function finalReportReady({
 }: {
   status: RunRecord["status"] | undefined;
   reportsReady?: string[];
-  resultUrl?: string;
+  resultUrl?: string | undefined;
 }): boolean {
   return status === "completed" && (reportsReady.length > 0 || Boolean(resultUrl));
 }
