@@ -9,6 +9,7 @@ import type {
 import { STAGE_OPTIONS } from "./types";
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
 import { normalizeReportsReady } from "./report-readiness";
+import { extractReasons } from "./signals";
 
 export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 
