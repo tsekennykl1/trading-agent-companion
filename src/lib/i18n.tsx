@@ -475,6 +475,7 @@ const ZH: Record<TKey, string> = {
   "toast.stopFailed": "無法停止此次分析",
   "toast.reportReady": "{name} 報告已完成",
   "toast.reportReadyBody": "可於下方「代理人報告」區開啟。",
+  "report.detailName": "詳細",
 };
 
 
