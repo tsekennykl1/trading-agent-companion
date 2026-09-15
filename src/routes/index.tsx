@@ -316,7 +316,12 @@ function Workbench() {
         </div>
         {showExportBar && chartReady && !showFormAtTop && (
           <div className="flex min-w-0 items-start justify-start xl:justify-center">
-            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShowFormAtTop(true)}>
+            <Button
+              size="lg"
+              className="w-full gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:w-auto sm:min-w-[10rem]"
+              onClick={() => setShowFormAtTop(true)}
+            >
+              <Plus className="size-5" aria-hidden="true" />
               {t("home.newAnalysis")}
             </Button>
           </div>
