@@ -257,8 +257,8 @@ export function AgentBoard({
                       <span className="truncate font-medium">{stageLabel(stage.roles)}</span>
                     </span>
                     <span><span className="text-muted-foreground">{t("agents.started")}</span><br /><span className="font-mono">{clock(timing?.startedAt)}</span></span>
-                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(timing?.endedAt)}</span></span>
-                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(timing?.durationMs)}</span></span>
+                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(endedAt)}</span></span>
+                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(endedMs)}</span></span>
                   </div>
                 );
               })}
