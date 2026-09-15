@@ -37,6 +37,14 @@ const TEAM_KEYS: Record<string, TKey> = {
   Engine: "team.Engine",
 };
 
+const COMPANY_CONTEXT_KEYS = [
+  "company_of_interest",
+  "asset_type",
+  "instrument_context",
+  "trade_date",
+  "sender",
+] as const;
+
 function translatedValue(value: string, keys: Record<string, TKey>, t: (key: TKey) => string) {
   const key = keys[value];
   return key ? t(key) : value;
@@ -55,11 +63,21 @@ export function ReportsSection({
   for (const [key, value] of Object.entries(extraReports ?? {})) {
     if (!reports[key]?.trim() && value?.trim()) reports[key] = value;
   }
+  const companyContext = COMPANY_CONTEXT_KEYS.map((key) => ({
+    key,
+    value: reports[key]?.trim() ?? "",
+  })).filter((field) => Boolean(field.value));
+  const companyContextContent = companyContext
+    .map(({ key, value }) => `### ${translatedValue(key, REPORT_LABEL_KEYS, t)}\n\n${value}`)
+    .join("\n\n");
   const available = REPORT_SECTIONS.filter((s) => reports[s.key]?.trim());
   // The engine log duplicates the Agent progress panel — never list it here.
   const isEngineLog = (key: string) => key.toLowerCase().replace(/[-\s]/g, "_") === "engine_log";
   const extra = Object.keys(reports).filter(
-    (k) => reports[k]?.trim() && !isEngineLog(k) && !REPORT_SECTIONS.some((s) => s.key === k),
+    (k) => reports[k]?.trim()
+      && !isEngineLog(k)
+      && !COMPANY_CONTEXT_KEYS.includes(k as (typeof COMPANY_CONTEXT_KEYS)[number])
+      && !REPORT_SECTIONS.some((s) => s.key === k),
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -68,6 +86,14 @@ export function ReportsSection({
     ...section,
     content: reports[section.key]?.trim() ?? "",
   }));
+  if (companyContext.length > 0) {
+    sectionRows.push({
+      key: "company_of_interest",
+      label: "Company of Interest",
+      team: "Engine",
+      content: companyContextContent,
+    });
+  }
   sectionRows.push(
     ...extra.map((key) => ({
       key,
@@ -93,8 +119,8 @@ export function ReportsSection({
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold">{t("reports.title")}</h2>
           <p className="mt-0.5 text-xs text-secondary-foreground/75">
-            {available.length > 0
-              ? `${available.length} · ${t("reports.available")}`
+            {available.length + (companyContext.length > 0 ? 1 : 0) > 0
+              ? `${available.length + (companyContext.length > 0 ? 1 : 0)} · ${t("reports.available")}`
               : running
                 ? t("reports.writing")
                 : t("reports.produced")}

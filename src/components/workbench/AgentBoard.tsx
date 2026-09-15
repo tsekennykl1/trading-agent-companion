@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, CircleDashed, Eye, EyeOff, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { AgentProgress, RunStats } from "@/lib/trading-agents/types";
+import type { AgentProgress, RunProgress, RunStats } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -70,19 +70,29 @@ export function AgentBoard({
   agents: agentsProp,
   stats: statsProp,
   compact = false,
+  analysisBusy = false,
+  progress,
+  ticker,
+  elapsed = 0,
+  latestStep,
 }: {
   agents: AgentProgress[];
   stats?: RunStats;
   compact?: boolean;
+  analysisBusy?: boolean;
+  progress?: RunProgress;
+  ticker?: string;
+  elapsed?: number;
+  latestStep?: string;
 }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
-  const [hideCompleted, setHideCompleted] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
   // An engine payload can omit progress counters entirely; never crash on it.
   const agents = agentsProp ?? [];
   const stats = statsProp ?? EMPTY_STATS;
-  // Completed rows can be tucked away; in-progress / pending / error stay visible.
-  const listedAgents = hideCompleted ? agents.filter((a) => a.status !== "completed") : agents;
+  // Completed rows stay tucked away by default; active, pending, and error rows remain visible.
+  const listedAgents = showCompleted ? agents : agents.filter((a) => a.status !== "completed");
   const teams = listedAgents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
     return acc;
@@ -99,9 +109,47 @@ export function AgentBoard({
   const showDetails = isRunning || expanded;
   const statusLabel = (status: AgentProgress["status"]) =>
     t(`agents.${status.replace("_", " ")}` as TKey);
+  const formatElapsed = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+    return minutes > 0 ? `${minutes}m ${String(remainder).padStart(2, "0")}s` : `${remainder}s`;
+  };
 
   return (
     <section className="panel p-4 sm:p-5">
+      {analysisBusy && (
+        <div className="mb-4 border-b border-rule pb-4" role="status" aria-live="polite">
+          <div className="flex items-start gap-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10">
+              <Loader2 className="size-4 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-base font-semibold sm:text-lg">{t("home.progressTitle")}</h2>
+              {progress && (
+                <div className="mt-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-500 motion-reduce:transition-none"
+                      style={{ width: `${Math.min(100, Math.max(0, progress.percent))}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs break-words text-muted-foreground">
+                    {progress.message || progress.stage}
+                    {progress.totalSteps > 0 && ` · ${t("home.step")} ${progress.step} ${t("home.of")} ${progress.totalSteps}`}
+                  </p>
+                </div>
+              )}
+              {!progress && latestStep && (
+                <p className="mt-2 break-words text-xs text-muted-foreground">{latestStep}</p>
+              )}
+              <span className="mt-2 inline-flex items-center gap-2 text-xs font-medium text-primary">
+                <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
+                {t("home.workingOn")} {ticker} · {formatElapsed(elapsed)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
         <h2 className="text-lg font-semibold">{t("agents.title")}</h2>
         <span className="font-mono text-xs text-muted-foreground">
@@ -173,16 +221,16 @@ export function AgentBoard({
             variant="ghost"
             size="sm"
             className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setHideCompleted((v) => !v)}
-            aria-pressed={hideCompleted}
+            onClick={() => setShowCompleted((v) => !v)}
+            aria-pressed={showCompleted}
           >
-            {hideCompleted ? (
+            {showCompleted ? (
               <>
-                <Eye className="size-3.5" /> {t("agents.showCompleted")}
+                <EyeOff className="size-3.5" /> {t("agents.hideCompleted")}
               </>
             ) : (
               <>
-                <EyeOff className="size-3.5" /> {t("agents.hideCompleted")}
+                <Eye className="size-3.5" /> {t("agents.showCompleted")}
               </>
             )}
           </Button>
