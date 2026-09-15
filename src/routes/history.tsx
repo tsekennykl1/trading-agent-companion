@@ -35,22 +35,8 @@ function statusTone(status: RunRecord["status"]): string {
   return "text-primary";
 }
 
-function formatTime(value: string | undefined): string {
-  if (!value) return "—";
-  const parsed = new Date(value);
-  // Always English AM/PM, never locale-dependent 上午/下午.
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      }).format(parsed);
-}
+// Shared helper: always English AM/PM, never locale-dependent 上午/下午.
+const formatTime = formatDateTime;
 
 function HistoryPage() {
   const t = useT();
