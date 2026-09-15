@@ -85,11 +85,11 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
   const language = config.language?.trim() || "English";
   // Stage opt-in/out: engines that understand it skip the unselected stages;
   // older engines ignore the extra keys and behave exactly as before.
-  const selectedStages = config.stages?.length ? config.stages : undefined;
-  const skippedStages = selectedStages
+  const selectedStages = config.stages;
+  const skippedStages = selectedStages !== undefined
     ? STAGE_OPTIONS.map((s) => s.id).filter((id) => !selectedStages.includes(id))
     : undefined;
-  const stageKeys = selectedStages
+  const stageKeys = selectedStages !== undefined
     ? {
         stages: selectedStages,
         selected_stages: selectedStages,
@@ -197,6 +197,8 @@ type EngineRequest = {
   end_date?: string;
   analysts?: string[];
   selected_analysts?: string[];
+  stages?: string[];
+  selected_stages?: string[];
   params?: {
     llm_provider?: string;
     deep_think_llm?: string;
@@ -204,6 +206,8 @@ type EngineRequest = {
     max_debate_rounds?: number;
     analysts?: string[];
     selected_analysts?: string[];
+    stages?: string[];
+    selected_stages?: string[];
   };
 };
 
@@ -410,6 +414,14 @@ export function normalizeRun(raw: unknown): RunRecord {
     fundamentals: "Fundamentals Analyst",
   };
   const requestedAnalystLabels = requestedAnalysts.map((analyst) => analystLabels[analyst] ?? analyst);
+  const requestedStagesRaw =
+    (Array.isArray(req.stages) ? req.stages : undefined) ??
+    (Array.isArray(req.selected_stages) ? req.selected_stages : undefined) ??
+    (Array.isArray(params.stages) ? params.stages : undefined) ??
+    (Array.isArray(params.selected_stages) ? params.selected_stages : undefined);
+  const requestedStages = requestedStagesRaw?.filter(
+    (stage): stage is string => typeof stage === "string" && STAGE_OPTIONS.some((option) => option.id === stage),
+  );
   const result = raw.result ?? undefined;
   const partial = (raw.partial_result ?? {}) as Record<string, unknown>;
   // Merge the engine's flat reports dict and its state object into one lookup.
@@ -587,6 +599,7 @@ export function normalizeRun(raw: unknown): RunRecord {
             ? "Medium"
             : "Shallow",
       analysts: requestedAnalystLabels,
+      ...(requestedStages !== undefined ? { stages: requestedStages } : {}),
       language: "English",
     },
     startedAt: raw.started_at ?? raw.created_at ?? new Date().toISOString(),

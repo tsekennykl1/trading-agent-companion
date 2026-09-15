@@ -26,6 +26,7 @@ import { useT } from "@/lib/i18n";
 const TITLE = "My Trading Agents — Financial Analysis";
 const DESCRIPTION =
   "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
+const FORM_CONFIG_KEY = "ta-analysis-form-v1";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,8 +59,30 @@ function Workbench() {
   });
 
   useEffect(() => {
-    setDefaultConfig((c) => ({ ...c, analysisDate: new Date().toISOString().slice(0, 10) }));
+    const analysisDate = new Date().toISOString().slice(0, 10);
+    try {
+      const saved = window.localStorage.getItem(FORM_CONFIG_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<RunConfig>;
+        setDefaultConfig((current) => ({
+          ...current,
+          ...parsed,
+          analysisDate,
+          analysts: Array.isArray(parsed.analysts) ? parsed.analysts : current.analysts,
+          ...(Array.isArray(parsed.stages) ? { stages: parsed.stages } : {}),
+        }));
+        return;
+      }
+    } catch {
+      window.localStorage.removeItem(FORM_CONFIG_KEY);
+    }
+    setDefaultConfig((current) => ({ ...current, analysisDate }));
   }, []);
+
+  const rememberConfig = (config: RunConfig) => {
+    setDefaultConfig(config);
+    window.localStorage.setItem(FORM_CONFIG_KEY, JSON.stringify(config));
+  };
 
 
   // Lightweight readiness poll (GET /runs/{id}/status). When the engine does
@@ -159,6 +182,7 @@ function Workbench() {
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
     onMutate: (config: RunConfig) => {
+      rememberConfig(config);
       requestedTicker.current = config.ticker.trim().toUpperCase();
       setActiveRunId(null);
       setCachedRun(null);
@@ -232,7 +256,16 @@ function Workbench() {
   };
 
   const fetchedRun = runQuery.data as RunRecord | undefined;
-  const liveRun = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
+  const liveRunSource = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
+  const liveRun = liveRunSource
+    ? {
+        ...liveRunSource,
+        config: {
+          ...liveRunSource.config,
+          ...(liveRunSource.config.stages === undefined ? { stages: defaultConfig.stages } : {}),
+        },
+      }
+    : undefined;
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const artifacts = useRunArtifacts(
     run,
@@ -298,6 +331,7 @@ function Workbench() {
             defaultConfig={defaultConfig}
             running={running && !showingSample}
             disabled={startRun.isPending}
+            onConfigChange={rememberConfig}
             onRun={(c) => startRun.mutate(c)}
             onCancel={cancelRun}
           />
@@ -324,6 +358,7 @@ function Workbench() {
                 running={running && !showingSample}
                 disabled={startRun.isPending}
                 compact
+                onConfigChange={rememberConfig}
                 onRun={(c) => startRun.mutate(c)}
                 onCancel={cancelRun}
               />

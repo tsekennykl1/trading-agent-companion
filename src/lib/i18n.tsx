@@ -124,6 +124,8 @@ const EN = {
   "form.needAnalyst": "Select at least one analyst.",
   "form.stages": "Research & decision stages",
   "form.stagesHint": "Unselected stages are skipped, which makes the run faster.",
+  "form.researchDebate": "Bull & Bear Researcher",
+  "form.riskDebate": "Aggressive + Conservative Analyst + Neutral Analyst",
 
   "lang.English": "English",
   "lang.Traditional Chinese": "Traditional Chinese",
@@ -350,6 +352,8 @@ const ZH: Record<TKey, string> = {
   "form.needAnalyst": "請至少選擇一位分析師。",
   "form.stages": "研究與決策階段",
   "form.stagesHint": "未選擇的階段會略過，分析速度更快。",
+  "form.researchDebate": "看多及看空研究員",
+  "form.riskDebate": "進取型 + 保守型 + 中立型風險分析師",
 
   "lang.English": "英文",
   "lang.Traditional Chinese": "繁體中文",
