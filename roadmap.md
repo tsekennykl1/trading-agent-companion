@@ -95,3 +95,10 @@
 - [x] Remove Connect engine and About from the main navigation.
 - [x] Use the clickable connection badge as the setup entry point and move About to the footer.
 - [x] Verify completed/loading report states and desktop/mobile layout.
+
+# Grouped company context and progress
+
+- [x] Group Company of Interest, Asset Type, Instrument Context, Trade Date, and Sender into one report row.
+- [x] Hide completed agents by default while preserving active and pending rows.
+- [x] Merge analysis status and agent progress into one panel.
+- [x] Verify desktop/mobile presentation and a clean build.

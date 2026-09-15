@@ -39,12 +39,6 @@ export const Route = createFileRoute("/")({
   component: Workbench,
 });
 
-function formatElapsed(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return m > 0 ? `${m}m ${String(s).padStart(2, "0")}s` : `${s}s`;
-}
-
 function Workbench() {
   const t = useT();
   const health = useBridgeHealth();
@@ -335,46 +329,6 @@ function Workbench() {
             </div>
           )}
 
-          {analysisBusy && (
-            <section className="panel order-2 px-4 py-4 sm:px-5" role="status" aria-live="polite">
-              <div className="flex items-start gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10">
-                  <Loader2 className="size-4 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-base font-semibold sm:text-lg">{t("home.progressTitle")}</h2>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {t("home.progressBody")}
-                  </p>
-                  {liveRun?.progress && (
-                    <div className="mt-3">
-                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all duration-500 motion-reduce:transition-none"
-                          style={{ width: `${Math.min(100, Math.max(0, liveRun.progress.percent))}%` }}
-                        />
-                      </div>
-                      <p className="mt-2 text-xs break-words text-muted-foreground">
-                        {liveRun.progress.message || liveRun.progress.stage}
-                        {liveRun.progress.totalSteps > 0 &&
-                          ` · ${t("home.step")} ${liveRun.progress.step} ${t("home.of")} ${liveRun.progress.totalSteps}`}
-                      </p>
-                    </div>
-                  )}
-                  {!liveRun?.progress && latestStep && (
-                    <p className="mt-2 truncate text-xs text-muted-foreground" title={latestStep}>
-                      {latestStep}
-                    </p>
-                  )}
-                  <span className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-primary">
-                    <span className="size-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
-                    {t("home.workingOn")} {liveRun?.config.ticker ?? defaultConfig.ticker} · {formatElapsed(elapsed)}
-                  </span>
-                </div>
-              </div>
-            </section>
-          )}
-
           {showingSample && run.source === "sample" && (
             <div className="order-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />
@@ -398,7 +352,16 @@ function Workbench() {
           )}
 
           <div className="order-6 min-w-0">
-            <AgentBoard agents={run.agents} stats={run.stats} compact />
+            <AgentBoard
+              agents={run.agents}
+              stats={run.stats}
+              compact
+              analysisBusy={analysisBusy}
+              progress={liveRun?.progress}
+              ticker={liveRun?.config.ticker ?? defaultConfig.ticker}
+              elapsed={elapsed}
+              latestStep={latestStep}
+            />
           </div>
 
         </aside>
