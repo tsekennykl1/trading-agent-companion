@@ -19,8 +19,8 @@ import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { clearCachedAnalysis, loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
-import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
+import { useSavedRunConfig } from "@/hooks/useSavedRunConfig";
 import { useT } from "@/lib/i18n";
 
 const TITLE = "My Trading Agents — Financial Analysis";
@@ -229,11 +229,11 @@ function Workbench() {
       .catch(() => toast.error(t("toast.stopFailed")));
   };
 
-  const fetchedRun = runQuery.data as RunRecord | undefined;
-  const liveRunSource = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
-  const liveRun = liveRunSource
-    ? liveRunSource
-    : undefined;
+  // The run we show: the freshly fetched one, else the one restored from the
+  // browser cache, else the built-in sample.
+  const liveRun: RunRecord | undefined =
+    (runQuery.data as RunRecord | undefined) ??
+    (cachedRun?.id === activeRunId ? cachedRun : undefined);
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const artifacts = useRunArtifacts(
     run,
