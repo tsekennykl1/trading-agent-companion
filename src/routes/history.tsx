@@ -36,11 +36,23 @@ function statusTone(status: RunRecord["status"]): string {
 function formatTime(value: string | undefined): string {
   if (!value) return "—";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  // Always English AM/PM, never locale-dependent 上午/下午.
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }).format(parsed);
 }
 
 function HistoryPage() {
   const t = useT();
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
   const runsQuery = useQuery({
     queryKey: ["run-history"],
     queryFn: () => api.listRuns(),
