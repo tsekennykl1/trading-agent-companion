@@ -96,7 +96,9 @@ export function AgentBoard({
   const agents = agentsProp ?? [];
   const stats = statsProp ?? EMPTY_STATS;
   // Completed rows stay tucked away by default; active, pending, and error rows remain visible.
-  const listedAgents = showCompleted ? agents : agents.filter((a) => a.status !== "completed");
+  // Engine log rows are noise once they finish, so they always drop out.
+  const visibleAgents = agents.filter((a) => !(a.team === "Engine" && a.status === "completed"));
+  const listedAgents = showCompleted ? visibleAgents : visibleAgents.filter((a) => a.status !== "completed");
   const teams = listedAgents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
     return acc;
@@ -124,9 +126,18 @@ export function AgentBoard({
     .map((stage) => ({ stage, timing: timingByStage.get(stage.id) }));
   const slowestMs = Math.max(0, ...timingRows.map(({ timing }) => timing?.durationMs ?? 0));
   const stageLabel = (roles: string[]) => roles.map((role) => translatedValue(role, ROLE_KEYS, t)).join(" + ");
-  const clock = (value?: string) => value
-    ? new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(value))
-    : "—";
+  const clock = (value?: string) => {
+    if (!value) return "—";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    // English AM/PM everywhere, so timings never mix locale formats.
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(parsed);
+  };
   const duration = (ms?: number) => ms === undefined ? "—" : formatElapsed(Math.max(0, Math.round(ms / 1000)));
 
   return (
@@ -239,6 +250,15 @@ export function AgentBoard({
               {timingRows.map(({ stage, timing }) => {
                 const status = timing?.status ?? "pending";
                 const isSlowest = status === "completed" && timing?.durationMs === slowestMs && slowestMs > 0;
+                // Some engine builds report only a duration; derive the completed time from it.
+                const endedAt = timing?.endedAt
+                  ?? (timing?.startedAt && timing?.durationMs !== undefined
+                    ? new Date(new Date(timing.startedAt).getTime() + timing.durationMs).toISOString()
+                    : undefined);
+                const endedMs = timing?.durationMs
+                  ?? (timing?.startedAt && timing?.endedAt
+                    ? new Date(timing.endedAt).getTime() - new Date(timing.startedAt).getTime()
+                    : undefined);
                 return (
                   <div key={stage.id} className={cn("grid grid-cols-[minmax(11rem,1fr)_7rem_7rem_5rem] items-center gap-3 px-3 py-2 text-xs", isSlowest && "bg-accent/10")}>
                     <span className="flex min-w-0 items-center gap-2">
@@ -246,8 +266,8 @@ export function AgentBoard({
                       <span className="truncate font-medium">{stageLabel(stage.roles)}</span>
                     </span>
                     <span><span className="text-muted-foreground">{t("agents.started")}</span><br /><span className="font-mono">{clock(timing?.startedAt)}</span></span>
-                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(timing?.endedAt)}</span></span>
-                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(timing?.durationMs)}</span></span>
+                    <span><span className="text-muted-foreground">{t("agents.ended")}</span><br /><span className="font-mono">{clock(endedAt)}</span></span>
+                    <span className="text-right"><span className="text-muted-foreground">{t("agents.duration")}</span><br /><span className="font-mono font-medium">{duration(endedMs)}</span></span>
                   </div>
                 );
               })}

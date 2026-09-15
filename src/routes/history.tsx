@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Fragment, useState } from "react";
+import { CheckCircle2, ChevronDown, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { RunHistoryDetails } from "@/components/workbench/RunHistoryDetails";
 import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady } from "@/lib/trading-agents/report-readiness";
@@ -36,11 +38,23 @@ function statusTone(status: RunRecord["status"]): string {
 function formatTime(value: string | undefined): string {
   if (!value) return "—";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  // Always English AM/PM, never locale-dependent 上午/下午.
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }).format(parsed);
 }
 
 function HistoryPage() {
   const t = useT();
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
   const runsQuery = useQuery({
     queryKey: ["run-history"],
     queryFn: () => api.listRuns(),
@@ -89,6 +103,7 @@ function HistoryPage() {
                 <th className="px-4 py-2.5 font-medium">{t("history.colStatus")}</th>
                 <th className="px-4 py-2.5 font-medium">{t("history.colDecision")}</th>
                 <th className="px-4 py-2.5 font-medium">{t("history.colReports")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("history.colDetails")}</th>
               </tr>
             </thead>
             <tbody>
@@ -103,8 +118,10 @@ function HistoryPage() {
                 const resultUrl = publishedResultUrl ?? (
                   ready && run.source === "engine" ? bridgeAssetUrl(`/runs/${run.id}/result.html`) : undefined
                 );
+                const open = openRunId === run.id;
                 return (
-                  <tr key={run.id || `run-${index}`} className="border-b border-rule/60 last:border-0 align-top">
+                  <Fragment key={run.id || `run-${index}`}>
+                  <tr className="border-b border-rule/60 align-top">
                     <td className="px-4 py-2.5 font-medium">{run.config.ticker}</td>
                     <td className="px-4 py-2.5 tabular-nums text-muted-foreground">{run.config.analysisDate || "—"}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{formatTime(run.startedAt)}</td>
@@ -151,7 +168,27 @@ function HistoryPage() {
                         )}
                       </span>
                     </td>
+                    <td className="px-4 py-2.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        onClick={() => setOpenRunId(open ? null : run.id)}
+                        aria-expanded={open}
+                      >
+                        <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+                        {open ? t("history.hideDetails") : t("history.showDetails")}
+                      </Button>
+                    </td>
                   </tr>
+                  {open && (
+                    <tr className="border-b border-rule/60 bg-muted/20">
+                      <td colSpan={7} className="p-0">
+                        <RunHistoryDetails run={run} />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
             </tbody>
