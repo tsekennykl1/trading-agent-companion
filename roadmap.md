@@ -130,4 +130,4 @@
 - [x] Preserve empty and partial stage selections in the submitted request and returned run.
 - [x] Keep analyst and stage choices across layout changes and refreshes.
 - [x] Avoid fetching individual reports for unticked stages and mark them Not selected.
-- [ ] Verify the request, refresh persistence, report ordering, responsive layout, and clean preview.
+- [x] Verify the request, refresh persistence, report ordering, responsive layout, and clean preview.
