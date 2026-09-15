@@ -69,7 +69,7 @@ function Workbench() {
           ...parsed,
           analysisDate,
           analysts: Array.isArray(parsed.analysts) ? parsed.analysts : current.analysts,
-          stages: Array.isArray(parsed.stages) ? parsed.stages : current.stages,
+          ...(Array.isArray(parsed.stages) ? { stages: parsed.stages } : {}),
         }));
         return;
       }

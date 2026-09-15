@@ -49,7 +49,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
     setMarket(/\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other");
-  }, [defaultConfig]);
+  }, [defaultConfig.analysisDate]);
 
   /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
   const resolveTicker = (): string | null => {

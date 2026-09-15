@@ -197,6 +197,8 @@ type EngineRequest = {
   end_date?: string;
   analysts?: string[];
   selected_analysts?: string[];
+  stages?: string[];
+  selected_stages?: string[];
   params?: {
     llm_provider?: string;
     deep_think_llm?: string;
@@ -204,6 +206,8 @@ type EngineRequest = {
     max_debate_rounds?: number;
     analysts?: string[];
     selected_analysts?: string[];
+    stages?: string[];
+    selected_stages?: string[];
   };
 };
 
