@@ -101,4 +101,4 @@
 - [x] Group Company of Interest, Asset Type, Instrument Context, Trade Date, and Sender into one report row.
 - [x] Hide completed agents by default while preserving active and pending rows.
 - [x] Merge analysis status and agent progress into one panel.
-- [ ] Verify desktop/mobile presentation and a clean build.
+- [x] Verify desktop/mobile presentation and a clean build.
