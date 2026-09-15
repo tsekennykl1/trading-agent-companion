@@ -108,4 +108,4 @@
 - [x] Place the chart range choices in the Technical Analysis header.
 - [x] Open Final Trade Decision automatically when content is available.
 - [x] Cache the latest engine run and retrieved artifacts in browser storage.
-- [ ] Verify restoration, refresh behavior, responsive layout, and a clean build.
+- [x] Verify restoration, refresh behavior, responsive layout, and a clean build.
