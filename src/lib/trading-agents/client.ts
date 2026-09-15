@@ -82,6 +82,19 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
   };
   const selectedAnalysts = config.analysts.map((analyst) => analystKeys[analyst] ?? analyst);
   const language = config.language?.trim() || "English";
+  // Stage opt-in/out: engines that understand it skip the unselected stages;
+  // older engines ignore the extra keys and behave exactly as before.
+  const selectedStages = config.stages?.length ? config.stages : undefined;
+  const skippedStages = selectedStages
+    ? STAGE_OPTIONS.map((s) => s.id).filter((id) => !selectedStages.includes(id))
+    : undefined;
+  const stageKeys = selectedStages
+    ? {
+        stages: selectedStages,
+        selected_stages: selectedStages,
+        skip_stages: skippedStages ?? [],
+      }
+    : {};
   return {
     // Engine's expected schema (ticker comes from ...config below)
     model: config.deepModel,
