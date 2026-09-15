@@ -60,7 +60,7 @@ export function RunHistoryDetails({ run }: { run: RunRecord }) {
           <dd className="font-medium">
             {decision ? `${decision.action}${decision.confidence ? ` · ${decision.confidence}%` : ""}` : "—"}
           </dd>
-          <dt className="text-muted-foreground">{t("form.analysts")}</dt>
+          <dt className="text-muted-foreground">{t("form.team")}</dt>
           <dd className="break-words">{detail.config.analysts.join(", ") || "—"}</dd>
           <dt className="text-muted-foreground">{t("form.depth")}</dt>
           <dd>{detail.config.researchDepth}</dd>
