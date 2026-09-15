@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { api, bridgeAssetUrl, type MarketData, type PriceChartData } from "./client";
 import { DEFAULT_STAGES, REPORT_SECTIONS, STAGE_OPTIONS, type RunRecord } from "./types";
 import { fill, translate } from "@/lib/i18n";
+import { announceReady } from "@/components/workbench/ReadyOverlay";
 
 export interface RunArtifacts {
   marketData: MarketData | null;
@@ -160,11 +161,16 @@ export function useRunArtifacts(
 
       if (!firstPass) {
         for (const key of newReports) {
-          toast.success(fill(translate("toast.reportReady"), { name: reportLabel(key) }), {
+          const title = fill(translate("toast.reportReady"), { name: reportLabel(key) });
+          announceReady(title);
+          toast.success(title, {
             description: translate("toast.reportReadyBody"),
             duration: 3000,
             closeButton: true,
           });
+        }
+        if (next.resultHtmlUrl && !have.resultHtmlUrl) {
+          announceReady(fill(translate("toast.reportReady"), { name: translate("report.detailName") }));
         }
       }
       firstPass = false;
