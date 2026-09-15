@@ -124,3 +124,10 @@
 - [x] Replace per-run daemon threads with a durable bounded worker queue.
 - [x] Add canonical secure artifact URL configuration and deployment guidance.
 - [x] Refresh frontend data only when the backend version changes and expire removed cached runs.
+
+# Persistent stage opt-outs
+
+- [x] Preserve empty and partial stage selections in the submitted request and returned run.
+- [x] Keep analyst and stage choices across layout changes and refreshes.
+- [x] Avoid fetching individual reports for unticked stages and mark them Not selected.
+- [ ] Verify the request, refresh persistence, report ordering, responsive layout, and clean preview.

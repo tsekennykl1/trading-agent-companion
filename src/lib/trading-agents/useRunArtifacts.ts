@@ -75,10 +75,16 @@ export function useRunArtifacts(
 
     const loadReports = async (have: Record<string, string>) => {
       const index = await api.reportsIndex(runId);
-      const next = { ...have, ...index.contents };
-      const missing = index.names.filter((name) => {
+      const allowed = (name: string) => {
         const knownStageReport = STAGE_OPTIONS.some((stage) => stage.reportKeys.includes(name));
-        return !next[name] && (!knownStageReport || selectedReportKeys.has(name));
+        return !knownStageReport || selectedReportKeys.has(name);
+      };
+      const next = {
+        ...Object.fromEntries(Object.entries(have).filter(([name]) => allowed(name))),
+        ...Object.fromEntries(Object.entries(index.contents).filter(([name]) => allowed(name))),
+      };
+      const missing = index.names.filter((name) => {
+        return !next[name] && allowed(name);
       });
       const fetched = await Promise.all(
         missing.map(async (name) => [name, await api.report(runId, name)] as const),
@@ -172,7 +178,7 @@ export function useRunArtifacts(
       alive = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult, restored]);
+  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult, restored, run?.config.stages]);
 
   return artifacts;
 }
