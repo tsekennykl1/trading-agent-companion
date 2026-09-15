@@ -56,8 +56,10 @@ export function ReportsSection({
     if (!reports[key]?.trim() && value?.trim()) reports[key] = value;
   }
   const available = REPORT_SECTIONS.filter((s) => reports[s.key]?.trim());
+  // The engine log duplicates the Agent progress panel — never list it here.
+  const isEngineLog = (key: string) => key.toLowerCase().replace(/[-\s]/g, "_") === "engine_log";
   const extra = Object.keys(reports).filter(
-    (k) => reports[k]?.trim() && !REPORT_SECTIONS.some((s) => s.key === k),
+    (k) => reports[k]?.trim() && !isEngineLog(k) && !REPORT_SECTIONS.some((s) => s.key === k),
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 

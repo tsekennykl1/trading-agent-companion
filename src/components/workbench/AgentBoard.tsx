@@ -77,6 +77,7 @@ export function AgentBoard({
 }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
+  const [hideCompleted, setHideCompleted] = useState(false);
   // An engine payload can omit progress counters entirely; never crash on it.
   const agents = agentsProp ?? [];
   const stats = statsProp ?? EMPTY_STATS;
