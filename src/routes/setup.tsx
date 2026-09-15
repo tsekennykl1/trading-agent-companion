@@ -47,8 +47,16 @@ const STEPS: { title: string; body: string; code?: string }[] = [
   },
   {
     title: "Run the guided configurator",
-    body: "initialSetup.py walks through every setting, checks your keys and writes .env for you. Press Enter at a prompt to accept the value it suggests (it reads your existing .env first).",
-    code: "python initialSetup.py\n# non-interactive, reusing everything already in .env:\n# python initialSetup.py --non-interactive",
+    body:
+      "initialSetup.py is the safest way to create .env. It asks one question at a time — which AI provider you use, its key, which deep-thinking and quick-thinking models to run, how many debate rounds, the temperature, and where to keep the cache and memory log. Press Enter at any prompt to accept the suggested value; it reads your existing .env first, so re-running it only changes what you retype, and keys are shown masked. Model names are checked against the engine's own list and friendly names are converted automatically (\"DeepSeek Pro\" becomes deepseek-v4-pro), so a typo is caught before anything is saved. Data keys for FRED and Alpha Vantage come pre-filled with shared starter keys that work immediately — replace them with your own when you start running analyses regularly, as the shared ones are rate limited. Nothing is written until every value passes validation; then it writes .env, refreshes .env.example, and creates sample_run_payload.json you can use to test the engine with one curl command.",
+    code: "python initialSetup.py",
+  },
+  {
+    title: "Or configure it unattended",
+    body:
+      "For servers and deployments, skip the questions entirely: put the same answers in a JSON file and run with --non-interactive. Point it at the file with --config, or set CONFIG_JSON instead — a local path, an http(s) address, an s3:// object, or the JSON itself all work. Keys named the friendly way (llm_provider, deep_think_llm, research_depth) are translated for you, and anything under \"env\" is written to .env exactly as typed. The same validation runs, so a bad model name or a missing provider key stops the deployment instead of failing mid-analysis.",
+    code:
+      'cat > config.json <<\'JSON\'\n{\n  "llm_provider": "deepseek",\n  "deep_think_llm": "deepseek-v4-pro",\n  "quick_think_llm": "deepseek-v4-flash",\n  "research_depth": 1,\n  "temperature": 0.0,\n  "env": {\n    "DEEPSEEK_API_KEY": "sk-your-key",\n    "PUBLIC_BASE_URL": "http://127.0.0.1:8000",\n    "FRONTEND_ORIGINS": "http://localhost:8080"\n  }\n}\nJSON\n\npython initialSetup.py --non-interactive --config config.json\n# or: CONFIG_JSON=s3://my-bucket/config/config.json python initialSetup.py --non-interactive',
   },
   {
     title: "Choose where the dashboard may call from",
