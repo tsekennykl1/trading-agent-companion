@@ -33,13 +33,13 @@ export function useSavedRunConfig() {
   // Runs once, in the browser only: localStorage does not exist on the server.
   useEffect(() => {
     const saved = readSavedConfig();
-    setConfig((current) => ({
-      ...current,
-      ...saved,
-      analysisDate: new Date().toISOString().slice(0, 10),
-      analysts: Array.isArray(saved.analysts) ? saved.analysts : current.analysts,
-      stages: Array.isArray(saved.stages) ? saved.stages : (current.stages ?? DEFAULT_STAGES),
-    }));
+    setConfig((current): RunConfig => {
+      const next: RunConfig = { ...current, ...saved } as RunConfig;
+      next.analysisDate = new Date().toISOString().slice(0, 10);
+      next.analysts = Array.isArray(saved.analysts) ? saved.analysts : current.analysts;
+      next.stages = Array.isArray(saved.stages) ? saved.stages : (current.stages ?? DEFAULT_STAGES);
+      return next;
+    });
   }, []);
 
   const remember = (next: RunConfig) => {
