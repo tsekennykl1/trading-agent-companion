@@ -9,8 +9,11 @@ export function useBridgeHealth() {
     queryKey: ["bridge-health"],
     queryFn: api.health,
     retry: false,
-    refetchInterval: 15000,
-    staleTime: 5000,
+    // Once the engine answers, stop hammering /health — a slow heartbeat is
+    // enough to notice it going away. While offline, check a little more often.
+    refetchInterval: (q) => (q.state.data && !q.state.error ? 120000 : 20000),
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
   });
 }
 
