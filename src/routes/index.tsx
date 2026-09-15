@@ -58,6 +58,7 @@ function Workbench() {
     stages: DEFAULT_STAGES,
   });
   const [showFormAtTop, setShowFormAtTop] = useState(false);
+  const [sidebarFormOpen, setSidebarFormOpen] = useState(true);
 
   useEffect(() => {
     const analysisDate = new Date().toISOString().slice(0, 10);
