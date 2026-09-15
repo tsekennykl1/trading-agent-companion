@@ -83,15 +83,13 @@ export function ExportBar({
             <Loader2 className="size-6 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
             <span className="sr-only">{t("export.preparing")}</span>
           </div>
-        ) : (
+        ) : reportUrl ? (
           <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto" aria-busy={exporting}>
-            {reportUrl && (
             <Button asChild size="sm" variant="secondary" className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <Link to="/report" search={{ url: reportUrl, ticker: run.config.ticker }}>
                 <ScrollText className="size-4" /> {t("export.open")}
               </Link>
             </Button>
-            )}
             <Button variant="outline" size="sm" disabled={exporting || !reportUrl} onClick={exportMarkdown} className="min-h-10 flex-1 gap-2 sm:min-h-8 sm:flex-none">
               <FileText className="size-4" /> {t("export.markdown")}
             </Button>
@@ -102,6 +100,10 @@ export function ExportBar({
               <Printer className="size-4" /> {t("export.print")}
             </Button>
           </div>
+        ) : (
+          <p className="w-full text-right text-xs text-muted-foreground sm:w-auto">
+            {t("export.linkUnavailable")}
+          </p>
         )}
       </div>
     </section>

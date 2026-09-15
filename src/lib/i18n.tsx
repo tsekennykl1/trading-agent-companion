@@ -77,6 +77,7 @@ const EN = {
   "export.open": "Detail Report",
   "export.openHint": "The full engine report opens on its own page.",
   "export.preparing": "Report in progress — exports unlock when it is ready.",
+  "export.linkUnavailable": "Report ready, but its link is not available from this page.",
 
   "report.title": "Detailed report",
   "report.back": "Back to workbench",
@@ -296,6 +297,7 @@ const ZH: Record<TKey, string> = {
   "export.open": "開啟詳細報告",
   "export.openHint": "完整的引擎報告會在獨立頁面開啟。",
   "export.preparing": "報告產生中 — 完成後即可匯出。",
+  "export.linkUnavailable": "報告已完成，但此頁面無法使用其連結。",
 
   "report.title": "詳細報告",
   "report.back": "返回工作台",

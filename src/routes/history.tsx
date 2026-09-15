@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/trading-agents/client";
+import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
+import { finalReportReady } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useT } from "@/lib/i18n";
 import type { RunRecord } from "@/lib/trading-agents/types";
@@ -93,8 +94,15 @@ function HistoryPage() {
             <tbody>
               {runs.map((run, index) => {
                 const readyCount = run.partial?.reportsReady?.length ?? Object.keys(run.reports ?? {}).length;
-                const resultUrl = run.partial?.resultHtmlUrl;
-                const ready = run.status === "completed" && (readyCount > 0 || Boolean(resultUrl));
+                const publishedResultUrl = run.partial?.resultHtmlUrl;
+                const ready = finalReportReady({
+                  status: run.status,
+                  reportsReady: run.partial?.reportsReady ?? Object.keys(run.reports ?? {}),
+                  resultUrl: publishedResultUrl,
+                });
+                const resultUrl = publishedResultUrl ?? (
+                  ready && run.source === "engine" ? bridgeAssetUrl(`/runs/${run.id}/result.html`) : undefined
+                );
                 return (
                   <tr key={run.id || `run-${index}`} className="border-b border-rule/60 last:border-0 align-top">
                     <td className="px-4 py-2.5 font-medium">{run.config.ticker}</td>

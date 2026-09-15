@@ -7,6 +7,7 @@ import type {
   TradeLevels,
 } from "./types";
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
+import { normalizeReportsReady } from "./report-readiness";
 
 export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 
@@ -124,7 +125,7 @@ function readRunStatus(raw: unknown): RunStatus | null {
   if (typeof rawStatus !== "string") return null;
   const progress = (o["progress"] ?? {}) as Record<string, unknown>;
   const resultUrl = o["result_url"] ?? o["resultUrl"];
-  const reportsReady = o["reports_ready"] ?? o["reportsReady"];
+  const reportsReady = normalizeReportsReady(o["reports_ready"] ?? o["reportsReady"]);
   const pollAfter = num(o["poll_after_ms"] ?? o["pollAfterMs"]);
   const percent = num(progress["percent"]);
   const message = progress["message"] ?? progress["stage"];
@@ -132,7 +133,7 @@ function readRunStatus(raw: unknown): RunStatus | null {
     runId: String(o["run_id"] ?? o["runId"] ?? ""),
     status: canonicalStatus(rawStatus),
     decisionReady: (o["decision_ready"] ?? o["decisionReady"]) === true,
-    reportsReady: Array.isArray(reportsReady) ? reportsReady.map(String) : [],
+    reportsReady,
     ...(typeof resultUrl === "string" && resultUrl ? { resultUrl: bridgeAssetUrl(resultUrl) } : {}),
     ...(typeof o["error"] === "string" && o["error"] ? { error: o["error"] } : {}),
     ...(pollAfter !== undefined ? { pollAfterMs: pollAfter } : {}),
@@ -323,8 +324,8 @@ function readPartial(
     marketDataReady: partial["market_data_ready"] === true,
     chartsReady,
     decisionReady: partial["decision_ready"] === true,
-    ...(Array.isArray(partial["reports_ready"])
-      ? { reportsReady: (partial["reports_ready"] as unknown[]).map(String) }
+    ...(partial["reports_ready"] !== undefined
+      ? { reportsReady: normalizeReportsReady(partial["reports_ready"]) }
       : {}),
     ...(typeof get("stock_name", "name") === "string" ? { stockName: get("stock_name", "name") as string } : {}),
     ...(num(get("latest_price", "latest_close")) !== undefined
