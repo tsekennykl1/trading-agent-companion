@@ -298,6 +298,14 @@ function Workbench() {
   );
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = startedAt !== null;
+  // While an analysis is loading the form only takes up space; it comes back
+  // with the Show button or the New Analysis button at the top of the page.
+  useEffect(() => {
+    if (analysisBusy) setSidebarFormOpen(false);
+  }, [analysisBusy]);
+  // On the single-column layout the progress panel drops to the bottom of the
+  // page once everything has finished.
+  const allDone = !analysisBusy && (engineStatus === "completed" || run.status === "completed");
   const headerGridCols =
     showExportBar && chartReady && !showFormAtTop
       ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
