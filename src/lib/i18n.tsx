@@ -24,6 +24,9 @@ const EN = {
   "history.reportsReady": "Ready",
   "history.reportsPending": "Preparing",
   "history.open": "Open report",
+  "history.colDetails": "Details",
+  "history.showDetails": "Show details",
+  "history.hideDetails": "Hide details",
   "app.tagline": "Workplace decision support for multi-agent financial analysis",
   "app.language": "Language",
   "footer.disclaimer":
@@ -235,6 +238,7 @@ const EN = {
   "toast.stopFailed": "Could not stop the run",
   "toast.reportReady": "{name} report is ready",
   "toast.reportReadyBody": "Open it in the Agent reports section below.",
+  "report.detailName": "Detail",
 } as const;
 
 
@@ -259,6 +263,9 @@ const ZH: Record<TKey, string> = {
   "history.reportsReady": "已完成",
   "history.reportsPending": "準備中",
   "history.open": "開啟報告",
+  "history.colDetails": "詳情",
+  "history.showDetails": "顯示詳情",
+  "history.hideDetails": "隱藏詳情",
   "app.tagline": "多代理人金融分析的決策支援工作平台",
   "app.language": "語言",
   "footer.disclaimer":
