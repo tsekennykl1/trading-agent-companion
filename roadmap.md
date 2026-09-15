@@ -94,4 +94,4 @@
 - [x] Allow completed reports from the connected local engine to expose their report controls.
 - [x] Remove Connect engine and About from the main navigation.
 - [x] Use the clickable connection badge as the setup entry point and move About to the footer.
-- [ ] Verify completed/loading report states and desktop/mobile layout.
+- [x] Verify completed/loading report states and desktop/mobile layout.
