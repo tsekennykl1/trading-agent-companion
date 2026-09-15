@@ -38,7 +38,7 @@ export function useSavedRunConfig() {
       ...saved,
       analysisDate: new Date().toISOString().slice(0, 10),
       analysts: Array.isArray(saved.analysts) ? saved.analysts : current.analysts,
-      stages: Array.isArray(saved.stages) ? saved.stages : current.stages,
+      stages: Array.isArray(saved.stages) ? saved.stages : (current.stages ?? DEFAULT_STAGES),
     }));
   }, []);
 
