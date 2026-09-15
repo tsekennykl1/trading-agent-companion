@@ -53,6 +53,7 @@ function Workbench() {
     ...SAMPLE_RUN.config,
     analysisDate: "",
     analysts: ["Market Analyst"],
+    stages: DEFAULT_STAGES,
   });
 
   useEffect(() => {
