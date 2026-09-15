@@ -96,6 +96,16 @@ The page itself is now almost pure layout. The moving parts live in two hooks:
 Everything below that is presentation: `LiveSnapshot`, `AgentBoard`,
 `DecisionPanel`, charts, `ReportsSection`, `ExportBar`.
 
+`AgentBoard` is the biggest panel, so it is split into named pieces inside
+one file: `BusyBanner` (the "working on…" banner), `StatusCounts` (the
+collapsed summary), `TeamList` (every agent grouped by team), `StageTimings`
+(start / end / duration per stage) and `StatsGrid` (the counters). The
+`AgentBoard` function itself only decides which of those to show.
+
+All date and duration text comes from `src/lib/format.ts`
+(`formatElapsed`, `formatDuration`, `formatClock`, `formatDateTime`) so every
+screen shows the same English AM/PM style.
+
 
 ## 6. Reading any component
 
