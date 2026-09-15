@@ -101,6 +101,7 @@ function HistoryPage() {
                 <th className="px-4 py-2.5 font-medium">{t("history.colStatus")}</th>
                 <th className="px-4 py-2.5 font-medium">{t("history.colDecision")}</th>
                 <th className="px-4 py-2.5 font-medium">{t("history.colReports")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("history.colDetails")}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,8 +116,10 @@ function HistoryPage() {
                 const resultUrl = publishedResultUrl ?? (
                   ready && run.source === "engine" ? bridgeAssetUrl(`/runs/${run.id}/result.html`) : undefined
                 );
+                const open = openRunId === run.id;
                 return (
-                  <tr key={run.id || `run-${index}`} className="border-b border-rule/60 last:border-0 align-top">
+                  <Fragment key={run.id || `run-${index}`}>
+                  <tr className="border-b border-rule/60 align-top">
                     <td className="px-4 py-2.5 font-medium">{run.config.ticker}</td>
                     <td className="px-4 py-2.5 tabular-nums text-muted-foreground">{run.config.analysisDate || "—"}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{formatTime(run.startedAt)}</td>
