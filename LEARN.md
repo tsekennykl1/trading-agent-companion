@@ -61,7 +61,13 @@ Routing is by file name: `src/routes/history.tsx` becomes `/history`. The file
 | File | Responsibility |
 | --- | --- |
 | `types.ts` | The shapes of a run, decision, config, stage list. Start here. |
-| `client.ts` | All HTTP calls (`api.startRun`, `api.getRun`, ...) plus readers that turn loose engine JSON into those types. |
+| `client.ts` | The `api` object: one short function per engine endpoint. |
+| `http.ts` | Which engine URL to use, how a request is sent, how errors read. |
+| `run-payload.ts` | Builds the JSON body sent when you start an analysis. |
+| `parse.ts` | Tiny helpers for reading messy JSON (numbers, titles, dates). |
+| `normalize-run.ts` | Turns an engine run into the dashboard's `RunRecord`. |
+| `chart-data.ts` | Readers for the price chart and market data. |
+| `reports.ts` | Readers for the report endpoints. |
 | `report-readiness.ts` | One rule: when is the final report really finished. |
 | `useRunArtifacts.ts` | Fetches chart data, market data and report texts for a run. |
 | `run-cache.ts` | Saves the latest analysis in the browser so a refresh keeps it. |
@@ -69,9 +75,10 @@ Routing is by file name: `src/routes/history.tsx` becomes `/history`. The file
 | `providers.ts` | The catalogue of AI providers and model names. |
 | `sample-run.ts` | The demo run shown before you start your own. |
 
-**Why `client.ts` is large:** engines differ in the exact JSON they return, so
-each `readX` function accepts several spellings and returns one clean type. The
-rest of the app then only ever sees the clean type.
+**Why the readers look repetitive:** engines differ in the exact JSON they
+return, so each `readX` function accepts several spellings and returns one clean
+type. The rest of the app then only ever sees the clean type.
+
 
 ## 5. How the dashboard works (`src/routes/index.tsx`)
 
