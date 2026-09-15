@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { useT, type TKey } from "@/lib/i18n";
-import { REPORT_SECTIONS, type RunRecord } from "@/lib/trading-agents/types";
+import { DEFAULT_STAGES, REPORT_SECTIONS, STAGE_OPTIONS, type RunRecord } from "@/lib/trading-agents/types";
 
 const REPORT_LABEL_KEYS: Record<string, TKey> = {
   market_report: "analyst.Market Analyst",
@@ -45,12 +45,10 @@ const COMPANY_CONTEXT_KEYS = [
   "sender",
 ] as const;
 
-const ANALYST_BY_REPORT_KEY: Record<string, string> = {
-  market_report: "Market Analyst",
-  sentiment_report: "Sentiment Analyst",
-  news_report: "News Analyst",
-  fundamentals_report: "Fundamentals Analyst",
-};
+/** Which stage produces each report, so skipped stages can be marked. */
+const STAGE_BY_REPORT_KEY: Record<string, string> = Object.fromEntries(
+  STAGE_OPTIONS.flatMap((stage) => stage.reportKeys.map((key) => [key, stage.id])),
+);
 
 
 function translatedValue(value: string, keys: Record<string, TKey>, t: (key: TKey) => string) {
@@ -81,11 +79,17 @@ export function ReportsSection({
   const available = REPORT_SECTIONS.filter((s) => reports[s.key]?.trim());
   // The engine log duplicates the Agent progress panel — never list it here.
   const isEngineLog = (key: string) => key.toLowerCase().replace(/[-\s]/g, "_") === "engine_log";
+  // Some engines publish the same text under two names (e.g. trader_plan and
+  // trader_investment_plan) — list each piece of content once.
+  const knownContents = new Set(
+    REPORT_SECTIONS.map((s) => reports[s.key]?.trim()).filter((value): value is string => Boolean(value)),
+  );
   const extra = Object.keys(reports).filter(
     (k) => reports[k]?.trim()
       && !isEngineLog(k)
       && !COMPANY_CONTEXT_KEYS.includes(k as (typeof COMPANY_CONTEXT_KEYS)[number])
-      && !REPORT_SECTIONS.some((s) => s.key === k),
+      && !REPORT_SECTIONS.some((s) => s.key === k)
+      && !knownContents.has(reports[k]!.trim()),
   );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company_of_interest: true,
@@ -114,17 +118,21 @@ export function ReportsSection({
     })),
   );
 
-  // Analyst reports the user did not request sink to the bottom, just above the final decision.
+  // Stages the user opted out of sink below the final decision.
+  const selectedStages = new Set(run.config.stages ?? DEFAULT_STAGES);
   const selectedAnalysts = new Set(run.config.analysts ?? []);
   const isUnselected = (key: string) => {
-    const analyst = ANALYST_BY_REPORT_KEY[key];
-    return Boolean(analyst) && selectedAnalysts.size > 0 && !selectedAnalysts.has(analyst!);
+    const stage = STAGE_BY_REPORT_KEY[key];
+    if (!stage) return false;
+    const analyst = STAGE_OPTIONS.find((s) => s.id === stage)?.analyst;
+    if (analyst) return selectedAnalysts.size > 0 && !selectedAnalysts.has(analyst);
+    return !selectedStages.has(stage);
   };
   const isFinal = (key: string) => key === "final_decision" || key === "final_trade_decision";
   const orderedRows = [
     ...sectionRows.filter((s) => !isUnselected(s.key) && !isFinal(s.key)),
-    ...sectionRows.filter((s) => isUnselected(s.key)),
     ...sectionRows.filter((s) => !isUnselected(s.key) && isFinal(s.key)),
+    ...sectionRows.filter((s) => isUnselected(s.key)),
   ];
 
   const readyKeys = orderedRows.filter((section) => Boolean(section.content)).map((section) => section.key);

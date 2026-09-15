@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ANALYST_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
+import { ANALYST_OPTIONS, DEFAULT_STAGES, STAGE_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const [config, setConfig] = useState<RunConfig>({
     ...defaultConfig,
     language: defaultConfig.language || "English",
+    stages: defaultConfig.stages?.length ? defaultConfig.stages : DEFAULT_STAGES,
   });
   const [market, setMarket] = useState<"HK" | "Other">(
     /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
@@ -60,11 +61,25 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
 
-  const toggleAnalyst = (name: string, checked: boolean) =>
-    setConfig((c) => ({
-      ...c,
-      analysts: checked ? Array.from(new Set([...c.analysts, name])) : c.analysts.filter((a) => a !== name),
-    }));
+  const stages = config.stages ?? DEFAULT_STAGES;
+  const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
+  const decisionStages = STAGE_OPTIONS.filter((s) => !s.analyst);
+
+  /** Analyst stages keep `analysts` in sync so the engine payload is unchanged. */
+  const toggleStage = (id: string, checked: boolean) =>
+    setConfig((c) => {
+      const current = c.stages ?? DEFAULT_STAGES;
+      const next = checked ? Array.from(new Set([...current, id])) : current.filter((s) => s !== id);
+      const analyst = STAGE_OPTIONS.find((s) => s.id === id)?.analyst;
+      const analysts = !analyst
+        ? c.analysts
+        : checked
+          ? Array.from(new Set([...c.analysts, analyst]))
+          : c.analysts.filter((a) => a !== analyst);
+      return { ...c, stages: next, analysts };
+    });
+
+  const stageLabel = (roles: string[]) => roles.map((role) => t(`role.${role}` as TKey)).join(" + ");
 
   return (
     <form
@@ -103,7 +118,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                 }}
-                placeholder={market === "HK" ? "0700" : "AAPL"}
+                placeholder={market === "HK" ? "700" : "AAPL"}
                 required
                 aria-invalid={!!tickerError}
                 className="font-mono"
@@ -182,19 +197,46 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             </span>
           </div>
           <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-4")}>
-            {ANALYST_OPTIONS.map((a) => (
+            {analystStages.map((stage) => (
               <label
-                key={a}
+                key={stage.id}
                 className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
               >
                 <Checkbox
-                  checked={config.analysts.includes(a)}
-                  onCheckedChange={(c) => toggleAnalyst(a, c === true)}
+                  checked={stages.includes(stage.id)}
+                  onCheckedChange={(c) => toggleStage(stage.id, c === true)}
                 />
-                {t(`analyst.${a}` as TKey)}
+                {t(`analyst.${stage.analyst}` as TKey)}
               </label>
             ))}
           </div>
+        </div>
+
+        <div className="mt-5 border-t border-rule pt-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <Label className="label-caps">{t("form.stages")}</Label>
+            <span className="text-xs text-muted-foreground">
+              {fill(t("form.selected"), {
+                n: decisionStages.filter((s) => stages.includes(s.id)).length,
+                m: decisionStages.length,
+              })}
+            </span>
+          </div>
+          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-3")}>
+            {decisionStages.map((stage) => (
+              <label
+                key={stage.id}
+                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
+              >
+                <Checkbox
+                  checked={stages.includes(stage.id)}
+                  onCheckedChange={(c) => toggleStage(stage.id, c === true)}
+                />
+                <span className="min-w-0">{stageLabel(stage.roles)}</span>
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">{t("form.stagesHint")}</p>
         </div>
 
         <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

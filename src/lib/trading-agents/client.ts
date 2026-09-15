@@ -6,6 +6,7 @@ import type {
   RunRecord,
   TradeLevels,
 } from "./types";
+import { STAGE_OPTIONS } from "./types";
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
 import { normalizeReportsReady } from "./report-readiness";
 
@@ -82,6 +83,19 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
   };
   const selectedAnalysts = config.analysts.map((analyst) => analystKeys[analyst] ?? analyst);
   const language = config.language?.trim() || "English";
+  // Stage opt-in/out: engines that understand it skip the unselected stages;
+  // older engines ignore the extra keys and behave exactly as before.
+  const selectedStages = config.stages?.length ? config.stages : undefined;
+  const skippedStages = selectedStages
+    ? STAGE_OPTIONS.map((s) => s.id).filter((id) => !selectedStages.includes(id))
+    : undefined;
+  const stageKeys = selectedStages
+    ? {
+        stages: selectedStages,
+        selected_stages: selectedStages,
+        skip_stages: skippedStages ?? [],
+      }
+    : {};
   return {
     // Engine's expected schema (ticker comes from ...config below)
     model: config.deepModel,
@@ -97,6 +111,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
       language,
       report_language: language,
       output_language: language,
+      ...stageKeys,
     },
     // Aliases for other bridge implementations
     ...config,
@@ -108,6 +123,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     language,
     report_language: language,
     output_language: language,
+    ...stageKeys,
   };
 
 }

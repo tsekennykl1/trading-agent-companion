@@ -19,6 +19,7 @@ import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { clearCachedAnalysis, loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
+import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 import { useT } from "@/lib/i18n";
 
@@ -53,6 +54,7 @@ function Workbench() {
     ...SAMPLE_RUN.config,
     analysisDate: "",
     analysts: ["Market Analyst"],
+    stages: DEFAULT_STAGES,
   });
 
   useEffect(() => {

@@ -122,6 +122,8 @@ const EN = {
   "form.stop": "Stop run",
   "form.working": "Agents are working…",
   "form.needAnalyst": "Select at least one analyst.",
+  "form.stages": "Research & decision stages",
+  "form.stagesHint": "Unselected stages are skipped, which makes the run faster.",
 
   "lang.English": "English",
   "lang.Traditional Chinese": "Traditional Chinese",
@@ -346,6 +348,8 @@ const ZH: Record<TKey, string> = {
   "form.stop": "停止分析",
   "form.working": "代理人分析中…",
   "form.needAnalyst": "請至少選擇一位分析師。",
+  "form.stages": "研究與決策階段",
+  "form.stagesHint": "未選擇的階段會略過，分析速度更快。",
 
   "lang.English": "英文",
   "lang.Traditional Chinese": "繁體中文",
