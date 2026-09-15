@@ -69,6 +69,17 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   // Which technical studies are ticked; re-seeded whenever a new payload of
   // indicators arrives, but the user's choices stick while the run continues.
   const rows = useMemo(() => chartData?.rows ?? [], [chartData]);
+  // Chart narrowed to the selected trailing range; markers/levels stay attached.
+  const rangedChart = useMemo(() => {
+    if (!chartData || rangeMonths === null) return chartData;
+    const lastDate = chartData.rows.at(-1)?.date;
+    const lastMs = lastDate ? Date.parse(lastDate) : NaN;
+    if (!Number.isFinite(lastMs)) return chartData;
+    const cutoff = new Date(lastMs);
+    cutoff.setMonth(cutoff.getMonth() - rangeMonths);
+    const cutoffMs = cutoff.getTime();
+    return { ...chartData, rows: chartData.rows.filter((r) => Date.parse(r.date) >= cutoffMs) };
+  }, [chartData, rangeMonths]);
   const availableSignature = useMemo(
     () =>
       rows.length
