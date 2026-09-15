@@ -392,6 +392,7 @@ function Workbench() {
               elapsed={elapsed}
               latestStep={latestStep}
               selectedStages={run.config.stages}
+              stageTimingEnabled={run.source === "engine"}
             />
           </div>
 

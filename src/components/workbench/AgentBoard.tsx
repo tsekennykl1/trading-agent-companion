@@ -76,6 +76,7 @@ export function AgentBoard({
   elapsed = 0,
   latestStep,
   selectedStages,
+  stageTimingEnabled = false,
 }: {
   agents: AgentProgress[];
   stats?: RunStats;
@@ -86,6 +87,7 @@ export function AgentBoard({
   elapsed?: number;
   latestStep?: string | undefined;
   selectedStages?: string[] | undefined;
+  stageTimingEnabled?: boolean;
 }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
@@ -226,7 +228,7 @@ export function AgentBoard({
         </div>
       )}
 
-      {timingRows.length > 0 && (
+      {stageTimingEnabled && timingRows.length > 0 && (
         <div className="mt-4 border-t border-rule pt-4">
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h3 className="text-sm font-semibold">{t("agents.stageTiming")}</h3>
