@@ -1,14 +1,24 @@
-# Welcome to your Lovable project
+# Tauric Trading Connect
+
+I want to build a react.js website that can connect to Tauric Research. (2024). TradingAgents: Multi-Agent LLM Framework for Financial
+
+Trading. GitHub repository: https://github.com/TauricResearch/TradingAgents
+
+2. Liu, Z., et al. (2024). TradingAgents: Multi-Agent Collaboration for Financial Decision-
+
+Making. arXiv preprint https://arxiv.org/abs/2412.20138
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://trading-agent-companion.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/86c46bf9-9574-4870-9977-ff294e37a9a3).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +30,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
