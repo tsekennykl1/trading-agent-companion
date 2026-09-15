@@ -6,10 +6,10 @@ const STORAGE_KEY = "ta-language";
 
 /** Every user-facing string in the workbench chrome. */
 const EN = {
-  "nav.workbench": "Workbench",
+  "nav.workbench": "Dashboard",
   "nav.setup": "Connect engine",
   "nav.about": "About the project",
-  "nav.history": "Run history",
+  "nav.history": "History",
   "history.title": "Run history",
   "history.intro": "Past analyses from the connected engine, with status, decision and report readiness.",
   "history.refresh": "Refresh",
@@ -246,10 +246,10 @@ const EN = {
 export type TKey = keyof typeof EN;
 
 const ZH: Record<TKey, string> = {
-  "nav.workbench": "分析工作台",
+  "nav.workbench": "儀表板",
   "nav.setup": "連接引擎",
   "nav.about": "關於本專案",
-  "nav.history": "分析紀錄",
+  "nav.history": "歷史紀錄",
   "history.title": "分析紀錄",
   "history.intro": "已連接引擎的歷史分析，包含狀態、決策與報告完成情況。",
   "history.refresh": "重新整理",

@@ -47,10 +47,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
               <Activity className="size-4" />
             </span>
             <span className="min-w-0 leading-tight">
-              <span className="block truncate font-display text-base font-semibold">My Trading Agents</span>
-              <span className="hidden truncate text-[11px] text-muted-foreground sm:block">
-                {t("app.tagline")}
-              </span>
+              <span className="block truncate font-display text-base font-semibold">My Trading Agent</span>
             </span>
           </Link>
 
