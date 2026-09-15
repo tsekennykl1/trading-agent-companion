@@ -258,13 +258,7 @@ function Workbench() {
   const fetchedRun = runQuery.data as RunRecord | undefined;
   const liveRunSource = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
   const liveRun = liveRunSource
-    ? {
-        ...liveRunSource,
-        config: {
-          ...liveRunSource.config,
-          ...(liveRunSource.config.stages === undefined ? { stages: defaultConfig.stages } : {}),
-        },
-      }
+    ? liveRunSource
     : undefined;
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const artifacts = useRunArtifacts(
@@ -397,6 +391,7 @@ function Workbench() {
               ticker={liveRun?.config.ticker ?? defaultConfig.ticker}
               elapsed={elapsed}
               latestStep={latestStep}
+              selectedStages={run.config.stages}
             />
           </div>
 

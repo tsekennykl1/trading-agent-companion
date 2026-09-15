@@ -142,6 +142,7 @@ export interface RunStatus {
   version?: number;
   artifactsReady?: Record<string, boolean>;
   attemptCount?: number;
+  stageTimings?: import("./types").StageTiming[];
 }
 
 function readRunStatus(raw: unknown): RunStatus | null {
@@ -158,6 +159,7 @@ function readRunStatus(raw: unknown): RunStatus | null {
   const version = num(o["version"]);
   const attemptCount = num(o["attempt_count"] ?? o["attemptCount"]);
   const artifactsReadyRaw = o["artifacts_ready"] ?? o["artifactsReady"];
+  const stageTimings = readStageTimings((o["timings"] as Record<string, unknown> | undefined)?.["stages"]);
   const artifactsReady = artifactsReadyRaw && typeof artifactsReadyRaw === "object"
     ? Object.fromEntries(Object.entries(artifactsReadyRaw as Record<string, unknown>).map(([key, value]) => [key, value === true]))
     : undefined;
@@ -174,6 +176,7 @@ function readRunStatus(raw: unknown): RunStatus | null {
     ...(version !== undefined ? { version } : {}),
     ...(artifactsReady ? { artifactsReady } : {}),
     ...(attemptCount !== undefined ? { attemptCount } : {}),
+    ...(stageTimings.length ? { stageTimings } : {}),
   };
 }
 
@@ -258,6 +261,7 @@ type EngineRun = {
   timings?: {
     stage_durations_ms?: Record<string, number>;
     counters?: Record<string, number>;
+    stages?: unknown;
   };
   error?: { type?: string; message?: string; traceback?: string; code?: string } | null;
   logs?: unknown[];
@@ -326,6 +330,30 @@ function num(v: unknown): number | undefined {
     }
   }
   return undefined;
+}
+
+function readStageTimings(raw: unknown): import("./types").StageTiming[] {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
+  return Object.entries(raw as Record<string, unknown>).flatMap(([stage, value]) => {
+    if (!value || typeof value !== "object") return [];
+    const item = value as Record<string, unknown>;
+    const rawStatus = item["status"];
+    const status = rawStatus === "in_progress" || rawStatus === "completed" || rawStatus === "error"
+      ? rawStatus
+      : "pending";
+    const startedAt = item["started_at"];
+    const endedAt = item["ended_at"];
+    const durationMs = num(item["duration_ms"]);
+    const attempts = num(item["attempts"]);
+    return [{
+      stage,
+      status,
+      ...(typeof startedAt === "string" ? { startedAt } : {}),
+      ...(typeof endedAt === "string" ? { endedAt } : {}),
+      ...(durationMs !== undefined ? { durationMs } : {}),
+      ...(attempts !== undefined ? { attempts } : {}),
+    }];
+  });
 }
 
 /** Read the engine's partial_result (plus nested summary_cards / chart_urls). */
@@ -631,6 +659,7 @@ export function normalizeRun(raw: unknown): RunRecord {
       reportsDone: Object.keys(reports).length,
       reportsTotal: Object.keys(reports).length,
       runtimeSeconds: typeof totalMs === "number" ? Math.max(1, Math.round(totalMs / 1000)) : runtimeSeconds,
+      stageTimings: readStageTimings(raw.timings?.stages),
     },
     source: "engine",
     ...(raw.error ? { error: `${raw.error.type ?? "Error"}: ${raw.error.message ?? ""}` } : {}),
