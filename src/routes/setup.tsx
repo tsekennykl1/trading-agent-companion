@@ -29,28 +29,57 @@ export const Route = createFileRoute("/setup")({
 
 const STEPS: { title: string; body: string; code?: string }[] = [
   {
-    title: "Activate the environment you already use",
-    body: "Use the same virtual environment in which you installed TradingAgents.",
-    code: "cd ~/…/Group\nsource .venv/bin/activate\ncd TradingAgents",
+    title: "Get the engine code and create an environment",
+    body: "Clone your backend repository, then create and activate a Python virtual environment inside it.",
+    code:
+      "git clone https://github.com/tsekennykl1/myTradingAgentsBackend.git\ncd myTradingAgentsBackend\npython3 -m venv .venv\nsource .venv/bin/activate",
   },
   {
-    title: "Install the two bridge dependencies",
-    body: "FastAPI serves the small HTTP API the dashboard talks to.",
-    code: "pip install fastapi uvicorn",
+    title: "Install the dependencies",
+    body: "This installs FastAPI, the worker, and the TradingAgents engine requirements.",
+    code: "pip install -r requirements.txt",
   },
   {
-    title: "Save the bridge script into your TradingAgents folder",
-    body: "Download ta_bridge.py below and place it next to cli/ and tradingagents/.",
+    title: "Create your settings file",
+    body: "Copy the example file and fill in the keys listed further down this page.",
+    code: "cp .env.example .env\nopen .env   # or: nano .env",
   },
   {
-    title: "Set your LLM key and start the bridge",
+    title: "Choose where the dashboard may call from",
+    body: "PUBLIC_BASE_URL is the address the engine is reached at; FRONTEND_ORIGINS lists the dashboards allowed to talk to it. Without your dashboard address here, the browser blocks every request.",
+    code:
+      "PUBLIC_BASE_URL=http://127.0.0.1:8000\nFRONTEND_ORIGINS=http://localhost:8080,https://trading-agent-companion.lovable.app",
+  },
+  {
+    title: "Start the engine",
     body: "Keep this terminal open while you use the dashboard.",
-    code: 'export DEEPSEEK_API_KEY="<your key>"\npython ta_bridge.py',
+    code: "source .venv/bin/activate\nuvicorn app.main:app --host 127.0.0.1 --port 8000",
   },
   {
     title: "Point the dashboard at it",
-    body: "Enter the address the bridge prints (default http://127.0.0.1:8000) in the box above and test the connection.",
+    body: "Enter the address above (default http://127.0.0.1:8000) in the box at the top of this page and test the connection.",
   },
+];
+
+const LLM_KEYS: { name: string; key: string; url: string }[] = [
+  { name: "DeepSeek", key: "DEEPSEEK_API_KEY", url: "https://platform.deepseek.com/api_keys" },
+  { name: "OpenAI", key: "OPENAI_API_KEY", url: "https://platform.openai.com/api-keys" },
+  { name: "Google Gemini", key: "GOOGLE_API_KEY", url: "https://aistudio.google.com/app/apikey" },
+  { name: "Anthropic Claude", key: "ANTHROPIC_API_KEY", url: "https://console.anthropic.com/settings/keys" },
+  { name: "xAI Grok", key: "XAI_API_KEY", url: "https://console.x.ai/" },
+  { name: "OpenRouter", key: "OPENROUTER_API_KEY", url: "https://openrouter.ai/keys" },
+  { name: "Qwen (DashScope)", key: "DASHSCOPE_API_KEY", url: "https://dashscope.console.aliyun.com/apiKey" },
+  { name: "Qwen China", key: "DASHSCOPE_CN_API_KEY", url: "https://bailian.console.aliyun.com/" },
+  { name: "GLM (Zhipu)", key: "ZHIPU_API_KEY", url: "https://z.ai/manage-apikey/apikey-list" },
+  { name: "GLM China", key: "ZHIPU_CN_API_KEY", url: "https://open.bigmodel.cn/usercenter/apikeys" },
+  { name: "MiniMax", key: "MINIMAX_API_KEY", url: "https://www.minimax.io/platform/user-center/basic-information" },
+  { name: "MiniMax China", key: "MINIMAX_CN_API_KEY", url: "https://platform.minimaxi.com/user-center/basic-information" },
+  {
+    name: "Azure OpenAI",
+    key: "AZURE_OPENAI_API_KEY (+ AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_VERSION)",
+    url: "https://portal.azure.com/",
+  },
+  { name: "Ollama (local, no key)", key: "—", url: "https://ollama.com/download" },
 ];
 
 function CodeBlock({ code }: { code: string }) {
