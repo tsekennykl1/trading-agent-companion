@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ANALYST_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
+import { ANALYST_OPTIONS, DEFAULT_STAGES, STAGE_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const [config, setConfig] = useState<RunConfig>({
     ...defaultConfig,
     language: defaultConfig.language || "English",
+    stages: defaultConfig.stages?.length ? defaultConfig.stages : DEFAULT_STAGES,
   });
   const [market, setMarket] = useState<"HK" | "Other">(
     /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
