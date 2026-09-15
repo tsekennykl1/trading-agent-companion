@@ -724,8 +724,8 @@ export function normalizeRun(raw: unknown): RunRecord {
       ...(horizon ? { horizon } : {}),
       ...(rationale ? { rationale } : {}),
       executiveSummary: summaryText,
-      bullPoints: summaryText ? [summaryText] : [],
-      bearPoints: keyRisks,
+      bullPoints: decisionBull,
+      bearPoints: decisionBear.length ? decisionBear : keyRisks,
     };
   }
 
