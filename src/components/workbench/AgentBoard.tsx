@@ -80,10 +80,10 @@ export function AgentBoard({
   stats?: RunStats;
   compact?: boolean;
   analysisBusy?: boolean;
-  progress?: RunProgress;
-  ticker?: string;
+  progress?: RunProgress | undefined;
+  ticker?: string | undefined;
   elapsed?: number;
-  latestStep?: string;
+  latestStep?: string | undefined;
 }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
