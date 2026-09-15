@@ -3,7 +3,7 @@
 // functions accept anything and return a clean value or `undefined`.
 
 /** Best-effort number reader: accepts numbers, strings ("1,234.5") and objects. */
-function num(v: unknown): number | undefined {
+export function num(v: unknown): number | undefined {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string") {
     const normalized = v.replace(/,/g, "");
@@ -24,7 +24,7 @@ function num(v: unknown): number | undefined {
 }
 
 /** "risk_level" -> "Risk Level" */
-function titleCase(value: string): string {
+export function titleCase(value: string): string {
   return value.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -34,7 +34,7 @@ const STANCE_FROM_TEXT: [RegExp, number][] = [
   [/mixed|neutral|moderate|medium|elevated/i, 10],
 ];
 
-function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral"; score: number } {
+export function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral"; score: number } {
   for (const [re, score] of STANCE_FROM_TEXT) {
     if (re.test(text)) {
       return { stance: score > 30 ? "bullish" : score < -30 ? "bearish" : "neutral", score };
@@ -44,7 +44,7 @@ function stanceScore(text: string): { stance: "bullish" | "bearish" | "neutral";
 }
 
 /** Turns a list of numbers (or objects holding one) into a plain number list. */
-const numberList = (value: unknown): number[] =>
+export const numberList = (value: unknown): number[] =>
   Array.isArray(value)
     ? (value
         .map((v) =>
@@ -56,8 +56,8 @@ const numberList = (value: unknown): number[] =>
     : [];
 
 /** Lowercase a name and strip punctuation, so "MACD_Signal" -> "macdsignal". */
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+export const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 /** Reads the date of a dated point, whatever the engine called the field. */
-const pointDate = (o: Record<string, unknown>) =>
+export const pointDate = (o: Record<string, unknown>) =>
   String(o["t"] ?? o["date"] ?? o["Date"] ?? o["time"] ?? o["timestamp"] ?? o["x"] ?? "").slice(0, 10);

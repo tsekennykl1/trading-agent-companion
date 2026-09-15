@@ -24,7 +24,7 @@ export interface RunStatus {
   stageTimings?: import("./types").StageTiming[];
 }
 
-function readRunStatus(raw: unknown): RunStatus | null {
+export function readRunStatus(raw: unknown): RunStatus | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
   const rawStatus = o["status"];
@@ -149,11 +149,11 @@ export function canonicalStatus(raw: string | undefined): RunRecord["status"] {
   return "running";
 }
 
-function isEngineRun(raw: unknown): raw is EngineRun {
+export function isEngineRun(raw: unknown): raw is EngineRun {
   return typeof raw === "object" && raw !== null && "run_id" in raw && !("config" in raw);
 }
 
-function readStageTimings(raw: unknown): import("./types").StageTiming[] {
+export function readStageTimings(raw: unknown): import("./types").StageTiming[] {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
   return Object.entries(raw as Record<string, unknown>).flatMap(([stage, value]) => {
     if (!value || typeof value !== "object") return [];
@@ -178,7 +178,7 @@ function readStageTimings(raw: unknown): import("./types").StageTiming[] {
 }
 
 /** Read the engine's partial_result (plus nested summary_cards / chart_urls). */
-function readPartial(
+export function readPartial(
   partial: Record<string, unknown>,
   runId: string,
 ): import("./types").RunPartial | undefined {

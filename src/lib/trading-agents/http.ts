@@ -22,7 +22,7 @@ export class EngineHttpError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const base = getBridgeUrl().replace(/\/$/, "");
   const res = await fetch(`${base}${path}`, {
     ...init,
@@ -68,7 +68,7 @@ export function bridgeAssetUrl(path: string): string {
 }
 
 /** GET helper that treats "not ready" (404) and network errors as null. */
-async function getJson(path: string): Promise<unknown> {
+export async function getJson(path: string): Promise<unknown> {
   try {
     const res = await fetch(bridgeAssetUrl(path), { cache: "no-store" });
     if (!res.ok) return null;
