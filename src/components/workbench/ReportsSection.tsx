@@ -166,9 +166,10 @@ export function ReportsSection({
       </header>
 
       <div className="divide-y divide-rule">
-        {sectionRows.map((section) => {
+        {orderedRows.map((section) => {
           const ready = Boolean(section.content);
           const open = Boolean(openSections[section.key]);
+          const unselected = isUnselected(section.key);
           return (
             <section key={section.key}>
               <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
@@ -180,15 +181,16 @@ export function ReportsSection({
                   </h3>
                   <p
                     className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
-                      ready ? "text-bull" : running ? "text-primary" : "text-bear"
+                      unselected ? "text-bear" : ready ? "text-bull" : running ? "text-primary" : "text-bear"
                     }`}
                   >
-                    {!ready && running && (
+                    {!unselected && !ready && running && (
                       <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
                     )}
-                    {`${ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
+                    {`${unselected ? t("agents.notSelected") : ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
                   </p>
                 </div>
+
                 <Button
                   type="button"
                   size="sm"
