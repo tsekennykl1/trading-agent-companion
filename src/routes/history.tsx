@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { finalReportReady } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
+import { formatDateTime } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
