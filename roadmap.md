@@ -131,3 +131,11 @@
 - [x] Keep analyst and stage choices across layout changes and refreshes.
 - [x] Avoid fetching individual reports for unticked stages and mark them Not selected.
 - [x] Verify the request, refresh persistence, report ordering, responsive layout, and clean preview.
+
+# Stage timing and concurrent risk review
+
+- [ ] Record live start, end, duration, status, and execution state for every selected stage.
+- [ ] Show a compact stage timing panel on the workbench and identify the slowest completed stage.
+- [ ] Keep each run's selected stages immutable while preserving the next-run form choices across refreshes.
+- [ ] Execute the three risk viewpoints concurrently within each debate round and merge them deterministically.
+- [ ] Test timing persistence, stage accuracy, parallel speed, responsive layout, and clean frontend/backend builds.
