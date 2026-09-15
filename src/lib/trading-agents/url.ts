@@ -37,7 +37,12 @@ export function canUseBrowserUrl(url?: string | null): boolean {
   if (typeof window === "undefined") return true;
   try {
     const parsed = new URL(url, window.location.origin);
-    return !(window.location.protocol === "https:" && parsed.protocol === "http:");
+    const loopback =
+      parsed.hostname === "localhost" ||
+      parsed.hostname === "127.0.0.1" ||
+      parsed.hostname === "[::1]" ||
+      parsed.hostname.endsWith(".localhost");
+    return loopback || !(window.location.protocol === "https:" && parsed.protocol === "http:");
   } catch {
     return false;
   }
