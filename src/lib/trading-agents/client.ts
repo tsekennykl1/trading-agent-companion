@@ -110,6 +110,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
       language,
       report_language: language,
       output_language: language,
+      ...stageKeys,
     },
     // Aliases for other bridge implementations
     ...config,
@@ -121,6 +122,7 @@ export function runConfigPayload(config: RunConfig): Record<string, unknown> {
     language,
     report_language: language,
     output_language: language,
+    ...stageKeys,
   };
 
 }
