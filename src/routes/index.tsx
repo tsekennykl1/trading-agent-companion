@@ -57,6 +57,7 @@ function Workbench() {
     analysts: ["Market Analyst"],
     stages: DEFAULT_STAGES,
   });
+  const [showFormAtTop, setShowFormAtTop] = useState(false);
 
   useEffect(() => {
     const analysisDate = new Date().toISOString().slice(0, 10);
@@ -190,6 +191,7 @@ function Workbench() {
       setShowingSample(false);
       setStartedAt(Date.now());
       setElapsed(0);
+      setShowFormAtTop(false);
       knownRunIds.current = new Set();
       if (runListSupported.current) {
         void api
@@ -294,13 +296,17 @@ function Workbench() {
   );
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = startedAt !== null;
+  const headerGridCols =
+    showExportBar && chartReady && !showFormAtTop
+      ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
+      : showExportBar
+        ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]"
+        : "";
 
   return (
     <AppShell>
       <div
-        className={`mb-5 grid min-w-0 gap-4 xl:items-start sm:mb-6 ${
-          showExportBar ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]" : ""
-        }`}
+        className={`mb-5 grid min-w-0 gap-4 xl:items-start sm:mb-6 ${headerGridCols}`}
       >
         <div className="min-w-0 pt-1">
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
@@ -308,6 +314,13 @@ function Workbench() {
             {t("home.intro")}
           </p>
         </div>
+        {showExportBar && chartReady && !showFormAtTop && (
+          <div className="flex min-w-0 items-start justify-start xl:justify-center">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShowFormAtTop(true)}>
+              {t("home.newAnalysis")}
+            </Button>
+          </div>
+        )}
         {showExportBar && (
           <ExportBar
             run={run}
@@ -318,7 +331,7 @@ function Workbench() {
         )}
       </div>
 
-      {!chartReady && (
+      {(!chartReady || showFormAtTop) && (
         <div className="mb-6 min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
           <RunForm
             key={`top-${defaultConfig.analysisDate}`}
@@ -344,7 +357,7 @@ function Workbench() {
 
       <div className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start" aria-busy={analysisBusy}>
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
-          {chartReady && (
+          {chartReady && !showFormAtTop && (
             <div className="order-1 min-w-0">
               <RunForm
                 key={defaultConfig.analysisDate}
