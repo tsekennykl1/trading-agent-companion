@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ChartRow } from "@/lib/trading-agents/client";
 import { availableIndicators, type IndicatorKey, type IndicatorSpec } from "@/lib/trading-agents/indicators";
@@ -36,12 +37,14 @@ export function IndicatorToggles({
   visible,
   onToggle,
   onToggleMany,
+  rangeControl,
 }: {
   rows: ChartRow[];
   hasLevels: boolean;
   visible: IndicatorKey[];
   onToggle: (key: IndicatorKey, next: boolean) => void;
   onToggleMany: (keys: IndicatorKey[], next: boolean) => void;
+  rangeControl?: ReactNode;
 }) {
   const t = useT();
   const specs = availableIndicators(rows, hasLevels);
@@ -86,17 +89,20 @@ export function IndicatorToggles({
 
   return (
     <div className="rounded-md border border-rule bg-surface px-3 py-2">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-          {t("ind.title")}
-        </p>
-        <Tick
-          id="ind-all"
-          label={t("ind.selectAll")}
-          checked={allOn}
-          strong
-          onChange={(next) => onToggleMany(allKeys, next)}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            {t("ind.title")}
+          </p>
+          <Tick
+            id="ind-all"
+            label={t("ind.selectAll")}
+            checked={allOn}
+            strong
+            onChange={(next) => onToggleMany(allKeys, next)}
+          />
+        </div>
+        {rangeControl}
       </div>
 
       <div className="mt-1.5 space-y-1.5">

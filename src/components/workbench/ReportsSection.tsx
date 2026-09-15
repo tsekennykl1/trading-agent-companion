@@ -79,7 +79,10 @@ export function ReportsSection({
       && !COMPANY_CONTEXT_KEYS.includes(k as (typeof COMPANY_CONTEXT_KEYS)[number])
       && !REPORT_SECTIONS.some((s) => s.key === k),
   );
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    final_decision: true,
+    final_trade_decision: true,
+  });
 
   const running = run.status === "running" || run.status === "queued";
   const sectionRows = REPORT_SECTIONS.map((section) => ({

@@ -221,30 +221,32 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
 
               {view === "interactive" && chartData && rangedChart ? (
                 <>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="mr-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                      {t("chart.range")}
-                    </span>
-                    {RANGE_OPTIONS.map((opt) => (
-                      <Button
-                        key={opt.label}
-                        type="button"
-                        size="sm"
-                        variant={rangeMonths === opt.months ? "default" : "outline"}
-                        className="h-7 px-2.5 text-xs"
-                        aria-pressed={rangeMonths === opt.months}
-                        onClick={() => setRangeMonths(opt.months)}
-                      >
-                        {opt.label}
-                      </Button>
-                    ))}
-                  </div>
                   <IndicatorToggles
                     rows={rows}
                     hasLevels={Boolean(levels)}
                     visible={visible}
                     onToggle={toggleIndicator}
                     onToggleMany={toggleMany}
+                    rangeControl={
+                      <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto">
+                        <span className="mr-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                          {t("chart.range")}
+                        </span>
+                        {RANGE_OPTIONS.map((opt) => (
+                          <Button
+                            key={opt.label}
+                            type="button"
+                            size="sm"
+                            variant={rangeMonths === opt.months ? "default" : "outline"}
+                            className="h-7 px-2.5 text-xs"
+                            aria-pressed={rangeMonths === opt.months}
+                            onClick={() => setRangeMonths(opt.months)}
+                          >
+                            {opt.label}
+                          </Button>
+                        ))}
+                      </div>
+                    }
                   />
                   <PlotlyPriceChart
                     chart={rangedChart}
