@@ -81,7 +81,9 @@ export function AgentBoard({
   // An engine payload can omit progress counters entirely; never crash on it.
   const agents = agentsProp ?? [];
   const stats = statsProp ?? EMPTY_STATS;
-  const teams = agents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
+  // Completed rows can be tucked away; in-progress / pending / error stay visible.
+  const listedAgents = hideCompleted ? agents.filter((a) => a.status !== "completed") : agents;
+  const teams = listedAgents.reduce<Record<string, AgentProgress[]>>((acc, a) => {
     (acc[a.team] ??= []).push(a);
     return acc;
   }, {});
@@ -164,7 +166,27 @@ export function AgentBoard({
         </div>
       )}
 
-      <div className="mt-3 flex items-center justify-end">
+      <div className="mt-3 flex items-center justify-end gap-1">
+        {showDetails && counts.completed > 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => setHideCompleted((v) => !v)}
+            aria-pressed={hideCompleted}
+          >
+            {hideCompleted ? (
+              <>
+                <Eye className="size-3.5" /> {t("agents.showCompleted")}
+              </>
+            ) : (
+              <>
+                <EyeOff className="size-3.5" /> {t("agents.hideCompleted")}
+              </>
+            )}
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
