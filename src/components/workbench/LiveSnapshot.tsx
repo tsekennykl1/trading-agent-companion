@@ -27,6 +27,16 @@ function Stat({ label, value }: { label: string; value: string }) {
 const fmt = (v: number | undefined, digits = 2) =>
   typeof v === "number" ? v.toFixed(digits) : "—";
 
+const RANGE_OPTIONS: { label: string; months: number | null }[] = [
+  { label: "1M", months: 1 },
+  { label: "3M", months: 3 },
+  { label: "6M", months: 6 },
+  { label: "1Y", months: 12 },
+  { label: "2Y", months: 24 },
+  { label: "3Y", months: 36 },
+  { label: "All", months: null },
+];
+
 /**
  * Renders whatever the engine has already produced — market snapshot, warnings
  * and the interactive chart — while the slow AI analysis is still running.
@@ -36,6 +46,8 @@ const fmt = (v: number | undefined, digits = 2) =>
 export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: RunArtifacts }) {
   const t = useT();
   const [view, setView] = useState<"interactive" | "image">("interactive");
+  // null = full history; otherwise show only the last N months of rows.
+  const [rangeMonths, setRangeMonths] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const p = run.partial;
   const market = artifacts?.marketData ?? null;
@@ -67,6 +79,17 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
   // Which technical studies are ticked; re-seeded whenever a new payload of
   // indicators arrives, but the user's choices stick while the run continues.
   const rows = useMemo(() => chartData?.rows ?? [], [chartData]);
+  // Chart narrowed to the selected trailing range; markers/levels stay attached.
+  const rangedChart = useMemo(() => {
+    if (!chartData || rangeMonths === null) return chartData;
+    const lastDate = chartData.rows.at(-1)?.date;
+    const lastMs = lastDate ? Date.parse(lastDate) : NaN;
+    if (!Number.isFinite(lastMs)) return chartData;
+    const cutoff = new Date(lastMs);
+    cutoff.setMonth(cutoff.getMonth() - rangeMonths);
+    const cutoffMs = cutoff.getTime();
+    return { ...chartData, rows: chartData.rows.filter((r) => Date.parse(r.date) >= cutoffMs) };
+  }, [chartData, rangeMonths]);
   const availableSignature = useMemo(
     () =>
       rows.length
@@ -196,8 +219,26 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                 )}
               </div>
 
-              {view === "interactive" && chartData ? (
+              {view === "interactive" && chartData && rangedChart ? (
                 <>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="mr-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                      {t("chart.range")}
+                    </span>
+                    {RANGE_OPTIONS.map((opt) => (
+                      <Button
+                        key={opt.label}
+                        type="button"
+                        size="sm"
+                        variant={rangeMonths === opt.months ? "default" : "outline"}
+                        className="h-7 px-2.5 text-xs"
+                        aria-pressed={rangeMonths === opt.months}
+                        onClick={() => setRangeMonths(opt.months)}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
                   <IndicatorToggles
                     rows={rows}
                     hasLevels={Boolean(levels)}
@@ -206,7 +247,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                     onToggleMany={toggleMany}
                   />
                   <PlotlyPriceChart
-                    chart={chartData}
+                    chart={rangedChart}
                     height={(isMobile ? 360 : 480) + panelCount * 90}
                     levels={levels}
                     visible={visible}
