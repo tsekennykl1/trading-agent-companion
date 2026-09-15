@@ -197,19 +197,46 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             </span>
           </div>
           <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-4")}>
-            {ANALYST_OPTIONS.map((a) => (
+            {analystStages.map((stage) => (
               <label
-                key={a}
+                key={stage.id}
                 className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
               >
                 <Checkbox
-                  checked={config.analysts.includes(a)}
-                  onCheckedChange={(c) => toggleAnalyst(a, c === true)}
+                  checked={stages.includes(stage.id)}
+                  onCheckedChange={(c) => toggleStage(stage.id, c === true)}
                 />
-                {t(`analyst.${a}` as TKey)}
+                {t(`analyst.${stage.analyst}` as TKey)}
               </label>
             ))}
           </div>
+        </div>
+
+        <div className="mt-5 border-t border-rule pt-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <Label className="label-caps">{t("form.stages")}</Label>
+            <span className="text-xs text-muted-foreground">
+              {fill(t("form.selected"), {
+                n: decisionStages.filter((s) => stages.includes(s.id)).length,
+                m: decisionStages.length,
+              })}
+            </span>
+          </div>
+          <div className={cn("mt-2 grid gap-2 sm:grid-cols-2", !compact && "xl:grid-cols-3")}>
+            {decisionStages.map((stage) => (
+              <label
+                key={stage.id}
+                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border border-rule px-3 py-2 text-sm transition-colors has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary/8 hover:bg-muted"
+              >
+                <Checkbox
+                  checked={stages.includes(stage.id)}
+                  onCheckedChange={(c) => toggleStage(stage.id, c === true)}
+                />
+                <span className="min-w-0">{stageLabel(stage.roles)}</span>
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">{t("form.stagesHint")}</p>
         </div>
 
         <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
