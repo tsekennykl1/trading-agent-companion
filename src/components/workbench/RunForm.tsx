@@ -61,11 +61,25 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: value }));
 
-  const toggleAnalyst = (name: string, checked: boolean) =>
-    setConfig((c) => ({
-      ...c,
-      analysts: checked ? Array.from(new Set([...c.analysts, name])) : c.analysts.filter((a) => a !== name),
-    }));
+  const stages = config.stages ?? DEFAULT_STAGES;
+  const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
+  const decisionStages = STAGE_OPTIONS.filter((s) => !s.analyst);
+
+  /** Analyst stages keep `analysts` in sync so the engine payload is unchanged. */
+  const toggleStage = (id: string, checked: boolean) =>
+    setConfig((c) => {
+      const current = c.stages ?? DEFAULT_STAGES;
+      const next = checked ? Array.from(new Set([...current, id])) : current.filter((s) => s !== id);
+      const analyst = STAGE_OPTIONS.find((s) => s.id === id)?.analyst;
+      const analysts = !analyst
+        ? c.analysts
+        : checked
+          ? Array.from(new Set([...c.analysts, analyst]))
+          : c.analysts.filter((a) => a !== analyst);
+      return { ...c, stages: next, analysts };
+    });
+
+  const stageLabel = (roles: string[]) => roles.map((role) => t(`role.${role}` as TKey)).join(" + ");
 
   return (
     <form
@@ -104,7 +118,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                 }}
-                placeholder={market === "HK" ? "0700" : "AAPL"}
+                placeholder={market === "HK" ? "700" : "AAPL"}
                 required
                 aria-invalid={!!tickerError}
                 className="font-mono"
