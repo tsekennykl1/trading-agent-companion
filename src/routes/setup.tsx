@@ -166,9 +166,10 @@ function Setup() {
 
         <div className="panel mt-6 grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-center sm:p-5">
           <div className="mr-auto">
-            <p className="font-medium">Bridge script</p>
+            <p className="font-medium">Single-file bridge (alternative)</p>
             <p className="text-sm text-muted-foreground">
-              One Python file — wraps TradingAgentsGraph and streams progress to this dashboard.
+              If you do not want the full engine repository, this one Python file wraps TradingAgentsGraph
+              and streams progress to this dashboard.
             </p>
           </div>
           <Button asChild variant="outline" className="min-h-11 w-full gap-2 sm:min-h-9 sm:w-auto">
@@ -196,10 +197,81 @@ function Setup() {
           ))}
         </ol>
 
+        <h2 className="mt-10 text-xl font-semibold">AI model keys</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          DeepSeek is only one of the supported providers. Add the key for whichever provider you pick to
+          your <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code> file — one is
+          enough — then choose that provider in the New Analysis form.
+        </p>
+        <div className="panel mt-4 divide-y divide-rule overflow-hidden p-0">
+          {LLM_KEYS.map((item) => (
+            <div key={item.key} className="grid gap-1 px-4 py-3 text-sm sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:items-center sm:gap-3">
+              <span className="font-medium">{item.name}</span>
+              <code className="truncate font-mono text-xs text-muted-foreground">{item.key}</code>
+              <a
+                className="text-xs font-medium underline underline-offset-2 hover:text-primary sm:text-right"
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Get key
+              </a>
+            </div>
+          ))}
+        </div>
+        <CodeBlock code={'DEEPSEEK_API_KEY="sk-…"\n# or OPENAI_API_KEY="sk-…"  /  GOOGLE_API_KEY="…"  /  ANTHROPIC_API_KEY="sk-ant-…"'} />
+
+        <h2 className="mt-10 text-xl font-semibold">Market and economic data keys</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Both are free. Alpha Vantage supplies price and fundamentals data; FRED supplies US economic
+          series used by the fundamentals and macro write-ups.
+        </p>
+        <ol className="mt-4 space-y-4">
+          <li className="panel p-4 sm:p-5">
+            <p className="font-medium">Alpha Vantage</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Open{" "}
+              <a
+                className="underline underline-offset-2 hover:text-primary"
+                href="https://www.alphavantage.co/support/#api-key"
+                target="_blank"
+                rel="noreferrer"
+              >
+                alphavantage.co/support/#api-key
+              </a>
+              , enter your email, and the key appears on screen immediately. Free tier is rate limited, so
+              keep the engine's data cache switched on.
+            </p>
+            <CodeBlock code={'ALPHA_VANTAGE_API_KEY="your-key"'} />
+          </li>
+          <li className="panel p-4 sm:p-5">
+            <p className="font-medium">FRED (Federal Reserve Economic Data)</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create a free account at{" "}
+              <a
+                className="underline underline-offset-2 hover:text-primary"
+                href="https://fredaccount.stlouisfed.org/apikeys"
+                target="_blank"
+                rel="noreferrer"
+              >
+                fredaccount.stlouisfed.org/apikeys
+              </a>
+              , then request an API key. It is issued right away.
+            </p>
+            <CodeBlock code={'FRED_API_KEY="your-key"'} />
+          </li>
+        </ol>
+        <p className="mt-4 text-sm text-muted-foreground">
+          After editing <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code>, stop
+          the engine (Ctrl+C) and start it again so the new keys are picked up.
+        </p>
+
         <h2 className="mt-10 text-xl font-semibold">If the browser blocks the connection</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The bridge already allows requests from any origin. If your browser still refuses, open this
-          dashboard over the same protocol as the bridge, or run the bridge with{" "}
+          Add this dashboard's address to{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">FRONTEND_ORIGINS</code> in{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code> and restart the
+          engine. If it still refuses, run the engine with{" "}
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">--host 0.0.0.0</code> and use your
           machine's local IP address instead of 127.0.0.1.
         </p>
