@@ -241,6 +241,15 @@ export function AgentBoard({
               {timingRows.map(({ stage, timing }) => {
                 const status = timing?.status ?? "pending";
                 const isSlowest = status === "completed" && timing?.durationMs === slowestMs && slowestMs > 0;
+                // Some engine builds report only a duration; derive the completed time from it.
+                const endedAt = timing?.endedAt
+                  ?? (timing?.startedAt && timing?.durationMs !== undefined
+                    ? new Date(new Date(timing.startedAt).getTime() + timing.durationMs).toISOString()
+                    : undefined);
+                const endedMs = timing?.durationMs
+                  ?? (timing?.startedAt && timing?.endedAt
+                    ? new Date(timing.endedAt).getTime() - new Date(timing.startedAt).getTime()
+                    : undefined);
                 return (
                   <div key={stage.id} className={cn("grid grid-cols-[minmax(11rem,1fr)_7rem_7rem_5rem] items-center gap-3 px-3 py-2 text-xs", isSlowest && "bg-accent/10")}>
                     <span className="flex min-w-0 items-center gap-2">
