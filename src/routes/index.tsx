@@ -13,7 +13,8 @@ import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/trading-agents/client";
+import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
+import { finalReportReady, reportsReadyFor } from "@/lib/trading-agents/report-readiness";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
@@ -77,7 +78,11 @@ function Workbench() {
     refetchInterval: (q) => {
       const data = q.state.data;
       if (!data) return false;
-      const done = data.status === "error" || (data.status === "completed" && (data.reportsReady.length > 0 || !!data.resultUrl));
+      const done = data.status === "error" || finalReportReady({
+        status: data.status,
+        reportsReady: data.reportsReady,
+        resultUrl: data.resultUrl,
+      });
       return done ? false : (data.pollAfterMs ?? 2500);
     },
   });
@@ -252,13 +257,19 @@ function Workbench() {
   // Strict readiness per the engine contract: the run must be completed AND the
   // engine must list finished detail reports (partial_result.reports_ready).
   // A partial result page or a bare decision is NOT enough.
-  const reportsReadyCount = Math.max(
-    liveRun?.partial?.reportsReady?.length ?? 0,
-    status?.reportsReady.length ?? 0,
-  );
+  const readyReportNames = reportsReadyFor(liveRun, status);
   const engineStatus = status?.status ?? liveRun?.status;
-  const detailReportUrl = status?.resultUrl ?? artifacts.resultHtmlUrl;
-  const reportReady = engineStatus === "completed" && reportsReadyCount > 0 && Boolean(detailReportUrl);
+  const publishedReportUrl = status?.resultUrl ?? artifacts.resultHtmlUrl;
+  const reportReady = finalReportReady({
+    status: engineStatus,
+    reportsReady: readyReportNames,
+    resultUrl: publishedReportUrl,
+  });
+  const detailReportUrl = publishedReportUrl ?? (
+    reportReady && liveRun?.source === "engine"
+      ? bridgeAssetUrl(`/runs/${liveRun.id}/result.html`)
+      : undefined
+  );
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = startedAt !== null;
 
