@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
+import { EnvBuilder } from "@/components/workbench/EnvBuilder";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +42,13 @@ const STEPS: { title: string; body: string; code?: string }[] = [
   },
   {
     title: "Create your settings file",
-    body: "Copy the example file and fill in the keys listed further down this page.",
+    body: "Build it with the form further down this page, then save it as .env in the engine folder. Or start from the example file and edit it by hand.",
     code: "cp .env.example .env\nopen .env   # or: nano .env",
+  },
+  {
+    title: "Run the guided configurator",
+    body: "initialSetup.py walks through every setting, checks your keys and writes .env for you. Press Enter at a prompt to accept the value it suggests (it reads your existing .env first).",
+    code: "python initialSetup.py\n# non-interactive, reusing everything already in .env:\n# python initialSetup.py --non-interactive",
   },
   {
     title: "Choose where the dashboard may call from",
@@ -196,6 +202,14 @@ function Setup() {
             </li>
           ))}
         </ol>
+
+        <h2 className="mt-10 text-xl font-semibold">Build your .env</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Pick your AI provider, paste its key, and copy the finished file. Model names come straight from
+          the engine's own list, so they are always valid. Market and economic data keys are pre-filled with
+          working starter keys.
+        </p>
+        <EnvBuilder />
 
         <h2 className="mt-10 text-xl font-semibold">AI model keys</h2>
         <p className="mt-2 text-sm text-muted-foreground">
