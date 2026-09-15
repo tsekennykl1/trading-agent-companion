@@ -1,0 +1,119 @@
+# Understanding this frontend
+
+A guided tour of the React + TypeScript code in this project. Read it top to
+bottom once, then use it as a map when you open a file.
+
+---
+
+## 1. The big picture
+
+```text
+Browser (this app)  ──HTTP──>  your local engine (FastAPI, port 8000)
+   React components              TradingAgents analysis + artifacts
+```
+
+The frontend never runs any analysis itself. It:
+
+1. sends a configuration (ticker, date, model, stages) to the engine,
+2. polls the engine while the analysis runs,
+3. draws whatever the engine has produced so far (progress, chart, reports),
+4. lets you export the finished decision.
+
+## 2. The building blocks
+
+| Term | What it means here |
+| --- | --- |
+| **Component** | A function returning JSX (HTML-like markup). Example: `DecisionPanel`. |
+| **Props** | The arguments a component receives: `<DecisionPanel decision={...} />`. |
+| **State** | Values that change over time; created with `useState`. Changing state re-draws the component. |
+| **Effect** | `useEffect` — code that runs after drawing, e.g. starting a timer or reading localStorage. |
+| **Hook** | Any function starting with `use`. Hooks may only be called at the top level of a component. |
+| **Query** | `useQuery` from TanStack Query: fetches data, caches it, and can re-fetch on a timer. |
+| **Mutation** | `useMutation`: an action that changes something on the server (starting a run). |
+| **TypeScript type** | A description of a data shape. It is checked at build time and disappears at runtime. |
+
+## 3. Folder map
+
+```text
+src/
+  routes/            one file per page (file name = URL)
+    __root.tsx       the shell around every page (fonts, providers, toaster)
+    index.tsx        "/"        the dashboard
+    setup.tsx        "/setup"   the Connect page
+    history.tsx      "/history" past runs
+    report.tsx       "/report"  the detail report viewer
+    about.tsx        "/about"
+  components/
+    ui/              shadcn building blocks (Button, Card, ...) — rarely edited
+    workbench/       this app's own panels (chart, agent board, reports, ...)
+  lib/
+    trading-agents/  everything that talks to or interprets the engine
+    i18n.tsx         English / Chinese text
+  hooks/             small reusable pieces of logic
+  styles.css         colours, fonts and design tokens
+```
+
+Routing is by file name: `src/routes/history.tsx` becomes `/history`. The file
+`routeTree.gen.ts` is generated automatically — never edit it.
+
+## 4. The data layer (`src/lib/trading-agents/`)
+
+| File | Responsibility |
+| --- | --- |
+| `types.ts` | The shapes of a run, decision, config, stage list. Start here. |
+| `client.ts` | All HTTP calls (`api.startRun`, `api.getRun`, ...) plus readers that turn loose engine JSON into those types. |
+| `report-readiness.ts` | One rule: when is the final report really finished. |
+| `useRunArtifacts.ts` | Fetches chart data, market data and report texts for a run. |
+| `run-cache.ts` | Saves the latest analysis in the browser so a refresh keeps it. |
+| `signals.ts`, `indicators.ts`, `report.ts` | Pure calculations and text building — no network. |
+| `providers.ts` | The catalogue of AI providers and model names. |
+| `sample-run.ts` | The demo run shown before you start your own. |
+
+**Why `client.ts` is large:** engines differ in the exact JSON they return, so
+each `readX` function accepts several spellings and returns one clean type. The
+rest of the app then only ever sees the clean type.
+
+## 5. How the dashboard works (`src/routes/index.tsx`)
+
+1. `useSavedRunConfig()` restores the last form you used.
+2. `startRun` (a mutation) posts the config; the engine replies with a run id.
+3. Two queries then poll:
+   - `run-status` — cheap readiness check,
+   - `run` — the full payload, re-fetched only when the status changes.
+4. `useRunArtifacts(run)` fetches the chart and report files.
+5. `run` is either the live engine run or `SAMPLE_RUN` when nothing has started.
+6. Everything below is presentation: `LiveSnapshot`, `AgentBoard`,
+   `DecisionPanel`, charts, `ReportsSection`, `ExportBar`.
+
+## 6. Reading any component
+
+Every workbench component follows the same skeleton:
+
+```tsx
+export function DecisionCard({ decision }: { decision: Decision }) {
+  const t = useT();                    // translation helper
+  if (!decision) return null;          // nothing to show yet
+  return <section className="panel">...</section>;
+}
+```
+
+- `className` holds Tailwind utility classes; colours come from the tokens in
+  `styles.css` (`bg-primary`, `text-muted-foreground`), never raw hex values.
+- Text goes through `t("some.key")` so both languages stay in sync; the keys
+  live in `src/lib/i18n.tsx`.
+
+## 7. Suggested reading order
+
+1. `src/lib/trading-agents/types.ts`
+2. `src/routes/__root.tsx`
+3. `src/routes/index.tsx`
+4. `src/components/workbench/RunForm.tsx`
+5. `src/components/workbench/DecisionPanel.tsx`
+6. `src/lib/trading-agents/client.ts` (only the `api` object at first)
+
+## 8. Everyday commands
+
+```bash
+npm run dev    # start the dashboard on http://localhost:8080
+npm run build  # production build
+```

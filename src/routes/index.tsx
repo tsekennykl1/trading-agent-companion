@@ -19,14 +19,13 @@ import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { clearCachedAnalysis, loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
-import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
+import { useSavedRunConfig } from "@/hooks/useSavedRunConfig";
 import { useT } from "@/lib/i18n";
 
 const TITLE = "My Trading Agents — Financial Analysis";
 const DESCRIPTION =
   "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
-const FORM_CONFIG_KEY = "ta-analysis-form-v1";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,40 +50,11 @@ function Workbench() {
   const [showingSample, setShowingSample] = useState(true);
   const [cachedRun, setCachedRun] = useState<RunRecord | null>(null);
   const [cachedArtifacts, setCachedArtifacts] = useState<RunArtifacts | null>(null);
-  const [defaultConfig, setDefaultConfig] = useState<RunConfig>({
-    ...SAMPLE_RUN.config,
-    analysisDate: "",
-    analysts: ["Market Analyst"],
-    stages: DEFAULT_STAGES,
-  });
+  // The analysis form remembers what you last used (see hooks/useSavedRunConfig).
+  const { config: defaultConfig, remember: rememberConfig } = useSavedRunConfig();
   const [showFormAtTop, setShowFormAtTop] = useState(false);
   const [sidebarFormOpen, setSidebarFormOpen] = useState(true);
 
-  useEffect(() => {
-    const analysisDate = new Date().toISOString().slice(0, 10);
-    try {
-      const saved = window.localStorage.getItem(FORM_CONFIG_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<RunConfig>;
-        setDefaultConfig((current) => ({
-          ...current,
-          ...parsed,
-          analysisDate,
-          analysts: Array.isArray(parsed.analysts) ? parsed.analysts : current.analysts,
-          ...(Array.isArray(parsed.stages) ? { stages: parsed.stages } : {}),
-        }));
-        return;
-      }
-    } catch {
-      window.localStorage.removeItem(FORM_CONFIG_KEY);
-    }
-    setDefaultConfig((current) => ({ ...current, analysisDate }));
-  }, []);
-
-  const rememberConfig = (config: RunConfig) => {
-    setDefaultConfig(config);
-    window.localStorage.setItem(FORM_CONFIG_KEY, JSON.stringify(config));
-  };
 
 
   // Lightweight readiness poll (GET /runs/{id}/status). When the engine does
@@ -259,11 +229,11 @@ function Workbench() {
       .catch(() => toast.error(t("toast.stopFailed")));
   };
 
-  const fetchedRun = runQuery.data as RunRecord | undefined;
-  const liveRunSource = fetchedRun ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
-  const liveRun = liveRunSource
-    ? liveRunSource
-    : undefined;
+  // The run we show: the freshly fetched one, else the one restored from the
+  // browser cache, else the built-in sample.
+  const liveRun: RunRecord | undefined =
+    (runQuery.data as RunRecord | undefined) ??
+    (cachedRun?.id === activeRunId ? cachedRun : undefined);
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const artifacts = useRunArtifacts(
     run,
