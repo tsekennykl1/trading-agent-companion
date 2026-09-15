@@ -43,7 +43,7 @@ const EN = {
   "home.sampleNotice": "Showing a saved sample run so the workbench is demonstrable offline.",
   "home.engineOffline": "Your engine is not reachable right now.",
   "home.backToLive": "Back to live run",
-  "home.newAnalysis": "New analysis",
+  "home.newAnalysis": "New Analysis",
   "home.runError": "The engine reported an error during this run.",
   "home.confidenceTitle": "Recommendation confidence",
   "home.confidenceBody": "Available once the run completes.",
