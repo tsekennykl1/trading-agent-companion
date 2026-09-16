@@ -376,6 +376,13 @@ export function DetailedReport({
         )}
       </header>
 
+      {failed && (
+        <div className="space-y-1 px-4 py-4 text-xs text-muted-foreground sm:px-5">
+          {reason && <p>{reason}</p>}
+          <p className="break-all">{url}</p>
+        </div>
+      )}
+
       {ready && open && (
         <article
           aria-label={`${ticker} detailed analysis report`}
