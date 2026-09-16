@@ -151,3 +151,10 @@
 - [x] Add a prominent stock/date heading above charts and compact consensus charts.
 - [x] Improve entry, target, and stop-loss extraction from backend decisions.
 - [x] Verify desktop/mobile behavior and current diagnostics.
+
+# Chart-area analysis form and complete sample
+
+- [x] Move New Analysis from the left rail to directly above the chart.
+- [x] Add a Sample action beside Clear that restores the built-in demonstration.
+- [x] Include a self-contained interactive sample chart and all agent reports.
+- [ ] Verify Clear, Sample, and New Analysis on desktop and phone with clean diagnostics.

@@ -1,3 +1,5 @@
+import type { PriceChartData } from "./chart-data";
+import { DEFAULT_STAGES } from "./types";
 import type { RunRecord } from "./types";
 
 /**
@@ -17,14 +19,15 @@ export const SAMPLE_RUN: RunRecord = {
     quickModel: "deepseek-flash",
     deepModel: "deepseek-flash",
     researchDepth: "Shallow",
-    analysts: ["Market Analyst"],
+    analysts: ["Market Analyst", "Sentiment Analyst", "News Analyst", "Fundamentals Analyst"],
+    stages: [...DEFAULT_STAGES, "social", "news", "fundamentals"],
     language: "English",
   },
   agents: [
     { team: "Analyst Team", agent: "Market Analyst", status: "completed", time: "11:25:27", note: "Completed analysis for 2026-09-11" },
-    { team: "Analyst Team", agent: "Sentiment Analyst", status: "pending", note: "Not selected" },
-    { team: "Analyst Team", agent: "News Analyst", status: "pending", note: "Not selected" },
-    { team: "Analyst Team", agent: "Fundamentals Analyst", status: "pending", note: "Not selected" },
+    { team: "Analyst Team", agent: "Sentiment Analyst", status: "completed", time: "11:25:32" },
+    { team: "Analyst Team", agent: "News Analyst", status: "completed", time: "11:25:35" },
+    { team: "Analyst Team", agent: "Fundamentals Analyst", status: "completed", time: "11:25:38" },
     { team: "Research Team", agent: "Bull Researcher", status: "completed", time: "11:25:41" },
     { team: "Research Team", agent: "Bear Researcher", status: "completed", time: "11:26:12" },
     { team: "Research Team", agent: "Research Manager", status: "completed", time: "11:26:44" },
@@ -61,8 +64,8 @@ export const SAMPLE_RUN: RunRecord = {
     toolCalls: 13,
     tokensIn: 75200,
     tokensOut: 48800,
-    reportsDone: 4,
-    reportsTotal: 4,
+    reportsDone: 12,
+    reportsTotal: 12,
     runtimeSeconds: 263,
   },
   decision: {
@@ -71,6 +74,7 @@ export const SAMPLE_RUN: RunRecord = {
     confidence: 62,
     consensus: "High",
     entryPrice: 428.4,
+    takeProfit: 442.25,
     stopLoss: 411.9,
     positionSizing:
       "Maintain existing exposure at ~normal weight; add nothing at 428.40. If oversized, trim up to ~1/3 into the 436-442 cluster (10-EMA 435.96 / VWMA 441.05 / 20-SMA 442.25). Only add in tranches on a volume-backed close above 442.25; reduce on a decisive high-volume close below 419.40.",
@@ -113,6 +117,30 @@ This is a textbook, fully stacked bearish alignment — no timeframe offers a bu
 | Volatility | ATR | 10.98 (-30%) | Compressing |
 
 Conclusion: stand aside pending a volume-backed reclaim of 435.96, then 441–442.`,
+    sentiment_report: `## Market sentiment
+
+Investor sentiment is cautious rather than capitulatory. The weak trend and muted turnover keep conviction low, while the strong intraday recovery on 2026-09-11 suggests sellers are becoming less aggressive near support.
+
+| Signal | Reading | Interpretation |
+| --- | --- | --- |
+| Price action | Close near session high | Mildly constructive |
+| Participation | Below recent peak volume | Confirmation still absent |
+| Overall tone | Cautious | Neutral to bearish |`,
+    news_report: `## News review
+
+Recent coverage does not provide a decisive near-term catalyst. The sample therefore gives greater weight to observable price, volume and risk controls than to headline momentum.
+
+**Watch next:** company guidance, regulatory developments and evidence that improving operating trends can overcome the technical resistance cluster at HK$436–442.`,
+    fundamentals_report: `## Fundamental perspective
+
+Tencent remains a diversified platform business with durable cash generation, but this technical sample does not include enough fresh fundamental evidence to justify adding risk before price confirms.
+
+| Area | Assessment |
+| --- | --- |
+| Business quality | Established, diversified platform |
+| Valuation | Requires current earnings context |
+| Balance-sheet risk | No immediate signal in this sample |
+| Portfolio implication | Keep normal weight; wait for confirmation |`,
     bull_report: `**Pillar 1 — The confirmation tax.** The technical report concludes "stand aside", but that is internally inconsistent. It says bullish confirmation requires a close above 435.96, then above 441–442. If you wait for 442 you have surrendered 3.23% of the move and your stop is now 5.3% away instead of 2.1%. You cut your reward and doubled your risk to buy certainty. The bull gets paid precisely for absorbing the uncertainty the bear refuses to.
 
 **Pillar 2 — The 2026-09-11 candle is a rejection, not a breakdown.** Open 419.40, Low 419.40, High 430.80, Close 428.40. The open was the low and the close was 78.9% of the way up the range.
@@ -174,4 +202,41 @@ On sizing I favour the Neutral analyst over the Conservative analyst: forcing a 
 
 FINAL TRANSACTION PROPOSAL: HOLD (bearish bias — no fresh long exposure; tactical short only on a confirmed break below 419.40, or sell into rallies toward 436–442; abandon the bear case on a volume-backed reclaim of 442).`,
   },
+};
+
+/** Complete local chart payload so Sample never depends on the connected engine. */
+export const SAMPLE_CHART_DATA: PriceChartData = {
+  ticker: SAMPLE_RUN.config.ticker,
+  analysisDate: SAMPLE_RUN.config.analysisDate,
+  meta: {
+    stockName: "Tencent Holdings Limited",
+    stockCode: SAMPLE_RUN.config.ticker,
+    rows: SAMPLE_RUN.prices.length,
+    range: "2026-08-05 to 2026-09-11",
+  },
+  rows: SAMPLE_RUN.prices.map((point, index) => ({
+    ...point,
+    open: point.close + [2.1, -1.8, 8.4, 2.6, -1.2, 3.1, 0.8, 5.2, -9][index],
+    high: point.close + [6.8, 5.1, 7.4, 4.9, 6.2, 4.7, 5.6, 3.8, 2.4][index],
+    low: point.close - [4.2, 7.3, 9.1, 6.4, 4.8, 5.2, 4.1, 5.6, 9][index],
+    volume: [24800000, 31200000, 66400000, 28600000, 24100000, 21800000, 19400000, 17600000, 15630000][index],
+    rsi14: [48.2, 42.5, 31.4, 35.8, 38.6, 36.1, 34.8, 31.9, 36.7][index],
+    macd: [-1.4, -2.2, -4.1, -5.0, -5.8, -6.2, -6.5, -6.8, -7.13][index],
+    macdSignal: [-1.1, -1.7, -2.8, -3.9, -4.8, -5.5, -5.9, -6.2, -5.65][index],
+    macdHist: [-0.3, -0.5, -1.3, -1.1, -1.0, -0.7, -0.6, -0.6, -1.48][index],
+    bbUpper: [505, 492, 485, 477, 468, 459, 453, 449, 458.2][index],
+    bbMiddle: [480.1, 476.4, 470.9, 464.3, 456.2, 449.8, 445.6, 443.4, 442.25][index],
+    bbLower: [455.2, 460.8, 456.8, 451.6, 444.4, 440.6, 438.2, 432.8, 425.24][index],
+  })),
+  levels: {
+    entry: 428.4,
+    stopLoss: 411.9,
+    takeProfit: 442.25,
+    support: [419.4, 411.9],
+    resistance: [435.96, 442.25, 455.98],
+  },
+  markers: [
+    { date: "2026-08-13", kind: "sell", label: "High-volume breakdown", price: 452.8 },
+    { date: "2026-09-11", kind: "buy", label: "Support rejection", price: 428.4 },
+  ],
 };
