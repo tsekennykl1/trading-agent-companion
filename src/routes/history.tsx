@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { CheckCircle2, ChevronDown, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { PageHeading } from "@/components/workbench/PageHeading";
+import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
 import { RunHistoryDetails } from "@/components/workbench/RunHistoryDetails";
 import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
@@ -77,6 +78,10 @@ function HistoryPage() {
           </Button>
         }
       />
+
+      <div className="mb-4">
+        <McpConnectionNote context="history" />
+      </div>
 
       {runsQuery.isLoading ? (
         <section className="panel flex items-center gap-2 px-5 py-8 text-sm text-muted-foreground" role="status">

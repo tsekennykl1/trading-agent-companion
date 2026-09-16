@@ -8,8 +8,10 @@ bottom once, then use it as a map when you open a file.
 ## 1. The big picture
 
 ```text
-Browser (this app)  ──HTTP──>  your local engine (FastAPI, port 8000)
-   React components              TradingAgents analysis + artifacts
+Browser (this app) ──HTTP──┐
+                           ├──> local engine ──> one queue and run history
+AI assistant ──────MCP─────┘       │
+                                   └──> TradingAgents + charts + reports
 ```
 
 The frontend never runs any analysis itself. It:
@@ -18,6 +20,12 @@ The frontend never runs any analysis itself. It:
 2. polls the engine while the analysis runs,
 3. draws whatever the engine has produced so far (progress, chart, reports),
 4. lets you export the finished decision.
+
+MCP is a second entrance to the same backend. An assistant calls `/mcp`; the MCP
+tool calls the same Python service function as the matching HTTP route. Therefore
+an assistant-created run appears in Dashboard and History without special frontend
+state or another database. `McpConnectionNote` only explains this relationship and
+shows the endpoint; it does not call MCP from React.
 
 ## 2. The building blocks
 
