@@ -23,7 +23,10 @@ export function LlmVisibilityPanel() {
   useEffect(() => setEnabled(getEnabledLlms()), []);
 
   const toggle = (id: string, on: boolean) => {
-    const base = enabled && enabled.length > 0 ? enabled : configured.map((p) => p.provider);
+    const base =
+      enabled && enabled.length > 0
+        ? enabled
+        : configured.filter((p) => isLlmEnabled(null, p.provider)).map((p) => p.provider);
     const next = on ? Array.from(new Set([...base, id])) : base.filter((value) => value !== id);
     setEnabled(next);
     setEnabledLlms(next);

@@ -6,6 +6,7 @@ import { AppShell } from "@/components/workbench/AppShell";
 import { DetailedReport } from "@/components/workbench/DetailedReport";
 import { Button } from "@/components/ui/button";
 import { downloadFile, markdownToHtml } from "@/lib/trading-agents/report";
+import { SAMPLE_DETAIL_REPORT } from "@/lib/trading-agents/sample-run";
 import { useT } from "@/lib/i18n";
 
 const TITLE = "Detailed analysis report — My Trading Agents";
@@ -53,8 +54,9 @@ function ReportPage() {
   const url = search.url;
   const ticker = search.ticker;
   const t = useT();
-  const [markdown, setMarkdown] = useState("");
-  const [loading, setLoading] = useState(true);
+  const isSample = url === "sample";
+  const [markdown, setMarkdown] = useState(isSample ? SAMPLE_DETAIL_REPORT : "");
+  const [loading, setLoading] = useState(!isSample);
 
   const ready = markdown.trim().length > 0;
   const title = `${t("report.title")}${ticker ? ` — ${ticker}` : ""}`;
@@ -116,7 +118,12 @@ function ReportPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
       </div>
 
-      {url ? (
+      {isSample ? (
+        <article
+          className="panel prose-report min-w-0 overflow-x-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6"
+          dangerouslySetInnerHTML={{ __html: markdownToHtml(SAMPLE_DETAIL_REPORT) }}
+        />
+      ) : url ? (
         <DetailedReport url={url} ticker={ticker || "run"} expanded onContent={setMarkdown} onLoadingChange={setLoading} />
       ) : (
         <p className="panel px-4 py-6 text-sm text-muted-foreground sm:px-5">{t("report.missing")}</p>

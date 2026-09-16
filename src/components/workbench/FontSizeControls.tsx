@@ -3,7 +3,7 @@ import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "ta-font-scale";
-const SCALES = [0.9, 1, 1.1, 1.2] as const;
+const SCALES = [0.9, 1, 1.1, 1.2, 1.35, 1.5] as const;
 
 function savedScale(): number {
   if (typeof window === "undefined") return 1;

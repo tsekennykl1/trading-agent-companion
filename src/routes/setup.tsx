@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Copy, Download, RefreshCw, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { EnvBuilder } from "@/components/workbench/EnvBuilder";
@@ -131,6 +131,11 @@ function Setup() {
   return (
     <AppShell>
       <div className="mx-auto max-w-[95%]">
+        <Button asChild size="sm" variant="outline" className="mb-4 min-h-9 gap-2">
+          <Link to="/">
+            <ArrowLeft className="size-4" /> Back to Dashboard
+          </Link>
+        </Button>
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">Connect your engine</h1>
         <p className="mt-2 text-muted-foreground">
           TradingAgents is a Python system that runs on your own machine. A small bridge exposes it to this
@@ -225,11 +230,11 @@ function Setup() {
         </p>
         <EnvBuilder />
 
-        <h2 className="mt-10 text-xl font-semibold">AI model keys</h2>
+        <h2 className="mt-10 text-xl font-semibold">How to Generate the Large Language Model API_KEY?</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          DeepSeek is only one of the supported providers. Add the key for whichever provider you pick to
-          your <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code> file — one is
-          enough — then choose that provider in the New Analysis form.
+          Open the provider you want to use, sign in, create an API key, then copy it into your{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code> file under the variable
+          name shown below. One provider is enough — pick that provider in the New Analysis form afterwards.
         </p>
         <div className="panel mt-4 divide-y divide-rule overflow-hidden p-0">
           {LLM_KEYS.map((item) => (

@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as TechnicalAnalysisRouteImport } from './routes/technical-analysis'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TechnicalAnalysisRoute = TechnicalAnalysisRouteImport.update({
+  id: '/technical-analysis',
+  path: '/technical-analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
+  '/technical-analysis': typeof TechnicalAnalysisRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
+  '/technical-analysis': typeof TechnicalAnalysisRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,22 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
+  '/technical-analysis': typeof TechnicalAnalysisRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/history' | '/report' | '/setup'
+  fullPaths:
+    '/' | '/about' | '/history' | '/report' | '/setup' | '/technical-analysis'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/history' | '/report' | '/setup'
-  id: '__root__' | '/' | '/about' | '/history' | '/report' | '/setup'
+  to: '/' | '/about' | '/history' | '/report' | '/setup' | '/technical-analysis'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/history'
+    | '/report'
+    | '/setup'
+    | '/technical-analysis'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +94,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   ReportRoute: typeof ReportRoute
   SetupRoute: typeof SetupRoute
+  TechnicalAnalysisRoute: typeof TechnicalAnalysisRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/technical-analysis': {
+      id: '/technical-analysis'
+      path: '/technical-analysis'
+      fullPath: '/technical-analysis'
+      preLoaderRoute: typeof TechnicalAnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   ReportRoute: ReportRoute,
   SetupRoute: SetupRoute,
+  TechnicalAnalysisRoute: TechnicalAnalysisRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
