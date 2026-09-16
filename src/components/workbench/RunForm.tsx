@@ -173,7 +173,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             <div className="min-w-0 space-y-1.5">
               <Label className="label-caps">{t("form.llm")}</Label>
               <Select
-                value={config.provider.toLowerCase()}
+                value={config.provider}
                 onValueChange={(value) => {
                   const provider = configuredProviders.find((item) => item.provider === value);
                   if (!provider) return;
