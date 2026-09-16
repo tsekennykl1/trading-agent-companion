@@ -60,6 +60,13 @@ export const SAMPLE_RUN: RunRecord = {
     { agent: "Neutral Analyst", stance: "neutral", score: -5 },
     { agent: "Portfolio Manager", stance: "neutral", score: -12 },
   ],
+  // Official HKEX names, so the offline sample titles match a real run.
+  partial: {
+    stockName: "Tencent Holdings Limited",
+    stockNameEn: "TENCENT",
+    stockNameZh: "騰訊控股",
+    warnings: [],
+  },
   stats: {
     llmCalls: 11,
     toolCalls: 13,

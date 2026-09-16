@@ -218,6 +218,9 @@ export function readPartial(
       ? { reportsReady: normalizeReportsReady(partial["reports_ready"]) }
       : {}),
     ...(typeof get("stock_name", "name") === "string" ? { stockName: get("stock_name", "name") as string } : {}),
+    // Hong Kong listings carry the official HKEX names in both languages.
+    ...(typeof get("stock_name_en") === "string" ? { stockNameEn: get("stock_name_en") as string } : {}),
+    ...(typeof get("stock_name_zh") === "string" ? { stockNameZh: get("stock_name_zh") as string } : {}),
     ...(num(get("latest_price", "latest_close")) !== undefined
       ? { latestPrice: num(get("latest_price", "latest_close"))! }
       : {}),
