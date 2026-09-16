@@ -35,7 +35,11 @@ export function subscribeEnabledLlms(listener: () => void): () => void {
   };
 }
 
+/** Providers hidden until the user ticks them on the setup page. */
+export const DEFAULT_HIDDEN_LLMS = ["openai_compatible", "bedrock"];
+
 /** True when this provider should appear in the analysis form. */
 export function isLlmEnabled(enabled: string[] | null, id: string): boolean {
-  return !enabled || enabled.length === 0 || enabled.includes(id);
+  if (!enabled || enabled.length === 0) return !DEFAULT_HIDDEN_LLMS.includes(id);
+  return enabled.includes(id);
 }

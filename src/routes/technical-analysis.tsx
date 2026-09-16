@@ -94,7 +94,7 @@ function TechnicalAnalysisPage() {
             chart={chart}
             height={560}
             levels={chart.levels}
-            visible={["sma20", "sma50", "sma200", "bb", "rsi14", "macd", "volume", "levels"]}
+            visible={["sma50", "sma200", "bollinger", "rsi", "macd", "volume", "levels"]}
           />
         </div>
       </section>
