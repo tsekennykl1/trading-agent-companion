@@ -125,11 +125,19 @@ export const api = {
     return readReportContent(raw);
   },
 
+  /** GET /market/company — Alpha Vantage profile, valuation and latest quote. */
+  companyProfile: (ticker: string) =>
+    request<CompanyProfile>(`/market/company?ticker=${encodeURIComponent(ticker)}`),
+  /** GET /market/earnings — last quarters of EPS reported vs estimated. */
+  companyEarnings: (ticker: string) =>
+    request<CompanyEarnings>(`/market/earnings?ticker=${encodeURIComponent(ticker)}`),
+
   /** GET /providers — active LLM plus every provider with a key saved. */
   providers: () => request<ProvidersResponse>("/providers"),
   /** GET /providers/credit — key validity and, where published, remaining credit. */
   providerCredit: (provider?: string) =>
     request<ProviderCredit>(`/providers/credit${provider ? `?provider=${encodeURIComponent(provider)}` : ""}`),
+
   /** POST /providers/active — switch the engine to another configured provider. */
   setActiveProvider: (provider: string, deepModel?: string, quickModel?: string) =>
     request<{ active: ActiveProvider; credit: ProviderCredit; restart_required?: boolean }>(
