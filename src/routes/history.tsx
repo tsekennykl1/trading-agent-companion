@@ -152,10 +152,10 @@ function HistoryPage() {
                             {t("history.reportsPending")}
                           </span>
                         )}
-                        {ready && canUseBrowserUrl(resultUrl) && (
+                        {ready && resultUrl && canUseBrowserUrl(resultUrl) && (
                           <Link
                             to="/report"
-                            search={{ url: resultUrl!, ticker: run.config.ticker }}
+                            search={{ url: resultUrl, ticker: run.config.ticker }}
                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                           >
                             {t("history.open")} <ExternalLink className="size-3" aria-hidden="true" />
