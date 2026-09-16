@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ANALYST_OPTIONS, DEFAULT_STAGES, STAGE_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
 import { fill, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/trading-agents/client";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -39,6 +41,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
   );
   const [tickerError, setTickerError] = useState<string | null>(null);
+  const providersQuery = useQuery({
+    queryKey: ["configured-providers"],
+    queryFn: api.providers,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const configuredProviders = providersQuery.data?.providers.filter((provider) => provider.configured) ?? [];
 
   // The analysis date is filled in after hydration, so adopt it once it arrives.
   useEffect(() => {
@@ -119,9 +128,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         <div
           className={cn(
             "grid min-w-0 gap-4",
-            compact
-              ? "md:grid-cols-3 xl:grid-cols-1"
-              : "md:grid-cols-[minmax(9rem,0.8fr)_minmax(11rem,0.9fr)_minmax(16rem,1.5fr)]",
+             compact
+               ? "md:grid-cols-2 xl:grid-cols-1"
+               : "md:grid-cols-2 xl:grid-cols-4",
           )}
         >
           <div className="min-w-0 space-y-1.5">
@@ -159,6 +168,40 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             </div>
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
           </div>
+
+          {configuredProviders.length > 0 && (
+            <div className="min-w-0 space-y-1.5">
+              <Label className="label-caps">{t("form.llm")}</Label>
+              <Select
+                value={config.provider.toLowerCase()}
+                onValueChange={(value) => {
+                  const provider = configuredProviders.find((item) => item.provider === value);
+                  if (!provider) return;
+                  setConfig((current) => {
+                    const next = {
+                      ...current,
+                      provider: provider.provider,
+                      deepModel: provider.default_deep_model,
+                      quickModel: provider.default_quick_model,
+                    };
+                    onConfigChange?.(next);
+                    return next;
+                  });
+                }}
+              >
+                <SelectTrigger className="w-full min-w-0 [&>span]:truncate">
+                  <SelectValue placeholder={t("form.llmUnavailable")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {configuredProviders.map((provider) => (
+                    <SelectItem key={provider.provider} value={provider.provider}>
+                      {provider.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="date" className="label-caps">
               {t("form.date")}

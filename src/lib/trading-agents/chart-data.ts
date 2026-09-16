@@ -60,9 +60,9 @@ export function readTradeLevels(raw: unknown): TradeLevels | undefined {
       const match = raw.match(expression);
       return match?.[1] ? num(match[1]) : undefined;
     };
-    const entry = labelled(["entry", "entry price", "buy price", "進場價", "入場價"]);
+    const entry = labelled(["entry", "entry price", "entry point", "buy price", "purchase price", "進場價", "入場價"]);
     const stopLoss = labelled(["stop loss", "stop-loss", "stop", "停損價", "止蝕價"]);
-    const takeProfit = labelled(["take profit", "take-profit", "target price", "target", "目標價", "止賺價"]);
+    const takeProfit = labelled(["take profit", "take-profit", "profit target", "price target", "target price", "target", "目標價", "止賺價"]);
     if (entry === undefined && stopLoss === undefined && takeProfit === undefined) return undefined;
     return {
       ...(entry !== undefined ? { entry } : {}),
@@ -74,7 +74,7 @@ export function readTradeLevels(raw: unknown): TradeLevels | undefined {
   }
   if (!raw || typeof raw !== "object") return undefined;
   const o = raw as Record<string, unknown>;
-  const nestedKeys = ["levels", "trade_levels", "tradeLevels", "price_levels", "priceLevels", "targets", "recommendation"];
+  const nestedKeys = ["levels", "trade_levels", "tradeLevels", "price_levels", "priceLevels", "targets", "recommendation", "decision", "order", "trade"];
   const nested = nestedKeys
     .map((key) => o[key])
     .find((value): value is Record<string, unknown> => Boolean(value && typeof value === "object" && !Array.isArray(value)));
@@ -86,9 +86,9 @@ export function readTradeLevels(raw: unknown): TradeLevels | undefined {
     }
     return undefined;
   };
-  const entry = pick("entry", "entry_price", "entryPrice", "entry_zone", "entryZone", "entry_limit", "entryLimit", "buy_price", "buyPrice");
+  const entry = pick("entry", "entry_price", "entryPrice", "entry_point", "entryPoint", "entry_zone", "entryZone", "entry_limit", "entryLimit", "buy_price", "buyPrice", "purchase_price", "purchasePrice");
   const stopLoss = pick("stop_loss", "stopLoss", "stop_loss_price", "stopLossPrice", "stop", "sl", "risk_price", "riskPrice");
-  const takeProfit = pick("take_profit", "takeProfit", "take_profit_price", "takeProfitPrice", "target_price", "targetPrice", "target", "tp", "price_target", "priceTarget");
+  const takeProfit = pick("take_profit", "takeProfit", "take_profit_price", "takeProfitPrice", "profit_target", "profitTarget", "target_price", "targetPrice", "target", "tp", "price_target", "priceTarget");
   const support = numberList(src["support"] ?? src["support_levels"] ?? src["supports"]);
   const resistance = numberList(src["resistance"] ?? src["resistance_levels"] ?? src["resistances"]);
   if (entry === undefined && stopLoss === undefined && takeProfit === undefined && !support.length && !resistance.length) {

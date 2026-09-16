@@ -176,7 +176,8 @@ export function markdownToHtml(md: string): string {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/_(.+?)_/g, "<em>$1</em>");
 
-  for (const raw of compactFieldGroups(normalizeReportMarkdown(md)).split("\n")) {
+  const cleaned = md.replace(/[ \t]+\\[ \t]*$/gm, "");
+  for (const raw of compactFieldGroups(normalizeReportMarkdown(cleaned)).split("\n")) {
     const line = raw.trimEnd();
     if (!line.trim()) {
       closeList();
