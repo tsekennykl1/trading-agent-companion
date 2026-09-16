@@ -25,6 +25,12 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "ticker": {
               "type": "string",
               "minLength": 1,
@@ -73,6 +79,7 @@
             }
           },
           "required": [
+            "access_key",
             "ticker"
           ]
         },
@@ -91,6 +98,12 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "run_id": {
               "type": "string",
               "minLength": 1,
@@ -98,6 +111,7 @@
             }
           },
           "required": [
+            "access_key",
             "run_id"
           ]
         },
@@ -116,13 +130,22 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "limit": {
               "default": 10,
               "type": "integer",
               "minimum": 1,
               "maximum": 50
             }
-          }
+          },
+          "required": [
+            "access_key"
+          ]
         },
         "outputSchema": null
       },
@@ -139,6 +162,12 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "run_id": {
               "type": "string",
               "minLength": 1,
@@ -151,6 +180,7 @@
             }
           },
           "required": [
+            "access_key",
             "run_id"
           ]
         },
@@ -169,6 +199,12 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "run_id": {
               "type": "string",
               "minLength": 1,
@@ -176,6 +212,7 @@
             }
           },
           "required": [
+            "access_key",
             "run_id"
           ]
         },
@@ -194,6 +231,12 @@
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "access_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Shared access key for this trading MCP server. Ask the owner for it."
+            },
             "ticker": {
               "type": "string",
               "minLength": 1,
@@ -201,6 +244,7 @@
             }
           },
           "required": [
+            "access_key",
             "ticker"
           ]
         },
