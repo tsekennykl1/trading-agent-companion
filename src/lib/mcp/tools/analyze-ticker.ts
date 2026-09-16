@@ -37,6 +37,8 @@ export default defineTool({
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: async (input, ctx) => {
+    requireAccessKey(input.access_key);
+    checkStartBudget();
     const today = new Date().toISOString().slice(0, 10);
     const config: RunConfig = {
       ticker: input.ticker.toUpperCase(),
