@@ -44,6 +44,8 @@ const EN = {
   "home.engineOffline": "Your engine is not reachable right now.",
   "home.backToLive": "Back to live run",
   "home.newAnalysis": "New Analysis",
+  "home.clear": "Clear",
+
   "home.hideForm": "Hide New Analysis",
   "home.showForm": "Show New Analysis",
   "home.runError": "The engine reported an error during this run.",
