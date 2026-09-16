@@ -72,10 +72,11 @@ function Workbench() {
 
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = analysis.startedAt !== null;
+  const showAnalysisActions = !analysis.cleared;
   const headerGridCols =
     showExportBar && chartReady
       ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
-      : showExportBar
+      : showExportBar || showAnalysisActions
         ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]"
         : "";
 
@@ -86,7 +87,7 @@ function Workbench() {
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">{t("home.intro")}</p>
         </div>
-        {showExportBar && chartReady && (
+        {showAnalysisActions && (
           <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
             <Button
               size="lg"
@@ -134,10 +135,16 @@ function Workbench() {
         <LiveSnapshot run={run} artifacts={artifacts} />
 
         {!chartReady && (
-          <PriceChart
-            data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
-            ticker={run.config.ticker}
-          />
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-display text-2xl font-bold sm:text-3xl">{run.config.ticker}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{run.config.analysisDate}</p>
+            </div>
+            <PriceChart
+              data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+              ticker={run.config.ticker}
+            />
+          </div>
         )}
       </div>}
 

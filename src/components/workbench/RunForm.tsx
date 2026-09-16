@@ -60,6 +60,19 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     setMarket(/\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other");
   }, [defaultConfig.analysisDate]);
 
+  useEffect(() => {
+    const first = configuredProviders[0];
+    if (!first || configuredProviders.some((provider) => provider.provider === config.provider)) return;
+    const next = {
+      ...config,
+      provider: first.provider,
+      deepModel: first.default_deep_model,
+      quickModel: first.default_quick_model,
+    };
+    setConfig(next);
+    onConfigChange?.(next);
+  }, [configuredProviders, config, onConfigChange]);
+
   /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
   const resolveTicker = (): string | null => {
     const raw = config.ticker.trim().toUpperCase();

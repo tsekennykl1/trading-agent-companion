@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
 import { FontSizeControls } from "./FontSizeControls";
 import { useLanguage } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/", label: "nav.workbench", icon: LayoutDashboard },
@@ -20,17 +21,19 @@ function LanguageSwitch() {
     >
       <Languages className="ml-1 size-3.5 text-muted-foreground" aria-hidden="true" />
       {(["en", "zh"] as const).map((code) => (
-        <button
+        <Button
           key={code}
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setLang(code)}
           aria-pressed={lang === code}
-          className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+          className={`h-7 rounded px-2 text-xs font-medium transition-colors ${
             lang === code ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {code === "en" ? "EN" : "繁"}
-        </button>
+        </Button>
       ))}
     </div>
   );
