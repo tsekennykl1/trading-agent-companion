@@ -153,7 +153,51 @@ export const api = {
     ),
 };
 
+export interface CompanyProfile {
+  available: boolean;
+  message?: string;
+  symbol?: string;
+  name?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  exchange?: string | null;
+  currency?: string | null;
+  market_cap?: number | null;
+  pe_ratio?: number | null;
+  forward_pe?: number | null;
+  eps?: number | null;
+  dividend_yield?: number | null;
+  beta?: number | null;
+  week52_high?: number | null;
+  week52_low?: number | null;
+  analyst_target_price?: number | null;
+  quote?: {
+    price: number | null;
+    change: number | null;
+    change_percent: number | null;
+    previous_close: number | null;
+    volume: number | null;
+    latest_trading_day: string | null;
+  } | null;
+}
+
+export interface CompanyEarnings {
+  available: boolean;
+  message?: string;
+  symbol?: string;
+  quarters?: {
+    fiscal_date: string | null;
+    reported_date?: string | null;
+    reported_eps: number | null;
+    estimated_eps: number | null;
+    surprise?: number | null;
+    surprise_percent: number | null;
+  }[];
+  annual?: { fiscal_date: string | null; reported_eps: number | null }[];
+}
+
 export type ProviderCreditStatus =
+
   | "valid"
   | "invalid"
   | "missing_key"
