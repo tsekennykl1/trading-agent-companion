@@ -356,6 +356,11 @@ export function DetailedReport({
         >
           {t("report.original")} <ExternalLink className="size-3.5" aria-hidden="true" />
         </a>
+        {failed && (
+          <Button type="button" size="sm" variant="outline" onClick={() => setAttempt((n) => n + 1)}>
+            <RefreshCw className="size-3.5" aria-hidden="true" /> {t("report.retry")}
+          </Button>
+        )}
         {!expanded && (
           <Button
             type="button"
