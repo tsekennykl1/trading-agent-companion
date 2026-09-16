@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/trading-agents/client";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { useT } from "@/lib/i18n";
 
