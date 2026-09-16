@@ -290,32 +290,49 @@ export function DetailedReport({
 
   useEffect(() => {
     const controller = new AbortController();
+    let cancelled = false;
     setLoading(true);
     setFailed(false);
+    setReason("");
     setSource("");
     publish.current?.("");
 
-    fetch(url, { cache: "no-store", signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error("Report unavailable");
-        return response.text();
-      })
-      .then((text) => {
-        const markdown = readableArtifact(text);
-        setSource(markdown);
-        publish.current?.(markdown);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setFailed(true);
-      })
+    const finish = (markdown: string) => {
+      if (cancelled) return false;
+      const cleaned = markdown.trim();
+      if (!cleaned) return false;
+      setSource(cleaned);
+      publish.current?.(cleaned);
+      return true;
+    };
 
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+    (async () => {
+      let problem = "";
+      try {
+        const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error(`The engine answered ${response.status} for this report`);
+        if (finish(readableArtifact(await response.text()))) return;
+        problem = "The report file is empty";
+      } catch (error: unknown) {
+        if (controller.signal.aborted) return;
+        problem = error instanceof Error ? error.message : "The report could not be reached";
+      }
 
-    return () => controller.abort();
-  }, [url]);
+      // Fall back to the individual report files the engine already published.
+      const stitched = await reportsFallback(url).catch(() => "");
+      if (finish(stitched)) return;
+      if (cancelled) return;
+      setReason(problem);
+      setFailed(true);
+    })().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [url, attempt]);
 
   const html = useMemo(() => markdownToHtml(source), [source]);
   const ready = Boolean(source) && !failed;
