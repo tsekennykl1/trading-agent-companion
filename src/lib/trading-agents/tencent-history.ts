@@ -194,7 +194,7 @@ function buildRows(): ChartRow[] {
   /** Only set a study when it has a value (the chart types forbid explicit undefined). */
   const put = (row: ChartRow, key: keyof ChartRow, value: number | undefined, digits = 2) => {
     if (value === undefined || Number.isNaN(value)) return;
-    (row as Record<string, number>)[key] = round(value, digits);
+    (row as unknown as Record<string, number>)[key] = round(value, digits);
   };
 
   return bars.map((bar, i) => {
