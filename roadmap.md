@@ -165,4 +165,4 @@
 - [x] Rename History to Historical Analysis and place return actions above page titles.
 - [x] Stop inactive History refreshes and completed artifact polling.
 - [x] Simplify shared page headings and dashboard action handlers.
-- [ ] Verify phone, tablet, laptop, and wide-desktop layouts with clean diagnostics.
+- [x] Verify phone, tablet, laptop, and wide-desktop layouts with clean diagnostics.
