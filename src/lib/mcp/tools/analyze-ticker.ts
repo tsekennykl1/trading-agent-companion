@@ -2,6 +2,7 @@ import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch, summarizeRun, asObject, pickString, FINISHED } from "../engine";
 import { json } from "../json";
+import { accessKeyField, requireAccessKey } from "../auth";
 import { runConfigPayload } from "@/lib/trading-agents/run-payload";
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
@@ -14,6 +15,7 @@ export default defineTool({
   description:
     "Start a multi-agent trading analysis for a stock ticker on the trading engine and wait briefly for the result. Returns the trade decision when the run finishes in time, otherwise a run_id to poll with get_analysis.",
   inputSchema: {
+    ...accessKeyField,
     ticker: z.string().trim().min(1).max(20).describe("Stock ticker, e.g. AAPL or 0700.HK"),
     analysis_date: z
       .string()

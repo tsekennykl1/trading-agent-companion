@@ -1,5 +1,6 @@
 import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { z } from "zod";
+import { accessKeyField, requireAccessKey } from "../auth";
 import { engineFetch, asObject } from "../engine";
 
 const REPORT_NAME = /^[a-z0-9_]{1,60}$/;
@@ -10,6 +11,7 @@ export default defineTool({
   description:
     "List the analyst reports produced by a run, or read one of them (e.g. market_report, investment_plan, final_decision).",
   inputSchema: {
+    ...accessKeyField,
     run_id: z.string().trim().min(1).max(120),
     report: z
       .string()
@@ -19,7 +21,8 @@ export default defineTool({
       .describe("Report name. Omit to list the reports available for this run."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: async ({ run_id, report }, ctx) => {
+  handler: async ({ access_key, run_id, report }, ctx) => {
+    requireAccessKey(access_key);
     const id = encodeURIComponent(run_id);
     if (!report) {
       const raw = await engineFetch<unknown>(`/runs/${id}/reports`, { signal: ctx.signal });
