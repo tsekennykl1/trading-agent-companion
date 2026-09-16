@@ -1,4 +1,5 @@
 import type { PriceChartData } from "./chart-data";
+import { TENCENT_HISTORY_RANGE, tencentHistoryRows } from "./tencent-history";
 import { DEFAULT_STAGES } from "./types";
 import type { RunRecord } from "./types";
 
@@ -204,39 +205,37 @@ FINAL TRANSACTION PROPOSAL: HOLD (bearish bias — no fresh long exposure; tacti
   },
 };
 
-/** Complete local chart payload so Sample never depends on the connected engine. */
+/**
+ * Complete local chart payload so Sample never depends on the connected engine:
+ * three years of real 0700.HK daily bars with every technical study computed in
+ * the browser.
+ */
+const HISTORY_ROWS = tencentHistoryRows();
+const LAST_BAR = HISTORY_ROWS[HISTORY_ROWS.length - 1];
+
 export const SAMPLE_CHART_DATA: PriceChartData = {
   ticker: SAMPLE_RUN.config.ticker,
   analysisDate: SAMPLE_RUN.config.analysisDate,
   meta: {
     stockName: "Tencent Holdings Limited",
     stockCode: SAMPLE_RUN.config.ticker,
-    rows: SAMPLE_RUN.prices.length,
-    range: "2026-08-05 to 2026-09-11",
+    rows: HISTORY_ROWS.length,
+    range: `${TENCENT_HISTORY_RANGE.start} to ${TENCENT_HISTORY_RANGE.end}`,
+    visibleStart: HISTORY_ROWS[Math.max(0, HISTORY_ROWS.length - 180)]?.date ?? TENCENT_HISTORY_RANGE.start,
+    visibleEnd: TENCENT_HISTORY_RANGE.end,
+    vwapMode: "rolling_vwap_20",
   },
-  rows: SAMPLE_RUN.prices.map((point, index) => ({
-    ...point,
-    open: point.close + ([2.1, -1.8, 8.4, 2.6, -1.2, 3.1, 0.8, 5.2, -9][index] ?? 0),
-    high: point.close + ([6.8, 5.1, 7.4, 4.9, 6.2, 4.7, 5.6, 3.8, 2.4][index] ?? 0),
-    low: point.close - ([4.2, 7.3, 9.1, 6.4, 4.8, 5.2, 4.1, 5.6, 9][index] ?? 0),
-    volume: [24800000, 31200000, 66400000, 28600000, 24100000, 21800000, 19400000, 17600000, 15630000][index] ?? 0,
-    rsi14: [48.2, 42.5, 31.4, 35.8, 38.6, 36.1, 34.8, 31.9, 36.7][index] ?? 0,
-    macd: [-1.4, -2.2, -4.1, -5.0, -5.8, -6.2, -6.5, -6.8, -7.13][index] ?? 0,
-    macdSignal: [-1.1, -1.7, -2.8, -3.9, -4.8, -5.5, -5.9, -6.2, -5.65][index] ?? 0,
-    macdHist: [-0.3, -0.5, -1.3, -1.1, -1.0, -0.7, -0.6, -0.6, -1.48][index] ?? 0,
-    bbUpper: [505, 492, 485, 477, 468, 459, 453, 449, 458.2][index] ?? 0,
-    bbMiddle: [480.1, 476.4, 470.9, 464.3, 456.2, 449.8, 445.6, 443.4, 442.25][index] ?? 0,
-    bbLower: [455.2, 460.8, 456.8, 451.6, 444.4, 440.6, 438.2, 432.8, 425.24][index] ?? 0,
-  })),
+  rows: HISTORY_ROWS,
   levels: {
-    entry: 428.4,
-    stopLoss: 411.9,
-    takeProfit: 442.25,
-    support: [419.4, 411.9],
-    resistance: [435.96, 442.25, 455.98],
+    entry: LAST_BAR?.close ?? 455.2,
+    stopLoss: 428.4,
+    takeProfit: 487.5,
+    support: [443.4, 428.4],
+    resistance: [462.2, 487.5],
   },
   markers: [
-    { date: "2026-08-13", kind: "sell", label: "High-volume breakdown", price: 452.8 },
-    { date: "2026-09-11", kind: "buy", label: "Support rejection", price: 428.4 },
+    { date: "2026-08-13", kind: "sell", label: "High-volume breakdown", price: HISTORY_ROWS.find((r) => r.date === "2026-08-13")?.close ?? 452.8 },
+    { date: TENCENT_HISTORY_RANGE.end, kind: "buy", label: "Support rejection", price: LAST_BAR?.close ?? 455.2 },
   ],
 };
+
