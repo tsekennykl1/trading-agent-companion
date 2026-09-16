@@ -67,6 +67,13 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
       : undefined);
   const pricePoints = p?.pricePoints ?? (market?.prices.length || chartData?.rows.length || undefined);
   const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
+  // Hong Kong listings show the official HKEX English and Chinese names.
+  const hkNames = useHkStockNames(
+    run.config.ticker,
+    { ...(p?.stockNameEn ? { en: p.stockNameEn } : {}), ...(p?.stockNameZh ? { zh: p.stockNameZh } : {}) },
+    run.source === "sample",
+  );
+  const headline = hkNames.en ?? stockName ?? run.config.ticker;
   const warnings = p?.warnings ?? [];
 
   // Drop artifact URLs the browser cannot load (http asset on an https page).
