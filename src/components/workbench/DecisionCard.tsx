@@ -1,18 +1,11 @@
 import { useState } from "react";
-import { ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DecisionBadge } from "@/components/workbench/DecisionBadge";
+import { PriceLevels } from "@/components/workbench/PriceLevels";
 import { useT } from "@/lib/i18n";
 import type { Decision } from "@/lib/trading-agents/types";
 import { cn } from "@/lib/utils";
-
-const TONE: Record<string, { cls: string; Icon: typeof Minus }> = {
-  Buy: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
-  Overweight: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
-  Hold: { cls: "bg-neutral/12 text-neutral border-neutral/30", Icon: Minus },
-  Review: { cls: "bg-muted text-muted-foreground border-rule", Icon: Minus },
-  Underweight: { cls: "bg-bear/12 text-bear border-bear/30", Icon: ArrowDownRight },
-  Sell: { cls: "bg-bear/12 text-bear border-bear/30", Icon: ArrowDownRight },
-};
 
 function Gauge({ label, value, tone }: { label: string; value: number; tone: string }) {
   return (
@@ -31,15 +24,6 @@ function Gauge({ label, value, tone }: { label: string; value: number; tone: str
   );
 }
 
-function Level({ label, value, tone }: { label: string; value: number | undefined; tone?: string }) {
-  return (
-    <div className="rounded-md border border-rule bg-surface px-2.5 py-1.5">
-      <p className="label-caps">{label}</p>
-      <p className={cn("mt-0.5 font-mono text-sm", tone)}>{value === undefined ? "—" : value}</p>
-    </div>
-  );
-}
-
 /**
  * Compact decision summary shown beside the chart: signal badge, confidence,
  * trade levels, risk and horizon — so the call is readable without scrolling.
@@ -47,18 +31,12 @@ function Level({ label, value, tone }: { label: string; value: number | undefine
 export function DecisionCard({ decision, ticker }: { decision: Decision; ticker: string }) {
   const t = useT();
   const [open, setOpen] = useState(true);
-  const tone = TONE[decision.action] ?? TONE["Review"]!;
-  const { Icon } = tone;
-  const levels = decision.levels;
   const scores = decision.scores;
 
   return (
     <section className="panel space-y-4 p-4">
       <div className="flex items-center gap-3">
-        <span className={cn("flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-display text-lg font-semibold", tone.cls)}>
-          <Icon className="size-4" />
-          {decision.action}
-        </span>
+        <DecisionBadge action={decision.action} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{ticker}</p>
           <p className="text-xs text-muted-foreground">{decision.consensus} consensus</p>
@@ -78,11 +56,7 @@ export function DecisionCard({ decision, ticker }: { decision: Decision; ticker:
           {scores?.conviction !== undefined && <Gauge label="Conviction" value={scores.conviction} tone="bg-primary" />}
           {scores?.risk !== undefined && <Gauge label="Risk score" value={scores.risk} tone="bg-bear" />}
 
-          <div className="grid grid-cols-3 gap-2">
-            <Level label="Entry" value={decision.entryPrice ?? levels?.entry} />
-            <Level label="Target" value={decision.takeProfit ?? levels?.takeProfit} tone="text-bull" />
-            <Level label="Stop" value={decision.stopLoss ?? levels?.stopLoss} tone="text-bear" />
-          </div>
+          <PriceLevels decision={decision} boxed />
 
           {(decision.riskLevel || decision.horizon || decision.positionSizing) && (
             <div className="flex flex-wrap gap-1.5 text-xs">

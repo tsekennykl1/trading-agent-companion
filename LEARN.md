@@ -118,6 +118,17 @@ All date and duration text comes from `src/lib/format.ts`
 (`formatElapsed`, `formatDuration`, `formatClock`, `formatDateTime`) so every
 screen shows the same English AM/PM style.
 
+The chart area follows the same idea. `LiveSnapshot` gathers the available
+market and chart data, while `SnapshotResults` only arranges the finished
+decision and signal panels. `DecisionBadge` owns the Buy/Hold/Sell appearance,
+and `PriceLevels` owns the repeated Entry/Target/Stop display. Small components
+make each file easier to read and keep the two decision views consistent.
+
+AI model visibility is kept in `llm-prefs.ts`. With no saved preference, local
+Ollama, OpenAI-compatible endpoints, and AWS Bedrock stay hidden. Ticking one on
+Setup saves an explicit list in the browser and makes it available in the New
+Analysis form.
+
 
 ## 6. Reading any component
 
@@ -142,8 +153,10 @@ export function DecisionCard({ decision }: { decision: Decision }) {
 2. `src/routes/__root.tsx`
 3. `src/routes/index.tsx`
 4. `src/components/workbench/RunForm.tsx`
-5. `src/components/workbench/DecisionPanel.tsx`
-6. `src/lib/trading-agents/client.ts` (only the `api` object at first)
+5. `src/components/workbench/SnapshotResults.tsx`
+6. `src/components/workbench/DecisionCard.tsx`
+7. `src/components/workbench/DecisionPanel.tsx`
+8. `src/lib/trading-agents/client.ts` (only the `api` object at first)
 
 ## 8. Everyday commands
 

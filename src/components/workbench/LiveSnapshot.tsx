@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
 import { IndicatorToggles } from "@/components/workbench/IndicatorToggles";
 import { ChartDataPanel } from "@/components/workbench/ChartDataPanel";
-import { DecisionCard } from "@/components/workbench/DecisionCard";
-import { SignalReasons } from "@/components/workbench/SignalReasons";
+import { SnapshotResults } from "@/components/workbench/SnapshotResults";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
@@ -267,18 +266,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
               )}
             </div>
 
-            {(run.decision || Object.keys(allReports).length > 0) && (
-              <div className="flex min-w-0 flex-wrap gap-4">
-                {run.decision && (
-                  <div className="min-w-0 flex-1">
-                    <DecisionCard decision={run.decision} ticker={run.config.ticker} />
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <SignalReasons reports={allReports} />
-                </div>
-              </div>
-            )}
+            <SnapshotResults run={run} reports={allReports} />
           </div>
         ) : (
           running && (
