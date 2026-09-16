@@ -7,6 +7,7 @@ import { ChartDataPanel } from "@/components/workbench/ChartDataPanel";
 import { SnapshotResults } from "@/components/workbench/SnapshotResults";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useHkStockNames } from "@/hooks/useHkStockNames";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import { useT } from "@/lib/i18n";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
@@ -150,8 +151,11 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
       <div className="border-b border-rule bg-surface px-4 py-4 sm:px-5">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("snapshot.title")}</p>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="font-display text-2xl font-bold sm:text-3xl">{stockName ?? run.config.ticker}</h2>
-          {stockName && <span className="font-mono text-sm font-semibold text-muted-foreground">{run.config.ticker}</span>}
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">{headline}</h2>
+          {hkNames.zh && <h2 className="font-display text-2xl font-bold sm:text-3xl">{hkNames.zh}</h2>}
+          {headline !== run.config.ticker && (
+            <span className="font-mono text-sm font-semibold text-muted-foreground">{run.config.ticker}</span>
+          )}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {run.config.analysisDate}
