@@ -88,6 +88,7 @@ const EN = {
   "report.title": "Detailed report",
   "report.back": "Back to workbench",
   "report.original": "Original",
+  "report.retry": "Try again",
   "report.loading": "Preparing report",
   "report.failed": "Could not load the formatted report",
   "report.available": "Available",
