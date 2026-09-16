@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getEnabledLlms, isLlmEnabled, subscribeEnabledLlms } from "@/lib/trading-agents/llm-prefs";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,9 +46,25 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     queryKey: ["configured-providers"],
     queryFn: api.providers,
     retry: false,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
   });
-  const configuredProviders = providersQuery.data?.providers.filter((provider) => provider.configured) ?? [];
+  // The setup page can switch providers off; an empty preference means "all".
+  const [enabledLlms, setEnabled] = useState<string[] | null>(null);
+  useEffect(() => {
+    const read = () => setEnabled(getEnabledLlms());
+    read();
+    return subscribeEnabledLlms(read);
+  }, []);
+  const configuredProviders = useMemo(
+    () =>
+      (providersQuery.data?.providers ?? []).filter(
+        (provider) => provider.configured && isLlmEnabled(enabledLlms, provider.provider),
+      ),
+    [providersQuery.data, enabledLlms],
+  );
+
 
   // The analysis date is filled in after hydration, so adopt it once it arrives.
   useEffect(() => {
