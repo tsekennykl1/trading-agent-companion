@@ -31,7 +31,7 @@ function percent(value: number | null | undefined, alreadyPercent = false) {
   return `${number >= 0 ? "+" : ""}${number.toFixed(2)}%`;
 }
 
-function Metric({ label, value, tone }: { label: string; value: string; tone?: "bull" | "bear" }) {
+function Metric({ label, value, tone }: { label: string; value: string; tone?: "bull" | "bear" | undefined }) {
   return (
     <div className="min-w-0">
       <dt className="truncate text-[0.7rem] tracking-wide text-muted-foreground uppercase">{label}</dt>
@@ -85,25 +85,25 @@ export function CompanySnapshot({ ticker }: { ticker: string }) {
             {company.exchange ? ` · ${company.exchange}` : ""}
           </p>
         )}
-        <p className="ml-auto text-[0.7rem] text-muted-foreground">{t("snapshot.source")}</p>
+        <p className="ml-auto text-[0.7rem] text-muted-foreground">{t("company.source")}</p>
       </header>
 
       {company && (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
           <Metric
-            label={t("snapshot.price")}
+            label={t("company.price")}
             value={company.quote?.price != null ? `${decimal(company.quote.price)}${currency ? ` ${currency}` : ""}` : "—"}
           />
           <Metric
-            label={t("snapshot.change")}
+            label={t("company.change")}
             value={percent(change, true)}
             tone={change == null ? undefined : change >= 0 ? "bull" : "bear"}
           />
-          <Metric label={t("snapshot.marketCap")} value={compactNumber(company.market_cap, currency)} />
-          <Metric label={t("snapshot.pe")} value={decimal(company.pe_ratio)} />
-          <Metric label={t("snapshot.dividend")} value={percent(company.dividend_yield)} />
+          <Metric label={t("company.marketCap")} value={compactNumber(company.market_cap, currency)} />
+          <Metric label={t("company.pe")} value={decimal(company.pe_ratio)} />
+          <Metric label={t("company.dividend")} value={percent(company.dividend_yield)} />
           <Metric
-            label={t("snapshot.range52")}
+            label={t("company.range52")}
             value={
               company.week52_low != null && company.week52_high != null
                 ? `${decimal(company.week52_low)} – ${decimal(company.week52_high)}`
@@ -116,16 +116,16 @@ export function CompanySnapshot({ ticker }: { ticker: string }) {
       {eps.length > 0 && (
         <div className="mt-4 border-t border-rule pt-3">
           <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            {t("snapshot.earnings")}
+            {t("company.earnings")}
           </h3>
           <div className="min-w-0 overflow-x-auto">
             <table className="w-full min-w-[26rem] text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground">
-                  <th className="py-1 pr-3 font-medium">{t("snapshot.quarter")}</th>
-                  <th className="py-1 pr-3 font-medium">{t("snapshot.reported")}</th>
-                  <th className="py-1 pr-3 font-medium">{t("snapshot.estimated")}</th>
-                  <th className="py-1 font-medium">{t("snapshot.surprise")}</th>
+                  <th className="py-1 pr-3 font-medium">{t("company.quarter")}</th>
+                  <th className="py-1 pr-3 font-medium">{t("company.reported")}</th>
+                  <th className="py-1 pr-3 font-medium">{t("company.estimated")}</th>
+                  <th className="py-1 font-medium">{t("company.surprise")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-rule">
