@@ -79,6 +79,14 @@ Routing is by file name: `src/routes/history.tsx` becomes `/history`. The file
 return, so each `readX` function accepts several spellings and returns one clean
 type. The rest of the app then only ever sees the clean type.
 
+### Concurrent requests are not extra browser threads
+
+The browser already asks for independent market data, chart data and reports at
+the same time with `Promise.all` in `useRunArtifacts.ts`. This is the simplest
+and fastest approach for network work. A Web Worker would add another JavaScript
+thread, but it would not make HTTP responses or the Python analysis finish
+sooner. CPU-heavy parallel TradingAgents work therefore belongs in the engine.
+
 
 ## 5. How the dashboard works (`src/routes/index.tsx`)
 
@@ -95,6 +103,10 @@ The page itself is now almost pure layout. The moving parts live in two hooks:
 
 Everything below that is presentation: `LiveSnapshot`, `AgentBoard`,
 `DecisionPanel`, charts, `ReportsSection`, `ExportBar`.
+
+`PageHeading` provides the repeated Back to Dashboard, title, description and
+action layout used by secondary pages. The page files supply only their text and
+buttons.
 
 `AgentBoard` is the biggest panel, so it is split into named pieces inside
 one file: `BusyBanner` (the "working on…" banner), `StatusCounts` (the

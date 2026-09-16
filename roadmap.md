@@ -158,3 +158,11 @@
 - [x] Add a Sample action beside Clear that restores the built-in demonstration.
 - [x] Include a self-contained interactive sample chart and all agent reports.
 - [x] Verify Clear, Sample, and New Analysis on desktop and phone with clean diagnostics.
+
+# Full-width responsive layout and frontend tuning
+
+- [x] Use the full screen width with responsive page spacing and chart heights.
+- [x] Rename History to Historical Analysis and place return actions above page titles.
+- [x] Stop inactive History refreshes and completed artifact polling.
+- [x] Simplify shared page headings and dashboard action handlers.
+- [ ] Verify phone, tablet, laptop, and wide-desktop layouts with clean diagnostics.

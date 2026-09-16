@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 import { CheckCircle2, ChevronDown, ExternalLink, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { PageHeading } from "@/components/workbench/PageHeading";
 import { RunHistoryDetails } from "@/components/workbench/RunHistoryDetails";
 import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
@@ -12,7 +13,7 @@ import { formatDateTime } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import type { RunRecord } from "@/lib/trading-agents/types";
 
-const TITLE = "Run History — My Trading Agents";
+const TITLE = "Historical Analysis — My Trading Agents";
 const DESCRIPTION =
   "Past multi-agent analyses with run status, final decision and detailed-report readiness.";
 
@@ -45,7 +46,13 @@ function HistoryPage() {
   const runsQuery = useQuery({
     queryKey: ["run-history"],
     queryFn: () => api.listRuns(),
-    refetchInterval: 15000,
+    // Refresh automatically only while at least one analysis is active.
+    refetchInterval: (query) => {
+      const runs = query.state.data;
+      return runs?.some((run) => run.status === "queued" || run.status === "running") ? 15000 : false;
+    },
+    staleTime: 15000,
+    refetchOnWindowFocus: false,
     retry: false,
   });
 
@@ -53,22 +60,23 @@ function HistoryPage() {
 
   return (
     <AppShell>
-      <div className="mb-6 flex flex-wrap items-start gap-3">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("history.title")}</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">{t("history.intro")}</p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto min-h-9"
-          onClick={() => void runsQuery.refetch()}
-          disabled={runsQuery.isFetching}
-        >
-          <RefreshCw className={`size-4 ${runsQuery.isFetching ? "animate-spin motion-reduce:animate-none" : ""}`} />
-          {t("history.refresh")}
-        </Button>
-      </div>
+      <PageHeading
+        backToDashboard
+        title={t("history.title")}
+        description={t("history.intro")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-9"
+            onClick={() => void runsQuery.refetch()}
+            disabled={runsQuery.isFetching}
+          >
+            <RefreshCw className={`size-4 ${runsQuery.isFetching ? "animate-spin motion-reduce:animate-none" : ""}`} />
+            {t("history.refresh")}
+          </Button>
+        }
+      />
 
       {runsQuery.isLoading ? (
         <section className="panel flex items-center gap-2 px-5 py-8 text-sm text-muted-foreground" role="status">
