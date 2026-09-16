@@ -131,6 +131,9 @@ export const api = {
   /** GET /market/earnings — last quarters of EPS reported vs estimated. */
   companyEarnings: (ticker: string) =>
     request<CompanyEarnings>(`/market/earnings?ticker=${encodeURIComponent(ticker)}`),
+  /** GET /market/security — HKEX directory: English + Chinese name for a .HK ticker. */
+  hkSecurity: (ticker: string) =>
+    request<HkSecurity>(`/market/security?ticker=${encodeURIComponent(ticker)}`),
 
   /** GET /providers — active LLM plus every provider with a key saved. */
   providers: () => request<ProvidersResponse>("/providers"),
