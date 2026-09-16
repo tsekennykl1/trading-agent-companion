@@ -234,7 +234,8 @@
     width: 100%;
     border-collapse: collapse;
     margin: 1rem 0 1.25rem;
-    font-size: 0.8125rem;
+    table-layout: auto;
+    font-size: 0.875em;
   }
   & th,
   & td {
@@ -242,6 +243,9 @@
     padding: 0.55rem 0.65rem;
     text-align: left;
     vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
   & th {
     background-color: var(--color-muted);
@@ -250,24 +254,25 @@
 }
 
 @utility report-columns {
-  & > table {
+  & table {
     table-layout: auto;
   }
-  & > table th:first-child,
-  & > table td:first-child {
-    width: 1%;
-    max-width: 13rem;
+  & table th:first-child,
+  & table td:first-child {
+    width: max-content;
+    min-width: 7rem;
+    max-width: 16rem;
     overflow-wrap: anywhere;
-    white-space: nowrap;
+    white-space: normal;
   }
   @media (max-width: 639px) {
-    & > table th:first-child,
-    & > table td:first-child {
-      width: 7.5rem;
-      white-space: normal;
+    & table {
+      min-width: 34rem;
     }
   }
-  & > table td {
+  & table th,
+  & table td {
+    min-width: 6rem;
     overflow-wrap: anywhere;
   }
 }

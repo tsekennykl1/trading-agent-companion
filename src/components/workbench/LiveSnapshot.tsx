@@ -141,16 +141,16 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
 
   return (
     <section className="panel overflow-hidden">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-rule bg-surface px-4 py-4 sm:px-5">
-        <h3 className="text-base font-semibold">
-          {t("snapshot.title")}
-          {stockName ? ` — ${stockName}` : ""}
-        </h3>
-        <span className="text-xs text-muted-foreground">
-          {run.config.ticker}
-          {run.config.analysisDate ? ` · ${run.config.analysisDate}` : ""}
+      <div className="border-b border-rule bg-surface px-4 py-4 sm:px-5">
+        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("snapshot.title")}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">{stockName ?? run.config.ticker}</h2>
+          {stockName && <span className="font-mono text-sm font-semibold text-muted-foreground">{run.config.ticker}</span>}
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {run.config.analysisDate}
           {pricePoints ? ` · ${pricePoints} ${t("snapshot.sessions")}` : ""}
-        </span>
+        </p>
       </div>
 
       <div className="space-y-5 p-4 sm:p-6">

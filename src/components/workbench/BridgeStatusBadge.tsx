@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { api, DEFAULT_BRIDGE_URL, getBridgeUrl } from "@/lib/trading-agents/client";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,7 @@ export function BridgeStatusBadge() {
         {isLoading ? "Checking…" : online ? "Connected" : "Offline"}
       </span>
       <span className="max-w-36 truncate font-mono text-[10px] text-muted-foreground sm:max-w-48">{bridgeUrl}</span>
+      <ExternalLink className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>
   );
 }

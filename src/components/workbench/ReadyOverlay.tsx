@@ -11,7 +11,7 @@ export function announceReady(message: string) {
 }
 
 /**
- * Centre-screen confirmation that appears for two seconds whenever an analyst
+ * Centre-screen confirmation that appears for three seconds whenever an analyst
  * report, detail report or executive summary lands.
  */
 export function ReadyOverlay() {
@@ -27,7 +27,7 @@ export function ReadyOverlay() {
         const following = queue.current.shift();
         if (following) show(following);
         else setMessage(null);
-      }, 2000);
+      }, 3000);
     };
     const listener: Listener = (next) => {
       if (message !== null) queue.current.push(next);

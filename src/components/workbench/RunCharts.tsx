@@ -108,7 +108,7 @@ export function StanceChart({ data: dataProp }: { data?: StancePoint[] }) {
         </Button>
       </div>
       {open && data.length > 0 && (
-        <div className="h-72 border-t border-rule px-3 pb-4 pt-3 sm:h-80 sm:px-5">
+        <div className="h-56 border-t border-rule px-3 pb-3 pt-2 sm:h-64 sm:px-5">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={localizedData} layout="vertical" margin={{ top: 5, right: isMobile ? 4 : 16, left: isMobile ? 0 : 34, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" horizontal={false} />
@@ -162,8 +162,8 @@ export function ConfidenceChart({ decision, stances: stancesProp }: { decision: 
           {open ? t("common.hide") : t("common.show")}
         </Button>
       </div>
-      {open && <div className="flex min-h-72 flex-1 flex-col items-center justify-center gap-3 border-t border-rule px-4 py-3 min-[380px]:flex-row min-[380px]:gap-4 sm:min-h-80 sm:gap-6 sm:px-5">
-        <div className="relative h-48 w-48 shrink-0 sm:h-52 sm:w-52">
+      {open && <div className="flex min-h-56 flex-1 flex-col items-center justify-center gap-3 border-t border-rule px-4 py-3 min-[380px]:flex-row min-[380px]:gap-4 sm:min-h-64 sm:gap-6 sm:px-5">
+        <div className="relative h-40 w-40 shrink-0 sm:h-44 sm:w-44">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               innerRadius="72%"

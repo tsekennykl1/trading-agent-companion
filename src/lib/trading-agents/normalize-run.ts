@@ -511,7 +511,15 @@ export function normalizeRun(raw: unknown): RunRecord {
       partial["decision"],
       partial,
     ].filter((value): value is Record<string, unknown> => Boolean(value && typeof value === "object"));
-    let levels: TradeLevels | undefined = readTradeLevels(finalText);
+    let levels: TradeLevels | undefined;
+    const levelTexts = [
+      finalText,
+      reports["trader_plan"],
+      reports["investment_plan"],
+      reports["final_decision"],
+      typeof result?.summary === "string" ? result.summary : undefined,
+    ];
+    for (const text of levelTexts) levels = levels ?? readTradeLevels(text);
     let scores: DecisionScores | undefined;
     for (const src of decisionSources) {
       levels = levels ?? readTradeLevels(src);

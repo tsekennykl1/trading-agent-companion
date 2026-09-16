@@ -142,12 +142,12 @@
 
 # Dashboard controls and report fit
 
-- [ ] Make Clear show an empty dashboard until a new analysis starts.
-- [ ] Add persistent font-size controls and keep report tables readable at every size.
-- [ ] Clean stray backslashes from reports and rename the report return action.
-- [ ] Extend Ready notices to three seconds and improve the connection link cue.
-- [ ] List only configured LLM providers in New Analysis and submit their models.
-- [ ] Fix and reposition the New Analysis show/hide control.
-- [ ] Add a prominent stock/date heading above charts and compact consensus charts.
-- [ ] Improve entry, target, and stop-loss extraction from backend decisions.
-- [ ] Verify desktop/mobile behavior and current diagnostics.
+- [x] Make Clear show an empty dashboard until a new analysis starts.
+- [x] Add persistent font-size controls and keep report tables readable at every size.
+- [x] Clean stray backslashes from reports and rename the report return action.
+- [x] Extend Ready notices to three seconds and improve the connection link cue.
+- [x] List only configured LLM providers in New Analysis and submit their models.
+- [x] Fix and reposition the New Analysis show/hide control.
+- [x] Add a prominent stock/date heading above charts and compact consensus charts.
+- [x] Improve entry, target, and stop-loss extraction from backend decisions.
+- [x] Verify desktop/mobile behavior and current diagnostics.

@@ -15,7 +15,6 @@ import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
-import { clearCachedAnalysis } from "@/lib/trading-agents/run-cache";
 
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { useSavedRunConfig } from "@/hooks/useSavedRunConfig";
@@ -51,17 +50,14 @@ function Workbench() {
   const analysis = useAnalysisRun(rememberConfig);
   const { run, liveRun, artifacts, analysisBusy, chartReady } = analysis;
 
-  // Where the form sits: at the top of the page, or in the sidebar.
-  const [showFormAtTop, setShowFormAtTop] = useState(false);
-  const [sidebarFormOpen, setSidebarFormOpen] = useState(true);
-  // While an analysis is loading the form only takes up space; it comes back
-  // with the Show button or the New Analysis button at the top of the page.
+  const [formOpen, setFormOpen] = useState(true);
+  // Hide the form while an analysis runs; either New Analysis control restores it.
   useEffect(() => {
-    if (analysisBusy) setSidebarFormOpen(false);
+    if (analysisBusy) setFormOpen(false);
   }, [analysisBusy]);
 
   const startAnalysis = (config: RunConfig) => {
-    setShowFormAtTop(false);
+    setFormOpen(false);
     analysis.start(config);
   };
 
@@ -76,10 +72,11 @@ function Workbench() {
 
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = analysis.startedAt !== null;
+  const showAnalysisActions = !analysis.cleared;
   const headerGridCols =
-    showExportBar && chartReady && !showFormAtTop
+    showExportBar && chartReady
       ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
-      : showExportBar
+      : showExportBar || showAnalysisActions
         ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]"
         : "";
 
@@ -90,14 +87,13 @@ function Workbench() {
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">{t("home.intro")}</p>
         </div>
-        {showExportBar && chartReady && !showFormAtTop && (
+        {showAnalysisActions && (
           <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
             <Button
               size="lg"
               className="flex-1 gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:flex-none sm:min-w-[10rem]"
               onClick={() => {
-                setShowFormAtTop(true);
-                setSidebarFormOpen(true);
+                setFormOpen(true);
               }}
             >
               <Plus className="size-5" aria-hidden="true" />
@@ -108,8 +104,8 @@ function Workbench() {
               variant="outline"
               className="flex-1 gap-2 rounded-lg px-6 py-3 text-base font-semibold sm:flex-none"
               onClick={() => {
-                clearCachedAnalysis();
-                window.location.reload();
+                analysis.clear();
+                setFormOpen(true);
               }}
             >
               <Trash2 className="size-5" aria-hidden="true" />
@@ -128,43 +124,49 @@ function Workbench() {
         )}
       </div>
 
-      {(!chartReady || showFormAtTop) && (
+      {(!chartReady || analysis.cleared) && formOpen && (
         <div className="mb-6 min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
           <RunForm key={`top-${defaultConfig.analysisDate}`} {...formProps} />
         </div>
       )}
 
-      <div className="mb-6 min-w-0">
+      {!analysis.cleared && <div className="mb-6 min-w-0">
         <CompanySnapshot ticker={run.config.ticker} />
         <LiveSnapshot run={run} artifacts={artifacts} />
 
         {!chartReady && (
-          <PriceChart
-            data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
-            ticker={run.config.ticker}
-          />
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-display text-2xl font-bold sm:text-3xl">{run.config.ticker}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{run.config.analysisDate}</p>
+            </div>
+            <PriceChart
+              data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
+              ticker={run.config.ticker}
+            />
+          </div>
         )}
-      </div>
+      </div>}
 
-      <div
+      {!analysis.cleared && <div
         className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start"
         aria-busy={analysisBusy}
       >
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
-          {chartReady && !showFormAtTop && (
+          {chartReady && (
             <div className="order-1 min-w-0 space-y-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="w-full gap-2"
-                aria-expanded={sidebarFormOpen}
-                onClick={() => setSidebarFormOpen((v) => !v)}
+                aria-expanded={formOpen}
+                onClick={() => setFormOpen((value) => !value)}
               >
-                {sidebarFormOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                {sidebarFormOpen ? t("home.hideForm") : t("home.showForm")}
+                {formOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {formOpen ? t("home.hideForm") : t("home.showForm")}
               </Button>
-              {sidebarFormOpen && <RunForm key={defaultConfig.analysisDate} compact {...formProps} />}
+              {formOpen && <RunForm key={defaultConfig.analysisDate} compact {...formProps} />}
             </div>
           )}
 
@@ -241,7 +243,7 @@ function Workbench() {
             <ReportsSection run={run} extraReports={artifacts.reports} />
           </div>
         </main>
-      </div>
+      </div>}
     </AppShell>
   );
 }

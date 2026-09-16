@@ -24,6 +24,7 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
 
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [showingSample, setShowingSample] = useState(true);
+  const [cleared, setCleared] = useState(false);
   const [cachedRun, setCachedRun] = useState<RunRecord | null>(null);
   const [cachedArtifacts, setCachedArtifacts] = useState<RunArtifacts | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -108,6 +109,7 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
     setCachedArtifacts(cached.artifacts);
     setActiveRunId(cached.run.id);
     setShowingSample(false);
+    setCleared(false);
     setStartedAt(cached.startedAt ?? Date.parse(cached.run.startedAt));
   }, []);
 
@@ -129,6 +131,7 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
       setCachedRun(null);
       setCachedArtifacts(null);
       setShowingSample(false);
+      setCleared(false);
       setStartedAt(Date.now());
       setElapsed(0);
       knownRunIds.current = new Set();
@@ -231,6 +234,17 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
     artifacts,
     activeRunId,
     showingSample,
+    cleared,
+    clear: () => {
+      clearCachedAnalysis();
+      setActiveRunId(null);
+      setCachedRun(null);
+      setCachedArtifacts(null);
+      setStartedAt(null);
+      setElapsed(0);
+      setShowingSample(false);
+      setCleared(true);
+    },
     dismissSample: () => setShowingSample(false),
     startedAt,
     elapsed,

@@ -163,6 +163,7 @@ function decodeString(value: string, depth: number): string {
     .replace(/\\r\\n|\\n/g, "\n")
     .replace(/\\t/g, "  ")
     .replace(/\\"/g, '"')
+    .replace(/[ \t]+\\[ \t]*$/gm, "")
     .replace(/^['"]|['"]$/g, "")
     .trim();
 

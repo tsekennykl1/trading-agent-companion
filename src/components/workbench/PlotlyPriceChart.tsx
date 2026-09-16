@@ -433,13 +433,10 @@ export function PlotlyPriceChart({
       cursor += subFrac + gap;
     }
 
-    const title = `${chart.meta?.stockName ?? chart.ticker}${chart.analysisDate ? ` · ${chart.analysisDate}` : ""}`;
-
     return {
       data: traces,
       layout: {
-        title: { text: title, font: { size: 14 } },
-        margin: { l: 56, r: 18, t: 38, b: 34 },
+        margin: { l: 56, r: 18, t: 26, b: 34 },
         showlegend: true,
         legend: { orientation: "h", y: 1.03, x: 0 },
         dragmode: "zoom",
