@@ -61,8 +61,8 @@ const EN = {
 
 
 
-  "home.hideForm": "Hide New Analysis",
-  "home.showForm": "Show New Analysis",
+  "home.hideForm": "Hide Analysis detail",
+  "home.showForm": "Show Analysis detail",
   "home.runError": "The engine reported an error during this run.",
   "home.confidenceTitle": "Recommendation confidence",
   "home.confidenceBody": "Available once the run completes.",
@@ -323,8 +323,8 @@ const ZH: Record<TKey, string> = {
 
 
 
-  "home.hideForm": "隱藏新增分析",
-  "home.showForm": "顯示新增分析",
+  "home.hideForm": "隱藏分析細節",
+  "home.showForm": "顯示分析細節",
   "home.runError": "引擎在此次分析中回報了錯誤。",
   "home.confidenceTitle": "建議信心度",
   "home.confidenceBody": "分析完成後即可查看。",
