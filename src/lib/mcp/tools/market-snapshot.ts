@@ -2,15 +2,18 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch } from "../engine";
 import { json } from "../json";
+import { accessKeyField, requireAccessKey } from "../auth";
 
 export default defineTool({
   name: "get_market_snapshot",
   title: "Get a company snapshot",
   description:
     "Fetch the company profile, valuation and latest quote for a ticker, plus official English and Chinese names for Hong Kong listings.",
-  inputSchema: { ticker: z.string().trim().min(1).max(20) },
+  inputSchema: {
+    ...accessKeyField, ticker: z.string().trim().min(1).max(20) },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: async ({ ticker }, ctx) => {
+  handler: async ({ access_key, ticker }, ctx) => {
+    requireAccessKey(access_key);
     const symbol = encodeURIComponent(ticker.toUpperCase());
     const [company, security] = await Promise.all([
       engineFetch<unknown>(`/market/company?ticker=${symbol}`, { signal: ctx.signal }).catch(() => null),

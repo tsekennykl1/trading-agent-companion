@@ -186,9 +186,9 @@ export function EnvBuilder() {
           <Label htmlFor="alpha" className="label-caps">
             Alpha Vantage key
           </Label>
-          <Input id="alpha" value={alpha} onChange={(e) => setAlpha(e.target.value)} className="font-mono" />
+          <Input id="alpha" value={alpha} onChange={(e) => setAlpha(e.target.value)} placeholder="paste your key" className="font-mono" />
           <p className="text-xs text-muted-foreground">
-            A shared starter key is filled in. It is rate limited — get your own free key at{" "}
+            Paste your own free key from{" "}
             <a
               className="underline underline-offset-2 hover:text-primary"
               href="https://www.alphavantage.co/support/#api-key"
@@ -204,9 +204,9 @@ export function EnvBuilder() {
           <Label htmlFor="fred" className="label-caps">
             FRED key
           </Label>
-          <Input id="fred" value={fred} onChange={(e) => setFred(e.target.value)} className="font-mono" />
+          <Input id="fred" value={fred} onChange={(e) => setFred(e.target.value)} placeholder="paste your key" className="font-mono" />
           <p className="text-xs text-muted-foreground">
-            A shared starter key is filled in. Your own free key:{" "}
+            Paste your own free key from{" "}
             <a
               className="underline underline-offset-2 hover:text-primary"
               href="https://fredaccount.stlouisfed.org/apikeys"
