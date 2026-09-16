@@ -191,43 +191,50 @@ function buildRows(): ChartRow[] {
     return (window as number[]).reduce((a, b) => a + b, 0) / 3;
   });
 
-  const maybe = (value: number | undefined, digits = 2) =>
-    value === undefined || Number.isNaN(value) ? undefined : round(value, digits);
+  /** Only set a study when it has a value (the chart types forbid explicit undefined). */
+  const put = (row: ChartRow, key: keyof ChartRow, value: number | undefined, digits = 2) => {
+    if (value === undefined || Number.isNaN(value)) return;
+    (row as Record<string, number>)[key] = round(value, digits);
+  };
 
   return bars.map((bar, i) => {
     const macd = macdLine[i];
     const signal = i >= firstMacd + 8 && firstMacd >= 0 ? signalRaw[i] : undefined;
     const mean = sma20[i];
     const dev = bbDev[i];
-    return {
+    const row: ChartRow = {
       date: bar.date,
       open: bar.open,
       high: bar.high,
       low: bar.low,
       close: bar.close,
       volume: bar.volume,
-      volumeMa: maybe(volumeMa[i], 0),
-      ema12: maybe(ema12[i]),
-      ema26: maybe(ema26[i]),
-      ema20: maybe(ema20[i]),
-      ema50: maybe(ema50[i]),
-      sma20: maybe(sma20[i]),
-      sma50: maybe(sma50[i]),
-      sma200: maybe(sma200[i]),
-      rsi14: maybe(rsi14[i]),
-      macd: maybe(macd, 3),
-      macdSignal: maybe(signal, 3),
-      macdHist: macd !== undefined && signal !== undefined ? round(macd - signal, 3) : undefined,
-      bbUpper: mean !== undefined && dev !== undefined ? round(mean + 2 * dev) : undefined,
-      bbMiddle: maybe(mean),
-      bbLower: mean !== undefined && dev !== undefined ? round(mean - 2 * dev) : undefined,
-      atr14: maybe(atr[i]),
-      stochK: maybe(stochK[i], 1),
-      stochD: maybe(stochD[i], 1),
-      obv: maybe(obv[i], 0),
-      vwap: maybe(vwap[i]),
-    } satisfies ChartRow;
+    };
+    put(row, "volumeMa", volumeMa[i], 0);
+    put(row, "ema12", ema12[i]);
+    put(row, "ema26", ema26[i]);
+    put(row, "ema20", ema20[i]);
+    put(row, "ema50", ema50[i]);
+    put(row, "sma20", sma20[i]);
+    put(row, "sma50", sma50[i]);
+    put(row, "sma200", sma200[i]);
+    put(row, "rsi14", rsi14[i]);
+    put(row, "macd", macd, 3);
+    put(row, "macdSignal", signal, 3);
+    if (macd !== undefined && signal !== undefined) put(row, "macdHist", macd - signal, 3);
+    if (mean !== undefined && dev !== undefined) {
+      put(row, "bbUpper", mean + 2 * dev);
+      put(row, "bbMiddle", mean);
+      put(row, "bbLower", mean - 2 * dev);
+    }
+    put(row, "atr14", atr[i]);
+    put(row, "stochK", stochK[i], 1);
+    put(row, "stochD", stochD[i], 1);
+    put(row, "obv", obv[i], 0);
+    put(row, "vwap", vwap[i]);
+    return row;
   });
+
 }
 
 let cached: ChartRow[] | null = null;
