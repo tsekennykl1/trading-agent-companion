@@ -188,15 +188,22 @@ export function ReportsSection({
                       : translatedValue(section.key, REPORT_LABEL_KEYS, t)}
                   </h3>
                   <p
-                    className={`mt-0.5 flex items-center gap-2 text-xs font-medium ${
-                      unselected ? "text-bear" : ready ? "text-bull" : running ? "text-primary" : "text-bear"
+                    className={`mt-0.5 flex items-center gap-2 ${
+                      unselected
+                        ? "text-xs font-medium text-bear"
+                        : ready
+                          ? "text-sm font-bold text-bull"
+                          : running
+                            ? "text-xs font-medium text-muted-foreground"
+                            : "text-xs font-medium text-bear"
                     }`}
                   >
                     {!unselected && !ready && running && (
-                      <Loader2 className="size-3 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" />
+                      <Loader2 className="size-3 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
                     )}
                     {`${unselected ? t("agents.notSelected") : ready ? t("reports.available") : running ? t("reports.inProgress") : t("reports.notAvailable")} · ${translatedValue(section.team, TEAM_KEYS, t)}`}
                   </p>
+
                 </div>
 
                 <Button

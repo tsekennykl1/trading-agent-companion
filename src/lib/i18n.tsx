@@ -44,6 +44,8 @@ const EN = {
   "home.engineOffline": "Your engine is not reachable right now.",
   "home.backToLive": "Back to live run",
   "home.newAnalysis": "New Analysis",
+  "home.clear": "Clear",
+
   "home.hideForm": "Hide New Analysis",
   "home.showForm": "Show New Analysis",
   "home.runError": "The engine reported an error during this run.",
@@ -287,6 +289,8 @@ const ZH: Record<TKey, string> = {
   "home.engineOffline": "目前無法連接您的引擎。",
   "home.backToLive": "返回即時分析",
   "home.newAnalysis": "新增分析",
+  "home.clear": "清除",
+
   "home.hideForm": "隱藏新增分析",
   "home.showForm": "顯示新增分析",
   "home.runError": "引擎在此次分析中回報了錯誤。",

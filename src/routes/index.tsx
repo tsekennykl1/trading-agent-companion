@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, FlaskConical, Info, Loader2, Plus } from "lucide-react";
+import { Eye, EyeOff, FlaskConical, Info, Loader2, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { RunForm } from "@/components/workbench/RunForm";
 import { AgentBoard } from "@/components/workbench/AgentBoard";
@@ -13,6 +13,8 @@ import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
+import { clearCachedAnalysis } from "@/lib/trading-agents/run-cache";
+
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { useSavedRunConfig } from "@/hooks/useSavedRunConfig";
 import { useAnalysisRun } from "@/hooks/useAnalysisRun";
@@ -87,10 +89,10 @@ function Workbench() {
           <p className="mt-2 max-w-2xl text-muted-foreground">{t("home.intro")}</p>
         </div>
         {showExportBar && chartReady && !showFormAtTop && (
-          <div className="flex min-w-0 items-start justify-start xl:justify-center">
+          <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
             <Button
               size="lg"
-              className="w-full gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:w-auto sm:min-w-[10rem]"
+              className="flex-1 gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:flex-none sm:min-w-[10rem]"
               onClick={() => {
                 setShowFormAtTop(true);
                 setSidebarFormOpen(true);
@@ -99,8 +101,21 @@ function Workbench() {
               <Plus className="size-5" aria-hidden="true" />
               {t("home.newAnalysis")}
             </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1 gap-2 rounded-lg px-6 py-3 text-base font-semibold sm:flex-none"
+              onClick={() => {
+                clearCachedAnalysis();
+                window.location.reload();
+              }}
+            >
+              <Trash2 className="size-5" aria-hidden="true" />
+              {t("home.clear")}
+            </Button>
           </div>
         )}
+
         {showExportBar && (
           <ExportBar
             run={run}
