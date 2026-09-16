@@ -149,20 +149,21 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         onRun(submitted);
       }}
     >
-      <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
-        <h2 className="font-display text-xl font-bold sm:text-2xl">{t("form.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("form.subtitle")}</p>
+      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-primary/20 bg-primary/8 px-4 py-2.5 sm:px-5">
+        <h2 className="font-display text-lg font-bold sm:text-xl">{t("form.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("form.subtitle")}</p>
       </header>
 
-      <div className="p-4 sm:p-5">
+      <div className="p-3 sm:p-4">
         <div
           className={cn(
-            "grid min-w-0 gap-4",
+            "grid min-w-0 gap-3",
              compact
-               ? "md:grid-cols-2 xl:grid-cols-1"
-               : "md:grid-cols-2 xl:grid-cols-4",
+               ? "sm:grid-cols-2 xl:grid-cols-1"
+               : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
           )}
         >
+
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
