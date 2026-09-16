@@ -16,7 +16,8 @@ const DESCRIPTION =
 export const Route = createFileRoute("/report")({
   validateSearch: (search: Record<string, unknown>) => ({
     url: typeof search["url"] === "string" ? search["url"] : "",
-    ticker: typeof search["ticker"] === "string" ? search["ticker"] : "",
+    ticker:
+      typeof search["ticker"] === "string" ? search["ticker"].replace(/[^\w.\-: ]/g, "").slice(0, 40) : "",
   }),
   head: () => ({
     meta: [
@@ -57,7 +58,7 @@ function standaloneHtml(title: string, markdown: string): string {
   ul, ol { padding-left: 1.2rem; }
   @media print { body { padding: 0; } }
 </style></head>
-<body><h1>${title}</h1>${markdownToHtml(markdown)}</body></html>`;
+<body><h1>${safeTitle}</h1>${markdownToHtml(markdown)}</body></html>`;
 }
 
 function ReportPage() {
