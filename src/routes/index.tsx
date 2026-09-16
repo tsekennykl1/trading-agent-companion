@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, FlaskConical, Info, Loader2, Plus } from "lucide-react";
+import { Eye, EyeOff, FlaskConical, Info, Loader2, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
 import { RunForm } from "@/components/workbench/RunForm";
 import { AgentBoard } from "@/components/workbench/AgentBoard";
@@ -13,6 +13,8 @@ import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
 import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
+import { clearCachedAnalysis } from "@/lib/trading-agents/run-cache";
+
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { useSavedRunConfig } from "@/hooks/useSavedRunConfig";
 import { useAnalysisRun } from "@/hooks/useAnalysisRun";
