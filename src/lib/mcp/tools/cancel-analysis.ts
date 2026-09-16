@@ -1,0 +1,21 @@
+import { defineTool } from "@lovable.dev/mcp-js";
+import { z } from "zod";
+import { engineFetch } from "../engine";
+
+export default defineTool({
+  name: "cancel_analysis",
+  title: "Cancel an analysis",
+  description: "Cancel a queued or running analysis by its run_id.",
+  inputSchema: { run_id: z.string().trim().min(1).max(120) },
+  annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+  handler: async ({ run_id }, ctx) => {
+    await engineFetch<unknown>(`/runs/${encodeURIComponent(run_id)}/cancel`, {
+      method: "POST",
+      signal: ctx.signal,
+    });
+    return {
+      content: [{ type: "text", text: `Cancellation requested for run ${run_id}.` }],
+      structuredContent: { run_id, cancelled: true },
+    };
+  },
+});
