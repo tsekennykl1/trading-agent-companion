@@ -167,9 +167,9 @@ export const PROVIDERS: ProviderSpec[] = [
   },
 ];
 
-/** Shared defaults the engine ships with, so a first run works out of the box. */
-export const DEFAULT_FRED_KEY = "a18ce0f4ff2108251c4a0467c60338e1";
-export const DEFAULT_ALPHA_VANTAGE_KEY = "DGJFSPTFUJ6ZRKA1";
+/** No keys are shipped with the site: each user supplies their own free keys. */
+export const DEFAULT_FRED_KEY = "";
+export const DEFAULT_ALPHA_VANTAGE_KEY = "";
 
 export const DEFAULT_PUBLIC_BASE_URL = "http://127.0.0.1:8000";
 export const DEFAULT_FRONTEND_ORIGINS =
