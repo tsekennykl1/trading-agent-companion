@@ -218,8 +218,6 @@ export const SAMPLE_CHART_DATA: PriceChartData = {
   analysisDate: SAMPLE_RUN.config.analysisDate,
   meta: {
     stockName: "Tencent Holdings Limited",
-    stockNameEn: "TENCENT",
-    stockNameZh: "騰訊控股",
     stockCode: SAMPLE_RUN.config.ticker,
     rows: HISTORY_ROWS.length,
     range: `${TENCENT_HISTORY_RANGE.start} to ${TENCENT_HISTORY_RANGE.end}`,
