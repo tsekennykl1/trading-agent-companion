@@ -1,6 +1,7 @@
 import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch, summarizeRun, asObject, pickString, FINISHED } from "../engine";
+import { json } from "../json";
 import { runConfigPayload } from "@/lib/trading-agents/run-payload";
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
@@ -79,7 +80,7 @@ export default defineTool({
 
     return {
       content: [{ type: "text", text: `${text}\n\n${JSON.stringify(summary, null, 2)}` }],
-      structuredContent: { run_id: runId, finished, ...summary },
+      structuredContent: json({ run_id: runId, finished, ...summary }),
     };
   },
 });

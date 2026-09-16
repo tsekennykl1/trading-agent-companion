@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch, summarizeRun, FINISHED } from "../engine";
+import { json } from "../json";
 
 export default defineTool({
   name: "get_analysis",
@@ -15,7 +16,7 @@ export default defineTool({
     );
     return {
       content: [{ type: "text", text: JSON.stringify(summary, null, 2) }],
-      structuredContent: { finished: FINISHED.has(summary.status), ...summary },
+      structuredContent: json({ finished: FINISHED.has(summary.status), ...summary }),
     };
   },
 });

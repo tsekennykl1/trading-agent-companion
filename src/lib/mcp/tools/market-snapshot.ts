@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch } from "../engine";
+import { json } from "../json";
 
 export default defineTool({
   name: "get_market_snapshot",
@@ -20,7 +21,7 @@ export default defineTool({
     const payload = { ticker: ticker.toUpperCase(), company, security };
     return {
       content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-      structuredContent: payload,
+      structuredContent: json(payload),
     };
   },
 });

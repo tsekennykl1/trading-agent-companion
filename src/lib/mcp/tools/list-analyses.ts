@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { engineFetch, summarizeRun } from "../engine";
+import { json } from "../json";
 
 export default defineTool({
   name: "list_analyses",
@@ -14,7 +15,7 @@ export default defineTool({
     const runs = items.slice(0, limit ?? 10).map(summarizeRun);
     return {
       content: [{ type: "text", text: JSON.stringify(runs, null, 2) }],
-      structuredContent: { runs },
+      structuredContent: json({ runs }),
     };
   },
 });
