@@ -79,12 +79,6 @@ function Workbench() {
 
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = analysis.startedAt !== null;
-  const headerGridCols =
-    showExportBar && chartReady
-      ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
-      : showExportBar
-        ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]"
-        : "";
 
   return (
     <AppShell>
