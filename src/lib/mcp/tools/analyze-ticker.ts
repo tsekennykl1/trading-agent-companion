@@ -62,6 +62,7 @@ export default defineTool({
     const runId =
       pickString(started, "run_id", "runId", "id") ?? pickString(asObject(started["run"]), "run_id", "id");
     if (!runId) throw new ToolError("The engine started a run but did not return a run id.");
+    rememberMcpRun(runId);
 
     const waitMs = (input.wait_seconds ?? 30) * 1000;
     const deadline = Date.now() + waitMs;
