@@ -132,7 +132,7 @@ function Workbench() {
       </div>
 
 
-      <section id="new-analysis" className="mb-5 min-w-0 scroll-mt-24 space-y-2">
+      <section id="new-analysis" className="mb-3 min-w-0 scroll-mt-24 space-y-2">
         <Button
           type="button"
           variant="outline"
@@ -145,21 +145,21 @@ function Workbench() {
           {formOpen ? t("home.hideForm") : t("home.showForm")}
         </Button>
         {formOpen && (
-          <div className="min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
+          <div className="min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-2 shadow-sm sm:p-3">
             <RunForm key={defaultConfig.analysisDate} {...formProps} />
           </div>
         )}
       </section>
 
-      {!analysis.cleared && <div className="mb-6 min-w-0">
+      {!analysis.cleared && <div className="mb-4 min-w-0">
         {!analysis.showingSample && <CompanySnapshot ticker={run.config.ticker} />}
         <LiveSnapshot run={run} artifacts={artifacts} />
 
         {!chartReady && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div>
               <h2 className="font-display text-2xl font-bold sm:text-3xl">{run.config.ticker}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{run.config.analysisDate}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{run.config.analysisDate}</p>
             </div>
             <PriceChart
               data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
@@ -170,9 +170,10 @@ function Workbench() {
       </div>}
 
       {!analysis.cleared && <div
-        className="flex min-w-0 flex-col gap-6 xl:grid xl:grid-cols-[21rem_minmax(0,1fr)] xl:items-start"
+        className="flex min-w-0 flex-col gap-4 xl:grid xl:grid-cols-[20rem_minmax(0,1fr)] xl:items-start"
         aria-busy={analysisBusy}
       >
+
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
           {analysis.showingSample && run.source === "sample" && (
             <div className="order-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
