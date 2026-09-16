@@ -12,10 +12,10 @@ export const SAMPLE_RUN: RunRecord = {
   id: "sample-0700hk-20260911",
   status: "completed",
   source: "sample",
-  startedAt: "2026-09-11T11:21:04Z",
+  startedAt: "2026-08-31T11:21:04Z",
   config: {
     ticker: "0700.HK",
-    analysisDate: "2026-09-11",
+    analysisDate: "2026-08-31",
     provider: "DeepSeek",
     quickModel: "deepseek-flash",
     deepModel: "deepseek-flash",
@@ -239,3 +239,80 @@ export const SAMPLE_CHART_DATA: PriceChartData = {
   ],
 };
 
+
+/**
+ * Full detail report for the built-in sample so the Detail Report page works
+ * with no engine and no internet.
+ */
+export const SAMPLE_DETAIL_REPORT = `# TradingAgents detail report — 0700.HK (Tencent Holdings Limited)
+
+**Analysis date:** 2026-08-31 · **Sample run** · Generated offline for demonstration.
+
+## 1. Final recommendation
+
+| Field | Value |
+| --- | --- |
+| Action | Hold |
+| Confidence | 62% |
+| Consensus | High |
+| Entry | HK$428.40 |
+| Take profit | HK$442.25 |
+| Stop loss | HK$411.90 |
+
+Price sits below the 10-EMA, 50-SMA and 200-SMA, so the sample run declines to add
+risk until a volume-backed reclaim of HK$436 is confirmed.
+
+## 2. Market analyst
+
+| Dimension | Indicator | Value | Signal |
+| --- | --- | --- | --- |
+| Short-term trend | 10-EMA | 435.96 | Bearish |
+| Medium-term trend | 50-SMA | 455.98 | Bearish |
+| Long-term trend | 200-SMA | 507.90 | Bearish |
+| Momentum | MACD | -7.13 | Bearish |
+| Volatility | ATR 14 | 10.98 | Compressing |
+
+Volume on the recovery day (15.6M) is far below the 66.4M capitulation bar, so the
+bounce lacks participation.
+
+## 3. Sentiment and news
+
+Sentiment is cautious rather than capitulatory: sellers are less aggressive near
+support, but no headline catalyst is present. Coverage is balanced, so the sample
+weights observable price, volume and risk controls above narrative.
+
+## 4. Fundamentals
+
+Tencent remains a diversified platform business with durable cash generation.
+Nothing in the sample window changes the long-term earnings picture; the issue is
+timing, not quality.
+
+## 5. Research debate
+
+**Bull case.** Valuation support, buyback capacity and a hammer candle at the lower
+Bollinger band argue the drawdown is late-stage.
+
+**Bear case.** Every trend filter is negative, each rally has been sold, and overhead
+supply between 436 and 456 remains unabsorbed.
+
+**Research manager.** The bear case is better evidenced today; wait for confirmation
+rather than anticipating a turn.
+
+## 6. Risk review
+
+| Analyst | Stance | Note |
+| --- | --- | --- |
+| Aggressive | Neutral | Would scale in only below 415 with a hard stop |
+| Conservative | Bearish | Prefers no exposure until price closes above the 50-SMA |
+| Neutral | Neutral | Half-size starter is acceptable for long-horizon holders |
+
+## 7. Portfolio manager decision
+
+Hold existing exposure, add nothing new. Re-assess on a daily close above HK$442.25
+with volume above the 20-day average, or on a close below HK$411.90, which invalidates
+the support shelf and triggers the stop.
+
+## 8. How to read this sample
+
+Every number above is fixed demonstration data for 0700.HK. Run your own analysis from
+the dashboard to replace it with live engine output.`;
