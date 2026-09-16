@@ -242,3 +242,14 @@ export interface ProvidersResponse {
   active: ActiveProvider;
   providers: ProviderSummary[];
 }
+
+/** One row of the engine's HKEX securities directory. */
+export interface HkSecurity {
+  available: boolean;
+  message?: string;
+  ticker?: string;
+  code?: string;
+  name_en?: string | null;
+  name_zh?: string | null;
+  category?: string | null;
+}
