@@ -20,14 +20,10 @@ write-up, and exports an executive decision memo.
 ## 1. The big picture
 
 ```text
-Browser (this app)            Your machine                      Data + LLM providers
-┌──────────────────┐   HTTP   ┌───────────────────────────┐    ┌────────────────────┐
-│ New Analysis form│ ───────► │ FastAPI bridge            │    │ Alpha Vantage      │
-│ Live progress    │ ◄─────── │  app/main.py              │ ─► │ FRED               │
-│ Charts / reports │  polling │  app/routes/runs.py       │    │ DeepSeek / OpenAI  │
-│ Export memo      │          │  app/services/*           │    │ Gemini / Claude …  │
-└──────────────────┘          │  TradingAgents framework  │    └────────────────────┘
-                              └───────────────────────────┘
+Browser dashboard ── HTTP ─┐
+                           ├──► FastAPI + shared services ──► worker queue ──► TradingAgents
+AI assistants ───── MCP ───┘             │
+                                         └──► SQLite runs + charts + reports
 ```
 
 Nothing is hosted for you: the engine, your API keys and all run data stay on your own machine.
@@ -159,6 +155,17 @@ TanStack Start + React 19 + Tailwind v4.
 | `/history` | Past runs, each expandable to its chart, decision and report previews |
 | `/setup` | Connect page: engine address, `.env` builder, step-by-step install, key sources |
 | `/about` | Background and credits |
+
+### MCP connection
+
+The backend also exposes a Streamable HTTP MCP endpoint at `<engine-address>/mcp`.
+Assistants connected there create and read the same runs shown on the Dashboard and
+Historical Analysis pages. The Setup page displays the exact endpoint for the saved
+engine address and lists the available tool groups.
+
+This MCP is intentionally public: anyone who can reach its URL can read analyses,
+start paid AI runs, and cancel active runs without authentication. Restrict network
+access to the backend unless that exposure is intended.
 
 ### Key modules
 

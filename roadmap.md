@@ -174,3 +174,10 @@
 - [x] Share decision badges and price-level presentation between result views.
 - [x] Split the chart results from the large live snapshot component and update the learning guide.
 - [x] Verify desktop and phone layouts, provider defaults, and a clean build.
+
+# Backend MCP and dashboard documentation
+
+- [x] Add a public Streamable HTTP MCP server that reuses the existing run services.
+- [x] Expose bounded tools for run control, progress, reports, decisions, charts, market data, and AI models.
+- [x] Document the shared MCP/HTTP queue on Dashboard, Historical Analysis, Setup, README, and LEARN.
+- [ ] Apply and publish the backend package to the backend repository (blocked: repository credentials are unavailable here).

@@ -9,6 +9,7 @@ import { ConfidenceChart, PriceChart, StanceChart } from "@/components/workbench
 import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { CompanySnapshot } from "@/components/workbench/CompanySnapshot";
+import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
 
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
@@ -161,6 +162,10 @@ function Workbench() {
           </div>
         )}
       </section>
+
+      <div className="mb-3">
+        <McpConnectionNote context="dashboard" />
+      </div>
 
       {!analysis.cleared && <div className="mb-4 min-w-0">
         {!analysis.showingSample && <CompanySnapshot ticker={run.config.ticker} />}

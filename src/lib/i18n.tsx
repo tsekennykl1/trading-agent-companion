@@ -127,6 +127,16 @@ const EN = {
   "common.show": "Show",
   "common.hide": "Hide",
 
+  "mcp.title": "Connect an AI assistant with MCP",
+  "mcp.dashboardBody": "AI assistants use the engine's /mcp endpoint. Their analyses enter the same queue and appear on this dashboard.",
+  "mcp.historyBody": "Analyses started by an MCP-connected assistant are saved here with dashboard-created runs.",
+  "mcp.setupBody": "Add this Streamable HTTP address to ChatGPT, Claude, Cursor, or another MCP client. It uses the same engine, queue, reports, and charts as this dashboard.",
+  "mcp.publicWarning": "Public access: anyone who can reach this address can read analyses, start paid AI runs, and cancel active runs without signing in.",
+  "mcp.tools": "Tools cover run creation and cancellation, history, progress, decisions, reports, chart data, market snapshots, earnings, and configured AI models.",
+  "mcp.copy": "Copy endpoint",
+  "mcp.copied": "MCP endpoint copied",
+  "mcp.learn": "MCP client guide",
+
   "form.title": "New analysis",
   "form.subtitle": "Choose the market, date, research depth, and specialists for this run.",
   "form.ticker": "Stocks",
@@ -388,6 +398,16 @@ const ZH: Record<TKey, string> = {
 
   "common.show": "展開",
   "common.hide": "收合",
+
+  "mcp.title": "以 MCP 連接 AI 助手",
+  "mcp.dashboardBody": "AI 助手會使用引擎的 /mcp 端點；它建立的分析會進入同一佇列並顯示於此儀表板。",
+  "mcp.historyBody": "由 MCP AI 助手建立的分析，會與儀表板建立的分析一同儲存於此。",
+  "mcp.setupBody": "將此 Streamable HTTP 位址加入 ChatGPT、Claude、Cursor 或其他 MCP 用戶端。它與儀表板共用相同引擎、佇列、報告及圖表。",
+  "mcp.publicWarning": "公開存取：任何能連接此位址的人，無需登入即可讀取分析、啟動可能產生 AI 費用的分析，以及取消執行中的分析。",
+  "mcp.tools": "工具包括建立及取消分析、歷史紀錄、進度、決策、報告、圖表資料、市場概覽、業績及已設定的 AI 模型。",
+  "mcp.copy": "複製端點",
+  "mcp.copied": "已複製 MCP 端點",
+  "mcp.learn": "MCP 用戶端指南",
 
   "form.title": "新增分析",
   "form.subtitle": "選擇標的、日期、研究深度與參與的分析師。",
