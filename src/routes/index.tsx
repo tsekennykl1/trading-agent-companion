@@ -88,45 +88,44 @@ function Workbench() {
 
   return (
     <AppShell>
-      <div className={`mb-5 grid min-w-0 gap-4 xl:items-start sm:mb-6 ${headerGridCols}`}>
-        <div className="min-w-0 pt-1">
-          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">{t("home.intro")}</p>
-        </div>
-        <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
+      <div className="mb-4 grid min-w-0 gap-3 xl:items-start">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("home.title")}</h1>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("home.intro")}</p>
+          </div>
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex-none sm:justify-end">
             <Button
-              size="lg"
-              className="flex-1 gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:flex-none sm:min-w-[10rem]"
+              className="flex-1 gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-4 font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:flex-none"
               onClick={openAnalysisForm}
             >
-              <Plus className="size-5" aria-hidden="true" />
+              <Plus className="size-4" aria-hidden="true" />
               {t("home.newAnalysis")}
             </Button>
             <Button
-              size="lg"
               variant="secondary"
-              className="flex-1 gap-2 rounded-lg px-6 py-3 text-base font-semibold sm:flex-none"
+              className="flex-1 gap-2 rounded-lg px-4 font-semibold sm:flex-none"
               onClick={() => {
                 analysis.showSample();
                 setFormOpen(false);
               }}
             >
-              <FlaskConical className="size-5" aria-hidden="true" />
+              <FlaskConical className="size-4" aria-hidden="true" />
               {t("home.sample")}
             </Button>
             <Button
-              size="lg"
               variant="outline"
-              className="flex-1 gap-2 rounded-lg px-6 py-3 text-base font-semibold sm:flex-none"
+              className="flex-1 gap-2 rounded-lg px-4 font-semibold sm:flex-none"
               onClick={() => {
                 analysis.clear();
                 setFormOpen(true);
               }}
             >
-              <Trash2 className="size-5" aria-hidden="true" />
+              <Trash2 className="size-4" aria-hidden="true" />
               {t("home.clear")}
             </Button>
           </div>
+        </div>
 
         {showExportBar && (
           <ExportBar
@@ -137,6 +136,7 @@ function Workbench() {
           />
         )}
       </div>
+
 
       <section id="new-analysis" className="mb-5 min-w-0 scroll-mt-24 space-y-2">
         <Button
