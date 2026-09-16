@@ -80,7 +80,7 @@ export default defineTool({
 
     return {
       content: [{ type: "text", text: `${text}\n\n${JSON.stringify(summary, null, 2)}` }],
-      structuredContent: json({ run_id: runId, finished, ...summary }),
+      structuredContent: json({ ...summary, run_id: runId, finished }),
     };
   },
 });
