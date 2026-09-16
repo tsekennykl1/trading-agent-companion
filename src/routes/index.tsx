@@ -61,6 +61,13 @@ function Workbench() {
     analysis.start(config);
   };
 
+  const openAnalysisForm = () => {
+    setFormOpen(true);
+    window.requestAnimationFrame(() => {
+      document.getElementById("new-analysis")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const formProps = {
     defaultConfig,
     running: analysis.running && !analysis.showingSample,
@@ -72,11 +79,10 @@ function Workbench() {
 
   // The detail-report box only appears once an analysis has been started.
   const showExportBar = analysis.startedAt !== null;
-  const showAnalysisActions = !analysis.cleared;
   const headerGridCols =
     showExportBar && chartReady
       ? "xl:grid-cols-[minmax(0,1fr)_auto_minmax(28rem,0.85fr)]"
-      : showExportBar || showAnalysisActions
+      : showExportBar
         ? "xl:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)]"
         : "";
 
@@ -87,17 +93,26 @@ function Workbench() {
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("home.title")}</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">{t("home.intro")}</p>
         </div>
-        {showAnalysisActions && (
-          <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
+        <div className="flex min-w-0 flex-wrap items-start justify-start gap-2 xl:justify-center">
             <Button
               size="lg"
               className="flex-1 gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/85 px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:from-primary/95 hover:to-primary/80 hover:shadow-lg active:translate-y-0 sm:flex-none sm:min-w-[10rem]"
-              onClick={() => {
-                setFormOpen(true);
-              }}
+              onClick={openAnalysisForm}
             >
               <Plus className="size-5" aria-hidden="true" />
               {t("home.newAnalysis")}
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="flex-1 gap-2 rounded-lg px-6 py-3 text-base font-semibold sm:flex-none"
+              onClick={() => {
+                analysis.showSample();
+                setFormOpen(false);
+              }}
+            >
+              <FlaskConical className="size-5" aria-hidden="true" />
+              {t("home.sample")}
             </Button>
             <Button
               size="lg"
@@ -112,7 +127,6 @@ function Workbench() {
               {t("home.clear")}
             </Button>
           </div>
-        )}
 
         {showExportBar && (
           <ExportBar
@@ -124,14 +138,27 @@ function Workbench() {
         )}
       </div>
 
-      {(!chartReady || analysis.cleared) && formOpen && (
-        <div className="mb-6 min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
-          <RunForm key={`top-${defaultConfig.analysisDate}`} {...formProps} />
-        </div>
-      )}
+      <section id="new-analysis" className="mb-5 min-w-0 scroll-mt-24 space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          aria-expanded={formOpen}
+          onClick={() => setFormOpen((value) => !value)}
+        >
+          {formOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          {formOpen ? t("home.hideForm") : t("home.showForm")}
+        </Button>
+        {formOpen && (
+          <div className="min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 shadow-sm sm:p-4">
+            <RunForm key={defaultConfig.analysisDate} {...formProps} />
+          </div>
+        )}
+      </section>
 
       {!analysis.cleared && <div className="mb-6 min-w-0">
-        <CompanySnapshot ticker={run.config.ticker} />
+        {!analysis.showingSample && <CompanySnapshot ticker={run.config.ticker} />}
         <LiveSnapshot run={run} artifacts={artifacts} />
 
         {!chartReady && (
@@ -153,23 +180,6 @@ function Workbench() {
         aria-busy={analysisBusy}
       >
         <aside className="contents min-w-0 xl:sticky xl:top-24 xl:flex xl:flex-col xl:gap-5">
-          {chartReady && (
-            <div className="order-1 min-w-0 space-y-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                aria-expanded={formOpen}
-                onClick={() => setFormOpen((value) => !value)}
-              >
-                {formOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                {formOpen ? t("home.hideForm") : t("home.showForm")}
-              </Button>
-              {formOpen && <RunForm key={defaultConfig.analysisDate} compact {...formProps} />}
-            </div>
-          )}
-
           {analysis.showingSample && run.source === "sample" && (
             <div className="order-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm sm:flex sm:flex-wrap sm:items-center">
               <FlaskConical className="size-4 shrink-0 text-accent-foreground" />

@@ -15,7 +15,7 @@ import { api, bridgeAssetUrl, EngineHttpError } from "@/lib/trading-agents/clien
 import { finalReportReady, reportsReadyFor } from "@/lib/trading-agents/report-readiness";
 import { useRunArtifacts, type RunArtifacts } from "@/lib/trading-agents/useRunArtifacts";
 import { clearCachedAnalysis, loadCachedAnalysis, saveCachedAnalysis } from "@/lib/trading-agents/run-cache";
-import { SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
+import { SAMPLE_CHART_DATA, SAMPLE_RUN } from "@/lib/trading-agents/sample-run";
 import type { RunConfig, RunRecord } from "@/lib/trading-agents/types";
 import { useT } from "@/lib/i18n";
 
@@ -204,7 +204,10 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
   const liveRun: RunRecord | undefined =
     (runQuery.data as RunRecord | undefined) ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
-  const artifacts = useRunArtifacts(run, run.source === "engine", cachedRun?.id === run.id ? cachedArtifacts : null);
+  const fetchedArtifacts = useRunArtifacts(run, run.source === "engine", cachedRun?.id === run.id ? cachedArtifacts : null);
+  const artifacts: RunArtifacts = showingSample
+    ? { marketData: null, chartData: SAMPLE_CHART_DATA, reports: SAMPLE_RUN.reports }
+    : fetchedArtifacts;
 
   useEffect(() => {
     if (run.source !== "engine") return;
@@ -244,6 +247,11 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
       setElapsed(0);
       setShowingSample(false);
       setCleared(true);
+    },
+    showSample: () => {
+      setShowingSample(true);
+      setCleared(false);
+      setElapsed(0);
     },
     dismissSample: () => setShowingSample(false),
     startedAt,
