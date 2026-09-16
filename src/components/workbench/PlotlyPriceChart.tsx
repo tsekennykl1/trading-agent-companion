@@ -54,12 +54,12 @@ const PANEL_TITLE: Record<PanelKey, string> = {
  */
 export function PlotlyPriceChart({
   chart,
-  height = 520,
+  height = "clamp(26rem, 62vh, 42rem)",
   levels,
   visible,
 }: {
   chart: PriceChartData;
-  height?: number;
+  height?: number | string;
   /** Entry / stop / target / support / resistance drawn over the price panel. */
   levels?: TradeLevels | undefined;
   /** Which technical studies to draw. */
@@ -469,7 +469,7 @@ export function PlotlyPriceChart({
           data={data as never}
           layout={layout as never}
           config={{ responsive: true, displaylogo: false }}
-          style={{ width: "100%", height: `${height}px` }}
+          style={{ width: "100%", height: typeof height === "number" ? `${height}px` : height }}
           useResizeHandler
           className="rounded-md border border-rule bg-surface"
         />

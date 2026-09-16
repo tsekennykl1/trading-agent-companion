@@ -1,9 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/workbench/AppShell";
+import { PageHeading } from "@/components/workbench/PageHeading";
 import { PlotlyPriceChart } from "@/components/workbench/PlotlyPriceChart";
-import { Button } from "@/components/ui/button";
 import { SAMPLE_CHART_DATA } from "@/lib/trading-agents/sample-run";
 import { useT } from "@/lib/i18n";
 
@@ -66,22 +65,11 @@ function TechnicalAnalysisPage() {
 
   return (
     <AppShell>
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Button asChild size="sm" variant="outline" className="min-h-9 gap-2">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> {t("report.back")}
-          </Link>
-        </Button>
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-          Technical analysis: theory and important signals
-        </h1>
-      </div>
-
-      <p className="max-w-3xl text-sm text-muted-foreground">
-        Technical analysis reads price, volume and derived studies to judge the direction, strength and
-        exhaustion of a move. No indicator predicts the future; each is an objective measurement whose value
-        comes from combining a trend reading, a momentum reading and a volume confirmation.
-      </p>
+      <PageHeading
+        backToDashboard
+        title="Technical analysis: theory and important signals"
+        description="Technical analysis reads price, volume and derived studies to judge the direction, strength and exhaustion of a move. No indicator predicts the future; each is an objective measurement whose value comes from combining a trend reading, a momentum reading and a volume confirmation."
+      />
 
       <section className="panel mt-5 p-3 sm:p-4">
         <h2 className="font-display text-xl font-semibold">Worked example — 0700.HK, three years</h2>
@@ -92,7 +80,7 @@ function TechnicalAnalysisPage() {
         <div className="mt-3 min-w-0">
           <PlotlyPriceChart
             chart={chart}
-            height={560}
+            height="clamp(28rem, 68vh, 46rem)"
             levels={chart.levels}
             visible={["sma50", "sma200", "bollinger", "rsi", "macd", "volume", "levels"]}
           />

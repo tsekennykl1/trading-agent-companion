@@ -250,7 +250,7 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
                   />
                   <PlotlyPriceChart
                     chart={rangedChart}
-                    height={(isMobile ? 360 : 480) + panelCount * 90}
+                    height={`clamp(${isMobile ? 22 : 28}rem, ${58 + panelCount * 8}vh, ${34 + panelCount * 6}rem)`}
                     levels={levels}
                     visible={visible}
                   />

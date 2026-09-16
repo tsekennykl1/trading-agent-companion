@@ -68,6 +68,17 @@ function Workbench() {
     });
   };
 
+  const showSample = () => {
+    analysis.showSample();
+    setFormOpen(false);
+  };
+
+  const clearAnalysis = () => {
+    analysis.clear();
+    resetConfig();
+    setFormOpen(true);
+  };
+
   const formProps = {
     defaultConfig,
     running: analysis.running && !analysis.showingSample,
@@ -99,10 +110,7 @@ function Workbench() {
             <Button
               variant="secondary"
               className="flex-1 gap-2 rounded-lg px-4 font-semibold sm:flex-none"
-              onClick={() => {
-                analysis.showSample();
-                setFormOpen(false);
-              }}
+              onClick={showSample}
             >
               <FlaskConical className="size-4" aria-hidden="true" />
               {t("home.sample")}
@@ -110,11 +118,7 @@ function Workbench() {
             <Button
               variant="outline"
               className="flex-1 gap-2 rounded-lg px-4 font-semibold sm:flex-none"
-              onClick={() => {
-                analysis.clear();
-                resetConfig();
-                setFormOpen(true);
-              }}
+              onClick={clearAnalysis}
             >
               <Trash2 className="size-4" aria-hidden="true" />
               {t("home.clear")}

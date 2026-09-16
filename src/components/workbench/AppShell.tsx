@@ -45,7 +45,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
     <div className="min-h-screen bg-background">
 
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
-        <div className="mx-auto grid max-w-[95%] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5">
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5 lg:px-6 2xl:px-8">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Activity className="size-4" />
@@ -80,10 +80,10 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
         </div>
       </header>
 
-      <main className="mx-auto max-w-[95%] px-3 py-5 sm:px-5 sm:py-8">{children}</main>
+      <main className="w-full min-w-0 px-3 py-5 sm:px-5 sm:py-8 lg:px-6 2xl:px-8">{children}</main>
 
       <footer className="mt-10 border-t border-rule bg-surface">
-        <div className="mx-auto max-w-[95%] px-3 py-6 text-xs leading-relaxed text-muted-foreground sm:px-5">
+        <div className="w-full px-3 py-6 text-xs leading-relaxed text-muted-foreground sm:px-5 lg:px-6 2xl:px-8">
           <p>
             Built on TradingAgents — Tauric Research (2024),{" "}
             <a

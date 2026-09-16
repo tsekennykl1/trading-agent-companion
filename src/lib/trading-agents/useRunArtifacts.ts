@@ -175,7 +175,8 @@ export function useRunArtifacts(
       }
       firstPass = false;
 
-      const done = terminal && next.chartData && next.resultHtmlUrl;
+       const chartReady = Boolean(next.chartData || next.chartHtmlUrl || next.chartPngUrl);
+       const done = terminal && chartReady && Boolean(next.resultHtmlUrl);
       if (!done) timer = window.setTimeout(() => void probe(), terminal ? 5000 : 4000);
     };
 
