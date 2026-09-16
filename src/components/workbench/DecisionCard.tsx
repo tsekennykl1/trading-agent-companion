@@ -25,7 +25,7 @@ function Gauge({ label, value, tone }: { label: string; value: number; tone: str
 }
 
 /**
- * Compact decision summary shown beside the chart: signal badge, confidence,
+ * Compact decision summary shown below the chart: signal badge, confidence,
  * trade levels, risk and horizon — so the call is readable without scrolling.
  */
 export function DecisionCard({ decision, ticker }: { decision: Decision; ticker: string }) {
