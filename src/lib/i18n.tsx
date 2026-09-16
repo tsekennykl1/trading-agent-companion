@@ -398,7 +398,7 @@ const ZH: Record<TKey, string> = {
   "form.hkDigits": "港股代號必須為 1–4 位數字（0–9）。",
   "form.date": "分析日期",
   "form.depth": "研究深度",
-  "form.llm": "AI model",
+  "form.llm": "AI 模型",
   "form.llmUnavailable": "使用引擎目前的 AI 模型",
   "form.depthShallow": "淺層 — 快速，辯論回合較少",
   "form.depthMedium": "中等 — 平衡的辯論",

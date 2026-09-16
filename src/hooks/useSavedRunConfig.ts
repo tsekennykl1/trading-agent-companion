@@ -47,5 +47,12 @@ export function useSavedRunConfig() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   };
 
-  return { config, remember };
+  /** Empties the remembered ticker and date (used by the Clear button). */
+  const reset = () => {
+    const next: RunConfig = { ...config, ticker: "", analysisDate: "" };
+    setConfig(next);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  return { config, remember, reset };
 }

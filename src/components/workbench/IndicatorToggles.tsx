@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ChartRow } from "@/lib/trading-agents/client";
 import { availableIndicators, type IndicatorKey, type IndicatorSpec } from "@/lib/trading-agents/indicators";
@@ -101,6 +103,14 @@ export function IndicatorToggles({
             strong
             onChange={(next) => onToggleMany(allKeys, next)}
           />
+          <Link
+            to="/technical-analysis"
+            title={t("ind.learn")}
+            aria-label={t("ind.learn")}
+            className="inline-flex size-5 items-center justify-center rounded-full border border-rule text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Info className="size-3.5" aria-hidden="true" />
+          </Link>
         </div>
         {rangeControl}
       </div>

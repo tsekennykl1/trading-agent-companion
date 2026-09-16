@@ -203,6 +203,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="date" className="label-caps">
               {t("form.date")}
+              {config.language === "English" && (
+                <span className="ml-1.5 font-normal normal-case text-muted-foreground">(YYYY/MM/DD)</span>
+              )}
             </Label>
             <Input
               id="date"
