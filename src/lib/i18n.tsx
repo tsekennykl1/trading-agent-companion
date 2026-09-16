@@ -45,6 +45,20 @@ const EN = {
   "home.backToLive": "Back to live run",
   "home.newAnalysis": "New Analysis",
   "home.clear": "Clear",
+  "company.source": "Alpha Vantage",
+  "company.price": "Last price",
+  "company.change": "Day change",
+  "company.marketCap": "Market cap",
+  "company.pe": "P/E ratio",
+  "company.dividend": "Dividend yield",
+  "company.range52": "52-week range",
+  "company.earnings": "Recent earnings (EPS)",
+  "company.quarter": "Quarter",
+  "company.reported": "Reported",
+  "company.estimated": "Estimate",
+  "company.surprise": "Surprise",
+
+
 
   "home.hideForm": "Hide New Analysis",
   "home.showForm": "Show New Analysis",
@@ -290,6 +304,20 @@ const ZH: Record<TKey, string> = {
   "home.backToLive": "返回即時分析",
   "home.newAnalysis": "新增分析",
   "home.clear": "清除",
+  "company.source": "Alpha Vantage",
+  "company.price": "最新價格",
+  "company.change": "當日漲跌",
+  "company.marketCap": "市值",
+  "company.pe": "市盈率",
+  "company.dividend": "股息率",
+  "company.range52": "52週區間",
+  "company.earnings": "近期業績（每股盈利）",
+  "company.quarter": "季度",
+  "company.reported": "實際",
+  "company.estimated": "預期",
+  "company.surprise": "差異",
+
+
 
   "home.hideForm": "隱藏新增分析",
   "home.showForm": "顯示新增分析",

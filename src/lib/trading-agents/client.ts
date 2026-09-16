@@ -125,11 +125,19 @@ export const api = {
     return readReportContent(raw);
   },
 
+  /** GET /market/company — Alpha Vantage profile, valuation and latest quote. */
+  companyProfile: (ticker: string) =>
+    request<CompanyProfile>(`/market/company?ticker=${encodeURIComponent(ticker)}`),
+  /** GET /market/earnings — last quarters of EPS reported vs estimated. */
+  companyEarnings: (ticker: string) =>
+    request<CompanyEarnings>(`/market/earnings?ticker=${encodeURIComponent(ticker)}`),
+
   /** GET /providers — active LLM plus every provider with a key saved. */
   providers: () => request<ProvidersResponse>("/providers"),
   /** GET /providers/credit — key validity and, where published, remaining credit. */
   providerCredit: (provider?: string) =>
     request<ProviderCredit>(`/providers/credit${provider ? `?provider=${encodeURIComponent(provider)}` : ""}`),
+
   /** POST /providers/active — switch the engine to another configured provider. */
   setActiveProvider: (provider: string, deepModel?: string, quickModel?: string) =>
     request<{ active: ActiveProvider; credit: ProviderCredit; restart_required?: boolean }>(
@@ -145,7 +153,51 @@ export const api = {
     ),
 };
 
+export interface CompanyProfile {
+  available: boolean;
+  message?: string;
+  symbol?: string;
+  name?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  exchange?: string | null;
+  currency?: string | null;
+  market_cap?: number | null;
+  pe_ratio?: number | null;
+  forward_pe?: number | null;
+  eps?: number | null;
+  dividend_yield?: number | null;
+  beta?: number | null;
+  week52_high?: number | null;
+  week52_low?: number | null;
+  analyst_target_price?: number | null;
+  quote?: {
+    price: number | null;
+    change: number | null;
+    change_percent: number | null;
+    previous_close: number | null;
+    volume: number | null;
+    latest_trading_day: string | null;
+  } | null;
+}
+
+export interface CompanyEarnings {
+  available: boolean;
+  message?: string;
+  symbol?: string;
+  quarters?: {
+    fiscal_date: string | null;
+    reported_date?: string | null;
+    reported_eps: number | null;
+    estimated_eps: number | null;
+    surprise?: number | null;
+    surprise_percent: number | null;
+  }[];
+  annual?: { fiscal_date: string | null; reported_eps: number | null }[];
+}
+
 export type ProviderCreditStatus =
+
   | "valid"
   | "invalid"
   | "missing_key"

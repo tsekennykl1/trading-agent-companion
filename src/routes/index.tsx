@@ -8,6 +8,8 @@ import { DecisionPanel } from "@/components/workbench/DecisionPanel";
 import { ConfidenceChart, PriceChart, StanceChart } from "@/components/workbench/RunCharts";
 import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
+import { CompanySnapshot } from "@/components/workbench/CompanySnapshot";
+
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -133,7 +135,9 @@ function Workbench() {
       )}
 
       <div className="mb-6 min-w-0">
+        <CompanySnapshot ticker={run.config.ticker} />
         <LiveSnapshot run={run} artifacts={artifacts} />
+
         {!chartReady && (
           <PriceChart
             data={artifacts.marketData?.prices.length ? artifacts.marketData.prices : run.prices}
