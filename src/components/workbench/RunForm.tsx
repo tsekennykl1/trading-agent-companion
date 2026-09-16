@@ -170,7 +170,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   setTickerError(null);
                 }}
               >
-                <SelectTrigger className="w-28 shrink-0" aria-label={t("form.market")}>
+                <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,6 +180,21 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               </Select>
             </div>
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
+          </div>
+
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="date" className="label-caps">
+              {t("form.date")}
+            </Label>
+            <Input
+              id="date"
+              type="date"
+              lang={config.language === "English" ? "en-CA" : undefined}
+              placeholder="YYYY/MM/DD"
+              value={config.analysisDate}
+              onChange={(e) => update("analysisDate", e.target.value)}
+              required
+            />
           </div>
 
           {configuredProviders.length > 0 && (
@@ -215,18 +230,6 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               </Select>
             </div>
           )}
-          <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="date" className="label-caps">
-              {t("form.date")}
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={config.analysisDate}
-              onChange={(e) => update("analysisDate", e.target.value)}
-              required
-            />
-          </div>
 
           <div className="min-w-0 space-y-1.5">
             <Label className="label-caps">{t("form.depth")}</Label>
@@ -259,9 +262,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">{t("form.languageHint")}</p>
           </div>
         </div>
+
 
         <div className="mt-5 border-t border-rule pt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
