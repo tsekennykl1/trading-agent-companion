@@ -157,4 +157,4 @@
 - [x] Move New Analysis from the left rail to directly above the chart.
 - [x] Add a Sample action beside Clear that restores the built-in demonstration.
 - [x] Include a self-contained interactive sample chart and all agent reports.
-- [ ] Verify Clear, Sample, and New Analysis on desktop and phone with clean diagnostics.
+- [x] Verify Clear, Sample, and New Analysis on desktop and phone with clean diagnostics.
