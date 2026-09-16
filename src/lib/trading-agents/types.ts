@@ -124,6 +124,9 @@ export interface RunPartial {
   version?: number;
   artifactsReady?: Record<string, boolean>;
   stockName?: string;
+  /** Official HKEX names for Hong Kong listings (tickers ending in .HK). */
+  stockNameEn?: string;
+  stockNameZh?: string;
   latestPrice?: number;
   latestRsi14?: number;
   latestEma20?: number;
