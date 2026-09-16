@@ -139,3 +139,15 @@
 - [x] Keep each run's selected stages immutable while preserving the next-run form choices across refreshes.
 - [x] Execute the three risk viewpoints concurrently within each debate round and merge them deterministically.
 - [x] Test timing persistence, stage accuracy, parallel speed, responsive layout, and clean frontend/backend builds.
+
+# Dashboard controls and report fit
+
+- [ ] Make Clear show an empty dashboard until a new analysis starts.
+- [ ] Add persistent font-size controls and keep report tables readable at every size.
+- [ ] Clean stray backslashes from reports and rename the report return action.
+- [ ] Extend Ready notices to three seconds and improve the connection link cue.
+- [ ] List only configured LLM providers in New Analysis and submit their models.
+- [ ] Fix and reposition the New Analysis show/hide control.
+- [ ] Add a prominent stock/date heading above charts and compact consensus charts.
+- [ ] Improve entry, target, and stop-loss extraction from backend decisions.
+- [ ] Verify desktop/mobile behavior and current diagnostics.
