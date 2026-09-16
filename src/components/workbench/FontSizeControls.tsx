@@ -3,7 +3,7 @@ import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "ta-font-scale";
-const SCALES = [0.9, 1, 1.1, 1.2, 1.35, 1.5] as const;
+const SCALES = [0.9, 1, 1.1, 1.2, 1.35, 1.5, 1.65, 1.8] as const;
 
 function savedScale(): number {
   if (typeof window === "undefined") return 1;
@@ -27,7 +27,11 @@ export function FontSizeControls() {
   const index = SCALES.indexOf(scale as (typeof SCALES)[number]);
 
   return (
-    <div className="flex shrink-0 items-center rounded-md border border-rule bg-surface p-0.5" role="group" aria-label="Font size">
+    <div
+      className="flex shrink-0 items-center rounded-md border border-rule bg-surface p-0.5"
+      role="group"
+      aria-label="Font size"
+    >
       <Button
         type="button"
         variant="ghost"
@@ -41,7 +45,9 @@ export function FontSizeControls() {
         <Minus className="size-3.5" aria-hidden="true" />
         <span className="sr-only">A</span>
       </Button>
-      <span className="min-w-7 text-center text-xs font-semibold" aria-hidden="true">A</span>
+      <span className="min-w-7 text-center text-xs font-semibold" aria-hidden="true">
+        A
+      </span>
       <Button
         type="button"
         variant="ghost"
