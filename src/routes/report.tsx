@@ -16,7 +16,8 @@ const DESCRIPTION =
 export const Route = createFileRoute("/report")({
   validateSearch: (search: Record<string, unknown>) => ({
     url: typeof search["url"] === "string" ? search["url"] : "",
-    ticker: typeof search["ticker"] === "string" ? search["ticker"] : "",
+    ticker:
+      typeof search["ticker"] === "string" ? search["ticker"].replace(/[^\w.\-: ]/g, "").slice(0, 40) : "",
   }),
   head: () => ({
     meta: [
@@ -31,11 +32,22 @@ export const Route = createFileRoute("/report")({
   component: ReportPage,
 });
 
+/** Never interpolate raw text into HTML: a crafted ticker could carry markup. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function standaloneHtml(title: string, markdown: string): string {
+  const safeTitle = escapeHtml(title);
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${title}</title>
+<title>${safeTitle}</title>
 <style>
   body { font-family: "IBM Plex Sans", system-ui, sans-serif; color: #16202c; margin: 0 auto; max-width: 52rem; padding: 2.5rem 1.5rem; line-height: 1.65; }
   h1, h2, h3, h4 { font-family: "IBM Plex Serif", Georgia, serif; line-height: 1.25; margin: 1.8em 0 0.5em; }
@@ -46,7 +58,7 @@ function standaloneHtml(title: string, markdown: string): string {
   ul, ol { padding-left: 1.2rem; }
   @media print { body { padding: 0; } }
 </style></head>
-<body><h1>${title}</h1>${markdownToHtml(markdown)}</body></html>`;
+<body><h1>${safeTitle}</h1>${markdownToHtml(markdown)}</body></html>`;
 }
 
 function ReportPage() {
