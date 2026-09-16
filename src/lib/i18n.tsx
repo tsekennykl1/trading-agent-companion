@@ -330,6 +330,7 @@ const ZH: Record<TKey, string> = {
   "report.title": "詳細報告",
   "report.back": "返回工作台",
   "report.original": "原始檔",
+  "report.retry": "重試",
   "report.loading": "報告準備中",
   "report.failed": "無法載入已排版的報告",
   "report.available": "可供閱讀",
