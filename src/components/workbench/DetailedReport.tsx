@@ -234,6 +234,28 @@ export function readableArtifact(source: string): string {
   return stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0)));
 }
 
+/** `/runs/<id>/result.html` → `<id>`, so we can fall back to the report files. */
+function runIdFromUrl(url: string): string | null {
+  const match = /\/runs\/([^/?#]+)\//.exec(url);
+  return match?.[1] ?? null;
+}
+
+/** Stitch whatever individual reports the engine has into one Markdown document. */
+async function reportsFallback(url: string): Promise<string> {
+  const runId = runIdFromUrl(url);
+  if (!runId) return "";
+  const index = await api.reportsIndex(runId).catch(() => null);
+  if (!index || index.names.length === 0) return "";
+
+  const sections = await Promise.all(
+    index.names.map(async (name) => {
+      const body = index.contents[name] ?? (await api.report(runId, name).catch(() => null));
+      return body ? `## ${titleCase(name)}\n\n${readableArtifact(body)}` : "";
+    }),
+  );
+  return sections.filter(Boolean).join("\n\n").trim();
+}
+
 export function DetailedReport({
   url,
   ticker,
