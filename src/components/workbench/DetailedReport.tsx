@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/trading-agents/client";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { useT } from "@/lib/i18n";
 
@@ -234,6 +235,28 @@ export function readableArtifact(source: string): string {
   return stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0)));
 }
 
+/** `/runs/<id>/result.html` → `<id>`, so we can fall back to the report files. */
+function runIdFromUrl(url: string): string | null {
+  const match = /\/runs\/([^/?#]+)\//.exec(url);
+  return match?.[1] ?? null;
+}
+
+/** Stitch whatever individual reports the engine has into one Markdown document. */
+async function reportsFallback(url: string): Promise<string> {
+  const runId = runIdFromUrl(url);
+  if (!runId) return "";
+  const index = await api.reportsIndex(runId).catch(() => null);
+  if (!index || index.names.length === 0) return "";
+
+  const sections = await Promise.all(
+    index.names.map(async (name) => {
+      const body = index.contents[name] ?? (await api.report(runId, name).catch(() => null));
+      return body ? `## ${titleCase(name)}\n\n${readableArtifact(body)}` : "";
+    }),
+  );
+  return sections.filter(Boolean).join("\n\n").trim();
+}
+
 export function DetailedReport({
   url,
   ticker,
@@ -255,6 +278,8 @@ export function DetailedReport({
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [reason, setReason] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const publish = useRef(onContent);
   publish.current = onContent;
   const notifyLoading = useRef(onLoadingChange);
@@ -266,32 +291,49 @@ export function DetailedReport({
 
   useEffect(() => {
     const controller = new AbortController();
+    let cancelled = false;
     setLoading(true);
     setFailed(false);
+    setReason("");
     setSource("");
     publish.current?.("");
 
-    fetch(url, { cache: "no-store", signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error("Report unavailable");
-        return response.text();
-      })
-      .then((text) => {
-        const markdown = readableArtifact(text);
-        setSource(markdown);
-        publish.current?.(markdown);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setFailed(true);
-      })
+    const finish = (markdown: string) => {
+      if (cancelled) return false;
+      const cleaned = markdown.trim();
+      if (!cleaned) return false;
+      setSource(cleaned);
+      publish.current?.(cleaned);
+      return true;
+    };
 
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+    (async () => {
+      let problem = "";
+      try {
+        const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error(`The engine answered ${response.status} for this report`);
+        if (finish(readableArtifact(await response.text()))) return;
+        problem = "The report file is empty";
+      } catch (error: unknown) {
+        if (controller.signal.aborted) return;
+        problem = error instanceof Error ? error.message : "The report could not be reached";
+      }
 
-    return () => controller.abort();
-  }, [url]);
+      // Fall back to the individual report files the engine already published.
+      const stitched = await reportsFallback(url).catch(() => "");
+      if (finish(stitched)) return;
+      if (cancelled) return;
+      setReason(problem);
+      setFailed(true);
+    })().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [url, attempt]);
 
   const html = useMemo(() => markdownToHtml(source), [source]);
   const ready = Boolean(source) && !failed;
@@ -315,6 +357,11 @@ export function DetailedReport({
         >
           {t("report.original")} <ExternalLink className="size-3.5" aria-hidden="true" />
         </a>
+        {failed && (
+          <Button type="button" size="sm" variant="outline" onClick={() => setAttempt((n) => n + 1)}>
+            <RefreshCw className="size-3.5" aria-hidden="true" /> {t("report.retry")}
+          </Button>
+        )}
         {!expanded && (
           <Button
             type="button"
@@ -329,6 +376,13 @@ export function DetailedReport({
           </Button>
         )}
       </header>
+
+      {failed && (
+        <div className="space-y-1 px-4 py-4 text-xs text-muted-foreground sm:px-5">
+          {reason && <p>{reason}</p>}
+          <p className="break-all">{url}</p>
+        </div>
+      )}
 
       {ready && open && (
         <article
