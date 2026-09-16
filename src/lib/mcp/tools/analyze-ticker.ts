@@ -3,6 +3,7 @@ import { z } from "zod";
 import { engineFetch, summarizeRun, asObject, pickString, FINISHED } from "../engine";
 import { json } from "../json";
 import { accessKeyField, requireAccessKey } from "../auth";
+import { checkStartBudget, rememberMcpRun } from "../ownership";
 import { runConfigPayload } from "@/lib/trading-agents/run-payload";
 import type { RunConfig } from "@/lib/trading-agents/types";
 import { DEFAULT_STAGES } from "@/lib/trading-agents/types";
@@ -36,6 +37,8 @@ export default defineTool({
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: async (input, ctx) => {
+    requireAccessKey(input.access_key);
+    checkStartBudget();
     const today = new Date().toISOString().slice(0, 10);
     const config: RunConfig = {
       ticker: input.ticker.toUpperCase(),
@@ -59,6 +62,7 @@ export default defineTool({
     const runId =
       pickString(started, "run_id", "runId", "id") ?? pickString(asObject(started["run"]), "run_id", "id");
     if (!runId) throw new ToolError("The engine started a run but did not return a run id.");
+    rememberMcpRun(runId);
 
     const waitMs = (input.wait_seconds ?? 30) * 1000;
     const deadline = Date.now() + waitMs;

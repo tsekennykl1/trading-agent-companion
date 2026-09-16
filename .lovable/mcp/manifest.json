@@ -189,7 +189,7 @@
       {
         "name": "cancel_analysis",
         "title": "Cancel an analysis",
-        "description": "Cancel a queued or running analysis by its run_id.",
+        "description": "Cancel a queued or running analysis by its run_id. Only runs that were started through this MCP server can be cancelled here.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": true,
