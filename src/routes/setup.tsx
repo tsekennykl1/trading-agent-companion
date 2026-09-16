@@ -51,7 +51,7 @@ const STEPS: { title: string; body: string; code?: string }[] = [
   {
     title: "Run the guided configurator",
     body:
-      "initialSetup.py is the safest way to create .env. It asks one question at a time — which AI provider you use, its key, which deep-thinking and quick-thinking models to run, how many debate rounds, the temperature, and where to keep the cache and memory log. Press Enter at any prompt to accept the suggested value; it reads your existing .env first, so re-running it only changes what you retype, and keys are shown masked. Model names are checked against the engine's own list and friendly names are converted automatically (\"DeepSeek Pro\" becomes deepseek-v4-pro), so a typo is caught before anything is saved. Data keys for FRED and Alpha Vantage come pre-filled with shared starter keys that work immediately — replace them with your own when you start running analyses regularly, as the shared ones are rate limited. Nothing is written until every value passes validation; then it writes .env, refreshes .env.example, and creates sample_run_payload.json you can use to test the engine with one curl command.",
+      "initialSetup.py is the safest way to create .env. It asks one question at a time — which AI provider you use, its key, which deep-thinking and quick-thinking models to run, how many debate rounds, the temperature, and where to keep the cache and memory log. Press Enter at any prompt to accept the suggested value; it reads your existing .env first, so re-running it only changes what you retype, and keys are shown masked. Model names are checked against the engine's own list and friendly names are converted automatically (\"DeepSeek Pro\" becomes deepseek-v4-pro), so a typo is caught before anything is saved. Data keys for FRED and Alpha Vantage are your own free keys — create them on the FRED and Alpha Vantage sites and paste them in when asked. Nothing is written until every value passes validation; then it writes .env, refreshes .env.example, and creates sample_run_payload.json you can use to test the engine with one curl command.",
     code: "python initialSetup.py",
   },
   {
@@ -230,8 +230,8 @@ function Setup() {
         <h2 className="mt-10 text-xl font-semibold">Build your .env</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Pick your AI provider, paste its key, and copy the finished file. Model names come straight from
-          the engine's own list, so they are always valid. Market and economic data keys are pre-filled with
-          working starter keys.
+          the engine's own list, so they are always valid. Add your own free FRED and Alpha Vantage keys for
+          market and economic data.
         </p>
         <EnvBuilder />
 
