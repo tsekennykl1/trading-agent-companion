@@ -277,6 +277,8 @@ export function DetailedReport({
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [reason, setReason] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const publish = useRef(onContent);
   publish.current = onContent;
   const notifyLoading = useRef(onLoadingChange);
