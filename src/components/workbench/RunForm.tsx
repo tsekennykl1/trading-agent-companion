@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getEnabledLlms, isLlmEnabled, subscribeEnabledLlms } from "@/lib/trading-agents/llm-prefs";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,9 +46,25 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     queryKey: ["configured-providers"],
     queryFn: api.providers,
     retry: false,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
   });
-  const configuredProviders = providersQuery.data?.providers.filter((provider) => provider.configured) ?? [];
+  // The setup page can switch providers off; an empty preference means "all".
+  const [enabledLlms, setEnabled] = useState<string[] | null>(null);
+  useEffect(() => {
+    const read = () => setEnabled(getEnabledLlms());
+    read();
+    return subscribeEnabledLlms(read);
+  }, []);
+  const configuredProviders = useMemo(
+    () =>
+      (providersQuery.data?.providers ?? []).filter(
+        (provider) => provider.configured && isLlmEnabled(enabledLlms, provider.provider),
+      ),
+    [providersQuery.data, enabledLlms],
+  );
+
 
   // The analysis date is filled in after hydration, so adopt it once it arrives.
   useEffect(() => {
@@ -132,20 +149,21 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
         onRun(submitted);
       }}
     >
-      <header className="border-b border-primary/20 bg-primary/8 px-4 py-4 sm:px-5">
-        <h2 className="font-display text-xl font-bold sm:text-2xl">{t("form.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("form.subtitle")}</p>
+      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-primary/20 bg-primary/8 px-4 py-2.5 sm:px-5">
+        <h2 className="font-display text-lg font-bold sm:text-xl">{t("form.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("form.subtitle")}</p>
       </header>
 
-      <div className="p-4 sm:p-5">
+      <div className="p-3 sm:p-4">
         <div
           className={cn(
-            "grid min-w-0 gap-4",
+            "grid min-w-0 gap-3",
              compact
-               ? "md:grid-cols-2 xl:grid-cols-1"
-               : "md:grid-cols-2 xl:grid-cols-4",
+               ? "sm:grid-cols-2 xl:grid-cols-1"
+               : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
           )}
         >
+
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
@@ -170,7 +188,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   setTickerError(null);
                 }}
               >
-                <SelectTrigger className="w-28 shrink-0" aria-label={t("form.market")}>
+                <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,6 +198,21 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               </Select>
             </div>
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
+          </div>
+
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="date" className="label-caps">
+              {t("form.date")}
+            </Label>
+            <Input
+              id="date"
+              type="date"
+              lang={config.language === "English" ? "en-CA" : undefined}
+              placeholder="YYYY/MM/DD"
+              value={config.analysisDate}
+              onChange={(e) => update("analysisDate", e.target.value)}
+              required
+            />
           </div>
 
           {configuredProviders.length > 0 && (
@@ -215,18 +248,6 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               </Select>
             </div>
           )}
-          <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="date" className="label-caps">
-              {t("form.date")}
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={config.analysisDate}
-              onChange={(e) => update("analysisDate", e.target.value)}
-              required
-            />
-          </div>
 
           <div className="min-w-0 space-y-1.5">
             <Label className="label-caps">{t("form.depth")}</Label>
@@ -259,9 +280,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">{t("form.languageHint")}</p>
           </div>
         </div>
+
 
         <div className="mt-5 border-t border-rule pt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">

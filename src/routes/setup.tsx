@@ -4,6 +4,7 @@ import { CheckCircle2, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { EnvBuilder } from "@/components/workbench/EnvBuilder";
+import { LlmVisibilityPanel } from "@/components/workbench/LlmVisibilityPanel";
 import { ProviderCreditPanel } from "@/components/workbench/ProviderCreditPanel";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -180,6 +181,8 @@ function Setup() {
         </section>
 
         <ProviderCreditPanel />
+
+        <LlmVisibilityPanel />
 
         <div className="panel mt-6 grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-center sm:p-5">
           <div className="mr-auto">
