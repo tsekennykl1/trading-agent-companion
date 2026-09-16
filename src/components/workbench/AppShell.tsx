@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Activity, BookOpen, History, LayoutDashboard, Languages } from "lucide-react";
 import type { ReactNode } from "react";
 import { BridgeStatusBadge } from "./BridgeStatusBadge";
+import { FontSizeControls } from "./FontSizeControls";
 import { useLanguage } from "@/lib/i18n";
 
 const NAV = [
@@ -28,7 +29,7 @@ function LanguageSwitch() {
             lang === code ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          {code === "en" ? "EN" : "繁中"}
+          {code === "en" ? "EN" : "繁"}
         </button>
       ))}
     </div>
@@ -68,6 +69,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
 
           <div className="order-4 col-span-2 flex shrink-0 flex-wrap items-center gap-2 sm:order-none sm:col-auto sm:ml-auto">
             {actions}
+            <FontSizeControls />
             <LanguageSwitch />
             <BridgeStatusBadge />
           </div>
