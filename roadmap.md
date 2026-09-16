@@ -166,3 +166,11 @@
 - [x] Stop inactive History refreshes and completed artifact polling.
 - [x] Simplify shared page headings and dashboard action handlers.
 - [x] Verify phone, tablet, laptop, and wide-desktop layouts with clean diagnostics.
+
+# Full-width decision and beginner-friendly code
+
+- [x] Let the chart decision and signal panels use the full available width.
+- [x] Hide Ollama from the AI model list until explicitly enabled.
+- [x] Share decision badges and price-level presentation between result views.
+- [x] Split the chart results from the large live snapshot component and update the learning guide.
+- [x] Verify desktop and phone layouts, provider defaults, and a clean build.

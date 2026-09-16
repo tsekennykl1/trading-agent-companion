@@ -1,5 +1,5 @@
 // Which AI providers the user wants to see in the New Analysis form.
-// Stored in the browser; an empty/absent list means "show every configured one".
+// Stored in the browser; an empty/absent list uses the safe default choices.
 const KEY = "ta-enabled-llms";
 const EVENT = "ta-enabled-llms-changed";
 
@@ -36,7 +36,7 @@ export function subscribeEnabledLlms(listener: () => void): () => void {
 }
 
 /** Providers hidden until the user ticks them on the setup page. */
-export const DEFAULT_HIDDEN_LLMS = ["openai_compatible", "bedrock"];
+export const DEFAULT_HIDDEN_LLMS = ["ollama", "openai_compatible", "bedrock"];
 
 /** True when this provider should appear in the analysis form. */
 export function isLlmEnabled(enabled: string[] | null, id: string): boolean {

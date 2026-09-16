@@ -1,24 +1,13 @@
 import { useState } from "react";
-import { ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DecisionBadge } from "@/components/workbench/DecisionBadge";
+import { PriceLevels } from "@/components/workbench/PriceLevels";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { fill, useT } from "@/lib/i18n";
 
 import type { Decision } from "@/lib/trading-agents/types";
 import { cn } from "@/lib/utils";
-
-type Tone = { cls: string; Icon: typeof Minus };
-
-const FALLBACK_TONE: Tone = { cls: "bg-muted text-muted-foreground border-rule", Icon: Minus };
-
-const TONE: Record<string, Tone> = {
-  Buy: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
-  Overweight: { cls: "bg-bull/12 text-bull border-bull/30", Icon: ArrowUpRight },
-  Hold: { cls: "bg-neutral/12 text-neutral border-neutral/30", Icon: Minus },
-  Review: { cls: "bg-muted text-muted-foreground border-rule", Icon: Minus },
-  Underweight: { cls: "bg-bear/12 text-bear border-bear/30", Icon: ArrowDownRight },
-  Sell: { cls: "bg-bear/12 text-bear border-bear/30", Icon: ArrowDownRight },
-};
 
 export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker: string }) {
   const t = useT();
@@ -26,8 +15,6 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [bullOpen, setBullOpen] = useState(false);
   const [bearOpen, setBearOpen] = useState(false);
-  const tone = TONE[decision.action] ?? FALLBACK_TONE;
-  const { Icon } = tone;
 
   return (
     <section className="panel overflow-hidden">
@@ -53,32 +40,17 @@ export function DecisionPanel({ decision, ticker }: { decision: Decision; ticker
       {open && (
         <div className="border-t border-rule">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-rule bg-surface px-4 py-4 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
-            <span
-              className={cn(
-                "col-span-2 flex w-fit items-center gap-2 rounded-md border px-3 py-1.5 font-display text-xl font-semibold sm:col-auto",
-                tone.cls,
-              )}
-            >
-              <Icon className="size-5" />
-              {decision.action}
-            </span>
+            <div className="col-span-2 sm:col-auto">
+              <DecisionBadge action={decision.action} large />
+            </div>
             <div className="min-w-0 text-sm">
               <p className="font-medium break-words">{fill(t("decision.heading"), { ticker })}</p>
               <p className="text-muted-foreground">
                 {fill(t("decision.confidenceLine"), { c: decision.confidence, k: decision.consensus })}
               </p>
             </div>
-            <div className="grid shrink-0 grid-cols-3 gap-3 text-sm sm:ml-auto sm:flex sm:gap-5">
-              {[
-                [t("decision.entry"), decision.entryPrice ?? decision.levels?.entry],
-                [t("decision.target"), decision.takeProfit ?? decision.levels?.takeProfit],
-                [t("decision.stopLoss"), decision.stopLoss ?? decision.levels?.stopLoss],
-              ].map(([label, value]) => (
-                <div key={String(label)}>
-                  <p className="label-caps">{label}</p>
-                  <p className="font-mono text-base">{value === undefined ? "—" : value}</p>
-                </div>
-              ))}
+            <div className="col-span-2 min-w-0 sm:col-auto sm:ml-auto sm:min-w-72">
+              <PriceLevels decision={decision} />
             </div>
           </div>
 
