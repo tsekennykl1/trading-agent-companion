@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { readableArtifact } from "@/components/workbench/DetailedReport";
 import type { RunRecord } from "@/lib/trading-agents/types";
+import { SAMPLE_DETAIL_REPORT } from "@/lib/trading-agents/sample-run";
 
 export function ExportBar({
   run,
@@ -26,6 +27,7 @@ export function ExportBar({
   const slug = `${run.config.ticker.replace(/[^a-z0-9.]/gi, "_")}-${run.config.analysisDate}`;
 
   const fetchDetailedReport = async (): Promise<string> => {
+    if (reportUrl === "sample") return SAMPLE_DETAIL_REPORT;
     if (!reportUrl) throw new Error("Detailed report URL is unavailable");
     const response = await fetch(reportUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`Detailed report responded ${response.status}`);

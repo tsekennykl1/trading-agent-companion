@@ -45,7 +45,7 @@ function Workbench() {
   const engineOnline = !!health.data && !health.isError;
 
   // The analysis form remembers what you last used (see hooks/useSavedRunConfig).
-  const { config: defaultConfig, remember: rememberConfig } = useSavedRunConfig();
+  const { config: defaultConfig, remember: rememberConfig, reset: resetConfig } = useSavedRunConfig();
   // Everything about the current analysis (see hooks/useAnalysisRun).
   const analysis = useAnalysisRun(rememberConfig);
   const { run, liveRun, artifacts, analysisBusy, chartReady } = analysis;
@@ -78,7 +78,7 @@ function Workbench() {
   };
 
   // The detail-report box only appears once an analysis has been started.
-  const showExportBar = analysis.startedAt !== null;
+  const showExportBar = analysis.startedAt !== null || analysis.showingSample;
 
   return (
     <AppShell>
@@ -112,6 +112,7 @@ function Workbench() {
               className="flex-1 gap-2 rounded-lg px-4 font-semibold sm:flex-none"
               onClick={() => {
                 analysis.clear();
+                resetConfig();
                 setFormOpen(true);
               }}
             >
@@ -124,9 +125,15 @@ function Workbench() {
         {showExportBar && (
           <ExportBar
             run={run}
-            reportUrl={canUseBrowserUrl(analysis.detailReportUrl) ? analysis.detailReportUrl : undefined}
-            ready={analysis.reportReady}
-            loading={!analysis.reportReady}
+            reportUrl={
+              analysis.showingSample
+                ? "sample"
+                : canUseBrowserUrl(analysis.detailReportUrl)
+                  ? analysis.detailReportUrl
+                  : undefined
+            }
+            ready={analysis.showingSample || analysis.reportReady}
+            loading={!analysis.showingSample && !analysis.reportReady}
           />
         )}
       </div>
