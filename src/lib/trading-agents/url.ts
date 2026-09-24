@@ -12,7 +12,7 @@
 const env = import.meta.env as Record<string, string | undefined>;
 
 export const API_BASE_URL = (env["VITE_API_BASE_URL"] ?? "").trim().replace(/\/$/, "");
-export const PUBLIC_ASSET_BASE_URL = ((env["VITE_PUBLIC_ASSET_BASE_URL"] ?? "").trim() || API_BASE_URL).replace(
+export const PUBLIC_ASSET_BASE_URL = ((env["VITE_PUBLIC_ASSET_BASE_URL"] ?? "/api").trim() || API_BASE_URL).replace(
   /\/$/,
   "",
 );

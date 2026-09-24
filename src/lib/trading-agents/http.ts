@@ -3,7 +3,7 @@
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
-export const DEFAULT_BRIDGE_URL = API_BASE_URL || "http://127.0.0.1:8000";
+export const DEFAULT_BRIDGE_URL = API_BASE_URL || "/api";
 
 export function getBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_URL;
