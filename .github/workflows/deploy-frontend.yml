@@ -1,0 +1,75 @@
+# Deploy the Trading Agent dashboard (frontend) to S3 + EC2
+#
+# What this does on every push to main:
+#   1. Builds the app with Node output (NITRO_PRESET=node-server).
+#   2. Zips the built site (.output) and uploads it to S3 under
+#      frontend/releases/<commit>/.
+#   3. Tells the EC2 instance (via SSM) to run scripts/bootstrap-frontend.sh,
+#      which installs the new release and restarts the site service.
+#
+# One-time setup in GitHub repo Settings -> Secrets and variables -> Actions:
+#   AWS_DEPLOY_ROLE_ARN  = ARN of an IAM role GitHub Actions may assume
+#                          (needs s3:PutObject/s3:GetObject on the bucket and
+#                           ssm:SendCommand on the instance).
+#   (Alternative: store AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY instead and
+#    swap the "configure-aws-credentials" step for aws-actions/configure-aws-credentials
+#    with those keys — the role approach is safer.)
+
+name: deploy-frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-east-1
+  S3_BUCKET: s3general-148535751717-ap-east-1-an
+  EC2_INSTANCE_ID: i-00c16218eb325facf
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Bun (the project's package manager)
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build the site for a Node server (instead of the default Cloudflare target)
+        env:
+          NITRO_PRESET: node-server
+        run: bun run build
+
+      - name: Package the built site
+        run: |
+          tar -czf frontend.tar.gz .output package.json
+          echo "release=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Log in to AWS (via the deploy role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload the release to S3
+        run: |
+          aws s3 cp frontend.tar.gz "s3://$S3_BUCKET/frontend/releases/$release/frontend.tar.gz"
+          echo "$release" | aws s3 cp - "s3://$S3_BUCKET/frontend/current/release.txt"
+          aws s3 cp scripts/bootstrap-frontend.sh "s3://$S3_BUCKET/frontend/scripts/bootstrap-frontend.sh"
+
+      - name: Tell EC2 to install this release (via SSM — no SSH keys needed)
+        run: |
+          aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy frontend release $release" \
+            --parameters '{"commands":["bash /opt/trading-frontend/bootstrap-frontend.sh ']"dummy":["'\"$release\"'"]}'
