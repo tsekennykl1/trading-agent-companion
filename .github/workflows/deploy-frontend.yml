@@ -72,4 +72,4 @@ jobs:
             --instance-ids "$EC2_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy frontend release $release" \
-            --parameters '{"commands":["bash /opt/trading-frontend/bootstrap-frontend.sh ']"dummy":["'\"$release\"'"]}'
+            --parameters "{\"commands\":[\"bash /opt/trading-frontend/bootstrap-frontend.sh $release\"]}"
