@@ -8,12 +8,10 @@
 #      which installs the new release and restarts the site service.
 #
 # One-time setup in GitHub repo Settings -> Secrets and variables -> Actions:
-#   AWS_DEPLOY_ROLE_ARN  = ARN of an IAM role GitHub Actions may assume
-#                          (needs s3:PutObject/s3:GetObject on the bucket and
-#                           ssm:SendCommand on the instance).
-#   (Alternative: store AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY instead and
-#    swap the "configure-aws-credentials" step for aws-actions/configure-aws-credentials
-#    with those keys — the role approach is safer.)
+#   AWS_ACCESS_KEY_ID     = AWS access key for an IAM user with
+#                           s3:PutObject/s3:GetObject on the bucket and
+#                           ssm:SendCommand on the instance.
+#   AWS_SECRET_ACCESS_KEY = Corresponding AWS secret access key.
 
 # .github/workflows/deploy-frontend.yml
 name: Deploy frontend
@@ -29,7 +27,6 @@ env:
   EC2_INSTANCE_ID: i-00c16218eb325facf
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -59,7 +56,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload build to S3
