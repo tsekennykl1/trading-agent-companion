@@ -1,0 +1,76 @@
+# .github/workflows/deploy-frontend.yml
+#
+# Builds the React dashboard, stores the build in S3, and runs it on the same EC2 instance
+# as the backend (on port 3000, behind nginx on port 80/443).
+#
+# One-time setup is described in FRONTEND-DEPLOY-INSTRUCTIONS.md
+
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-east-1
+  S3_BUCKET: s3general-148535751717-ap-east-1-an
+  EC2_INSTANCE_ID: i-00c16218eb325facf
+
+permissions:
+  id-token: write # needed for the OIDC role below
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build (Node server output)
+        env:
+          # Build the site so it can run on a normal Node server instead of Cloudflare
+          NITRO_PRESET: node-server
+          # Any VITE_* values the site needs at build time go here
+          VITE_ENGINE_BASE_URL: ${{ vars.VITE_ENGINE_BASE_URL }}
+        run: bun run build
+
+      - name: Package the build
+        run: |
+          zip -r frontend.zip .output package.json
+          ls -lh frontend.zip
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          # If you prefer access keys instead of a role, delete role-to-assume and use:
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload build to S3
+        run: |
+          aws s3 cp frontend.zip "s3://$S3_BUCKET/frontend/releases/${{ github.sha }}/frontend.zip"
+          aws s3 cp scripts/bootstrap-frontend.sh "s3://$S3_BUCKET/frontend/scripts/bootstrap-frontend.sh"
+          echo "${{ github.sha }}" > release.txt
+          aws s3 cp release.txt "s3://$S3_BUCKET/frontend/current/release.txt"
+
+      - name: Tell EC2 to install the new release
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy frontend ${{ github.sha }}" \
+            --parameters commands="[\"set -euo pipefail\",\"aws s3 cp s3://$S3_BUCKET/frontend/scripts/bootstrap-frontend.sh /tmp/bootstrap-frontend.sh\",\"chmod +x /tmp/bootstrap-frontend.sh\",\"S3_BUCKET=$S3_BUCKET RELEASE=${{ github.sha }} AWS_REGION=$AWS_REGION /tmp/bootstrap-frontend.sh\"]" \
+            --query "Command.CommandId" --output text)
+          echo "SSM command: $COMMAND_ID"
+          aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID" || true
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID"
