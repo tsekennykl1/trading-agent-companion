@@ -354,7 +354,7 @@ function TechnicalAnalysisPage() {
           caption={
             <>
               RSI in a typical chart layout: RSI thresholds are easy to see, but the underlying trend context
-              changes how you interpret “overbought/oversold.” <Ref n={7} <Ref n={8} />
+              changes how you interpret “overbought/oversold.” <Ref n={7} /> <Ref n={8} />
             </>
           }
           credit={IMAGES.rsiExample.credit}
@@ -441,7 +441,7 @@ function TechnicalAnalysisPage() {
           caption={
             <>
               Bollinger bands: the middle line is a moving average and the outer bands widen/narrow with
-              volatility. Tight bands can precede a large move, but direction still needs confirmation. <Ref n={5} <Ref n={8} />
+              volatility. Tight bands can precede a large move, but direction still needs confirmation. <Ref n={5} /> <Ref n={8} />
             </>
           }
           credit={IMAGES.bollingerExample.credit}
@@ -482,7 +482,7 @@ function TechnicalAnalysisPage() {
             <ul className="mt-2 ml-4 list-disc space-y-1 text-sm text-foreground/90">
               <li>Price reclaims resistance and holds it on retest</li>
               <li>Trend filter improves (rising MA / bullish crossover)</li>
-              <li>Momentum improves (RSI > ~50 or MACD histogram expands)</li>
+              <li>Momentum improves (RSI &gt; ~50 or MACD histogram expands)</li>
               <li>Volume expands on the breakout day or the retest</li>
             </ul>
           </div>
