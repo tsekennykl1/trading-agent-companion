@@ -3,9 +3,9 @@
 import { API_BASE_URL, PUBLIC_ASSET_BASE_URL, isAbsoluteUrl, joinUrl } from "./url";
 
 const STORAGE_KEY = "ta-workbench-bridge-url";
-// Default to a locally running engine. Deployments that serve the engine
-// behind same-origin /api (e.g. nginx on EC2) set VITE_API_BASE_URL=/api.
-export const DEFAULT_BRIDGE_URL = API_BASE_URL || "http://127.0.0.1:8000";
+// Default to the hosted engine. VITE_API_BASE_URL overrides it, and a user
+// can still enter another address (e.g. http://127.0.0.1:8000) in the app.
+export const DEFAULT_BRIDGE_URL = API_BASE_URL || "https://www.myfinance5051.com/api";
 
 export function getBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_URL;

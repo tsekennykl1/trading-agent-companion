@@ -171,9 +171,9 @@ export const PROVIDERS: ProviderSpec[] = [
 export const DEFAULT_FRED_KEY = "";
 export const DEFAULT_ALPHA_VANTAGE_KEY = "";
 
-export const DEFAULT_PUBLIC_BASE_URL = "http://127.0.0.1:8000";
+export const DEFAULT_PUBLIC_BASE_URL = "https://www.myfinance5051.com/api";
 export const DEFAULT_FRONTEND_ORIGINS =
-  "http://localhost:8080,https://trading-agent-companion.lovable.app";
+  "http://localhost:8080,https://trading-agent-companion.lovable.app,https://www.myfinance5051.com";
 
 export function providerById(id: string): ProviderSpec {
   return PROVIDERS.find((p) => p.id === id) ?? (PROVIDERS[0] as ProviderSpec);
