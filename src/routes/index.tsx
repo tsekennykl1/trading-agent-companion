@@ -10,6 +10,7 @@ import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { CompanySnapshot } from "@/components/workbench/CompanySnapshot";
 import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
+import { ErrorDiagnosis } from "@/components/workbench/ErrorDiagnosis";
 
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
@@ -165,6 +166,13 @@ function Workbench() {
 
       <div className="mb-3">
         <McpConnectionNote context="dashboard" />
+      </div>
+
+      <div className="mb-4 min-w-0">
+        <ErrorDiagnosis
+          initialLog={[run.error, ...(liveRun?.partial?.warnings ?? [])].filter(Boolean).join("\n")}
+          context={`Ticker ${run.config.ticker}, date ${run.config.analysisDate}`}
+        />
       </div>
 
       {!analysis.cleared && <div className="mb-4 min-w-0">
