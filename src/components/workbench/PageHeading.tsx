@@ -12,7 +12,7 @@ export function PageHeading({
   backToDashboard = false,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   actions?: ReactNode;
   backToDashboard?: boolean;
 }) {
