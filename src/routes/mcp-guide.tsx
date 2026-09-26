@@ -1,10 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Bot, CheckCircle2, Clipboard, Code2, KeyRound, Network, ShieldCheck, TriangleAlert, Wrench } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/workbench/AppShell";
 import { Button } from "@/components/ui/button";
-import { getBridgeUrl } from "@/lib/trading-agents/client";
 
 const title = "MCP Integration Guide — Tauric TradingAgents Connect";
 const description = "Connect an MCP-compatible assistant to Tauric TradingAgents, discover its tools, and safely run or inspect stock analyses.";
