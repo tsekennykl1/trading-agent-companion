@@ -1,0 +1,63 @@
+# .github/workflows/deploy.yml  (backend repo: myTradingAgentsBackend)
+#
+# Packages the backend, stores it in S3, and installs it on the EC2 instance
+# via SSM (no SSH keys needed). scripts/bootstrap.sh does the on-instance work:
+# it fixes .env ownership, corrects the TRADINGAGENTS model names, creates the
+# systemd service (running as ec2-user), and waits for /health.
+
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-east-1
+  S3_BUCKET: s3general-148535751717-ap-east-1-an
+  EC2_INSTANCE_ID: i-00c16218eb325facf
+
+permissions:
+  id-token: write # needed for the OIDC role below
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package the backend
+        run: |
+          zip -r backend.zip . \
+            -x ".git/*" ".venv/*" "data/*" "artifacts/*" ".env" ".env.bak" \
+               "*.pem" "__pycache__/*" "*/__pycache__/*" "tests/*"
+          ls -lh backend.zip
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          # Prefer access keys instead? Delete role-to-assume and use:
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload build to S3
+        run: |
+          aws s3 cp backend.zip "s3://$S3_BUCKET/backend/releases/${{ github.sha }}/backend.zip"
+          aws s3 cp scripts/bootstrap.sh "s3://$S3_BUCKET/backend/scripts/bootstrap.sh"
+          echo "${{ github.sha }}" > release.txt
+          aws s3 cp release.txt "s3://$S3_BUCKET/backend/current/release.txt"
+
+      - name: Tell EC2 to install the new release
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy backend ${{ github.sha }}" \
+            --parameters commands="[\"set -euo pipefail\",\"aws s3 cp s3://$S3_BUCKET/backend/scripts/bootstrap.sh /tmp/bootstrap.sh\",\"chmod +x /tmp/bootstrap.sh\",\"S3_BUCKET=$S3_BUCKET RELEASE=${{ github.sha }} AWS_REGION=$AWS_REGION RUN_USER=ec2-user /tmp/bootstrap.sh\"]" \
+            --query "Command.CommandId" --output text)
+          echo "SSM command: $COMMAND_ID"
+          aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID" || true
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$EC2_INSTANCE_ID"
