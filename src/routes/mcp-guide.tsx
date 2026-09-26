@@ -50,9 +50,10 @@ function Section({ id, title: heading, icon: Icon, children }: { id: string; tit
 }
 
 function McpGuide() {
-  const [frontendEndpoint, setFrontendEndpoint] = useState("/mcp");
-  const [engineEndpoint, setEngineEndpoint] = useState("Your engine address /mcp");
-  useEffect(() => { setFrontendEndpoint(`${window.location.origin}/mcp`); setEngineEndpoint(`${getBridgeUrl().replace(/\/$/, "")}/mcp`); }, []);
+  // Public endpoints: the frontend gateway lives at /mcp on the production
+  // domain; the engine's own MCP is reachable through the /api proxy.
+  const frontendEndpoint = "https://www.myfinance5051.com/mcp";
+  const engineEndpoint = "https://www.myfinance5051.com/api/mcp";
   const config = `{
   "mcpServers": {
     "tauric-trading-connect": {
