@@ -125,13 +125,14 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
   const startRun = useMutation({
     mutationFn: (config: RunConfig) => api.startRun(config),
     onMutate: (config: RunConfig) => {
+      clearCachedAnalysis();
       rememberConfig(config);
       requestedTicker.current = config.ticker.trim().toUpperCase();
       setActiveRunId(null);
       setCachedRun(null);
       setCachedArtifacts(null);
       setShowingSample(false);
-      setCleared(false);
+      setCleared(true);
       setStartedAt(Date.now());
       setElapsed(0);
       knownRunIds.current = new Set();
@@ -203,6 +204,9 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
   // else the built-in sample.
   const liveRun: RunRecord | undefined =
     (runQuery.data as RunRecord | undefined) ?? (cachedRun?.id === activeRunId ? cachedRun : undefined);
+  useEffect(() => {
+    if (liveRun) setCleared(false);
+  }, [liveRun]);
   const run: RunRecord = showingSample || !liveRun ? SAMPLE_RUN : liveRun;
   const fetchedArtifacts = useRunArtifacts(run, run.source === "engine", cachedRun?.id === run.id ? cachedArtifacts : null);
   const artifacts: RunArtifacts = showingSample

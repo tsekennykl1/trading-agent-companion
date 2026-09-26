@@ -114,7 +114,15 @@ function htmlToMarkdown(source: string): string {
       heading.closest(".card")?.remove();
     }
   });
+  document.querySelectorAll("details, script, style").forEach((element) => element.remove());
   const blocks: string[] = [];
+
+  document.querySelectorAll(".meta-item").forEach((element) => {
+    const label = element.querySelector(".meta-label")?.textContent?.trim();
+    const value = element.querySelector(".meta-value")?.textContent?.trim();
+    if (label && value) blocks.push(`**${label}:** ${value}`);
+    element.remove();
+  });
 
   const renderInline = (element: Element): string =>
     Array.from(element.childNodes)
