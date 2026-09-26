@@ -17,6 +17,7 @@ import { Route as ReportRouteImport } from './routes/report'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as TechnicalAnalysisRouteImport } from './routes/technical-analysis'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as RunsSplatRouteImport } from './routes/runs.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +60,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const RunsSplatRoute = RunsSplatRouteImport.update({
+  id: '/runs/$',
+  path: '/runs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/runs/$': typeof RunsSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/runs/$': typeof RunsSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/runs/$': typeof RunsSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/technical-analysis'
     | '/.well-known/oauth-protected-resource'
+    | '/runs/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/technical-analysis'
     | '/.well-known/oauth-protected-resource'
+    | '/runs/$'
   id:
     | '__root__'
     | '/'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/technical-analysis'
     | '/.well-known/oauth-protected-resource'
+    | '/runs/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -133,6 +145,7 @@ export interface RootRouteChildren {
   SetupRoute: typeof SetupRoute
   TechnicalAnalysisRoute: typeof TechnicalAnalysisRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  RunsSplatRoute: typeof RunsSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/runs/$': {
+      id: '/runs/$'
+      path: '/runs/$'
+      fullPath: '/runs/$'
+      preLoaderRoute: typeof RunsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -206,6 +226,7 @@ const rootRouteChildren: RootRouteChildren = {
   TechnicalAnalysisRoute: TechnicalAnalysisRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  RunsSplatRoute: RunsSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
