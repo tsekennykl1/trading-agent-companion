@@ -28,7 +28,7 @@ function RunArtifactRedirect() {
   const t = useT();
   const [stuck, setStuck] = useState(false);
 
-  const target = bridgeAssetUrl(`/${_splat}`);
+  const target = bridgeAssetUrl(`/runs/${_splat}`);
 
   useEffect(() => {
     let samePlace = true;
