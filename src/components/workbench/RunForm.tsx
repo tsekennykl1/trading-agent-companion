@@ -188,7 +188,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 }}
               >
                 <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
-                  <SelectValue />
+                  <SelectValue>{market === "HK" ? t("form.marketHK") : t("form.marketOther")}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="HK">{t("form.marketHK")}</SelectItem>
