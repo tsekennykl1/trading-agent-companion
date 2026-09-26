@@ -175,7 +175,7 @@ function Workbench() {
         />
       </div>
 
-      {!analysis.cleared && <div className="mb-4 min-w-0">
+      {!analysis.cleared && <PanelErrorBoundary onReset={clearAnalysis}><div className="mb-4 min-w-0">
         {!analysis.showingSample && <CompanySnapshot ticker={run.config.ticker} />}
         <LiveSnapshot run={run} artifacts={artifacts} />
 
