@@ -187,4 +187,4 @@
 - [x] Add a site-wide catch-all so unknown or artifact URLs never blank the page.
 - [x] Add router-level error and not-found screens.
 - [x] Wrap dashboard panels in an error boundary with retry/reset.
-- [ ] Publish the fix and confirm a real analysis opens on the live site.
+- [x] Publish the fix and confirm a real analysis opens on the live site.
