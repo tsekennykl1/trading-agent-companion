@@ -83,7 +83,7 @@ function escapeHtml(s: string) {
 
 /** Promote bold field labels from model output into real subheadings. */
 function normalizeReportMarkdown(md: string): string {
-  const labelledField = /\*\*([^*\n]{2,50}?)(?:(?::\*\*|\*\*:)[ \t]*|\*\*(?=\s*$))/g;
+  const labelledField = /\*\*([^*\n]{2,70}?)(?:(?::\*\*|\*\*[:：])[ \t]*|\*\*(?=\s*$))/g;
 
   return md
     .split("\n")
@@ -153,7 +153,7 @@ function compactFieldGroups(md: string): string {
 }
 
 /** Minimal markdown -> HTML for the exported standalone report. */
-export function markdownToHtml(md: string): string {
+export function markdownToHtml(md: string, compactFields = true): string {
   const out: string[] = [];
   let inList = false;
   let inTable = false;
@@ -177,7 +177,8 @@ export function markdownToHtml(md: string): string {
       .replace(/_(.+?)_/g, "<em>$1</em>");
 
   const cleaned = md.replace(/[ \t]+\\[ \t]*$/gm, "");
-  for (const raw of compactFieldGroups(normalizeReportMarkdown(cleaned)).split("\n")) {
+  const normalized = normalizeReportMarkdown(cleaned);
+  for (const raw of (compactFields ? compactFieldGroups(normalized) : normalized).split("\n")) {
     const line = raw.trimEnd();
     if (!line.trim()) {
       closeList();

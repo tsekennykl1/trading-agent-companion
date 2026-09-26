@@ -58,7 +58,7 @@ function standaloneHtml(title: string, markdown: string): string {
   ul, ol { padding-left: 1.2rem; }
   @media print { body { padding: 0; } }
 </style></head>
-<body><h1>${safeTitle}</h1>${markdownToHtml(markdown)}</body></html>`;
+<body><h1>${safeTitle}</h1>${markdownToHtml(markdown, false)}</body></html>`;
 }
 
 function ReportPage() {
