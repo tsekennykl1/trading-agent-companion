@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, Download, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/trading-agents/client";
+import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
 import { markdownToHtml } from "@/lib/trading-agents/report";
 import { useT } from "@/lib/i18n";
 
@@ -300,6 +300,10 @@ export function DetailedReport({
   publish.current = onContent;
   const notifyLoading = useRef(onLoadingChange);
   notifyLoading.current = onLoadingChange;
+  const runId = runIdFromUrl(url);
+  // Some engines publish an absolute /runs URL without the reverse-proxy
+  // /api prefix. Rebuild known run artifacts from the configured engine base.
+  const reportUrl = runId ? bridgeAssetUrl(`/runs/${runId}/result.html`) : bridgeAssetUrl(url);
 
   useEffect(() => {
     notifyLoading.current?.(loading);
@@ -326,7 +330,7 @@ export function DetailedReport({
     (async () => {
       let problem = "";
       try {
-        const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+        const response = await fetch(reportUrl, { cache: "no-store", signal: controller.signal });
         if (!response.ok) throw new Error(`The engine answered ${response.status} for this report`);
         if (finish(readableArtifact(await response.text()))) return;
         problem = "The report file is empty";
@@ -336,7 +340,7 @@ export function DetailedReport({
       }
 
       // Fall back to the individual report files the engine already published.
-      const stitched = await reportsFallback(url).catch(() => "");
+      const stitched = await reportsFallback(reportUrl).catch(() => "");
       if (finish(stitched)) return;
       if (cancelled) return;
       setReason(problem);
@@ -349,12 +353,11 @@ export function DetailedReport({
       cancelled = true;
       controller.abort();
     };
-  }, [url, attempt]);
+  }, [reportUrl, attempt]);
 
   const html = useMemo(() => markdownToHtml(source), [source]);
   const ready = Boolean(source) && !failed;
-  const runId = runIdFromUrl(url);
-  const artifactBase = runId ? url.slice(0, url.indexOf(`/runs/${runId}/`) + `/runs/${runId}/`.length) : null;
+  const artifactBase = runId ? bridgeAssetUrl(`/runs/${runId}/`) : null;
   const artifacts = artifactBase ? [
     { filename: "market-data.json", label: "Market Data (JSON)" },
     { filename: "price-chart.json", label: "Price Chart (JSON)" },
@@ -391,7 +394,7 @@ export function DetailedReport({
           </p>
         </div>
         <Button asChild size="sm" variant="default" className="min-h-10 gap-2 px-4 font-semibold shadow-sm">
-          <a href={url} target="_blank" rel="noreferrer">
+          <a href={reportUrl} target="_blank" rel="noreferrer">
             {t("report.original")} <ExternalLink className="size-4" aria-hidden="true" />
           </a>
         </Button>
@@ -418,7 +421,7 @@ export function DetailedReport({
       {failed && (
         <div className="space-y-1 px-4 py-4 text-xs text-muted-foreground sm:px-5">
           {reason && <p>{reason}</p>}
-          <p className="break-all">{url}</p>
+          <p className="break-all">{reportUrl}</p>
         </div>
       )}
 

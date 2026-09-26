@@ -53,10 +53,15 @@ function Workbench() {
   const { run, liveRun, artifacts, analysisBusy, chartReady } = analysis;
 
   const [formOpen, setFormOpen] = useState(true);
+  const [mcpOpen, setMcpOpen] = useState(true);
   // Hide the form while an analysis runs; either New Analysis control restores it.
   useEffect(() => {
     if (analysisBusy) setFormOpen(false);
   }, [analysisBusy]);
+
+  useEffect(() => {
+    if (chartReady) setMcpOpen(false);
+  }, [chartReady]);
 
   const startAnalysis = (config: RunConfig) => {
     setFormOpen(false);
@@ -165,8 +170,19 @@ function Workbench() {
         )}
       </section>
 
-      <div className="mb-3">
-        <McpConnectionNote context="dashboard" />
+      <div className="mb-3 space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          aria-expanded={mcpOpen}
+          onClick={() => setMcpOpen((value) => !value)}
+        >
+          {mcpOpen ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          {mcpOpen ? t("common.hide") : t("common.show")} {t("mcp.title")}
+        </Button>
+        {mcpOpen && <McpConnectionNote context="dashboard" />}
       </div>
 
       {!analysis.cleared && <PanelErrorBoundary onReset={clearAnalysis}><div className="mb-4 min-w-0">

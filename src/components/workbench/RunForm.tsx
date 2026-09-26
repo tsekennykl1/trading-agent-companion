@@ -38,9 +38,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     language: defaultConfig.language || "English",
     stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
-  const [market, setMarket] = useState<"HK" | "Other">(
-    /\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other",
-  );
+  const [market, setMarket] = useState<"HK" | "Other">("HK");
   const [tickerError, setTickerError] = useState<string | null>(null);
   const providersQuery = useQuery({
     queryKey: ["configured-providers"],
@@ -74,7 +72,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
-    setMarket(/\.HK$/i.test(defaultConfig.ticker) || /^\d{1,4}$/.test(defaultConfig.ticker) ? "HK" : "Other");
+    setMarket("HK");
   }, [defaultConfig.analysisDate]);
 
   useEffect(() => {
@@ -190,7 +188,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 }}
               >
                 <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
-                  <SelectValue />
+                  <SelectValue>{market === "HK" ? t("form.marketHK") : t("form.marketOther")}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="HK">{t("form.marketHK")}</SelectItem>
