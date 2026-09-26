@@ -176,10 +176,11 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                 }}
-                placeholder="e.g. 700"
+                placeholder="eg. 700"
                 required
                 aria-invalid={!!tickerError}
-                className="font-mono"
+                className="font-mono placeholder:text-xs"
+
               />
               <Select
                 value={market}
@@ -203,19 +204,18 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
           <div className="min-w-0 space-y-1.5">
             <Label htmlFor="date" className="label-caps">
               {t("form.date")}
-              {config.language === "English" && (
-                <span className="ml-1.5 font-normal normal-case text-muted-foreground">(YYYY/MM/DD)</span>
-              )}
             </Label>
             <Input
               id="date"
               type="date"
-              lang={config.language === "English" ? "en-CA" : undefined}
+              lang="en-CA"
               placeholder="YYYY/MM/DD"
               value={config.analysisDate}
               onChange={(e) => update("analysisDate", e.target.value)}
               required
+              className="placeholder:text-xs"
             />
+
           </div>
 
           {configuredProviders.length > 0 && (
