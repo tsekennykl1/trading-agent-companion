@@ -195,3 +195,9 @@
 - [x] Clear previous analysis immediately when New Analysis is chosen; move error explanation to Setup.
 - [x] Refresh the connection badge after saving the engine address; adjust stock and language labels.
 - [x] Link the MCP invitation to a detailed in-app explanation and verify the updated screens.
+
+# Report loading and dashboard defaults
+
+- [x] Load completed reports and downloads through the configured engine artifact path.
+- [x] Default Stock country to HK and collapse the MCP connection section when charts are ready.
+- [x] Recolor the 5051 favicon red and verify the updated dashboard and report page.
