@@ -112,6 +112,12 @@ const EN = {
   "report.available": "Available",
   "report.missing": "No detailed report is available yet. Run an analysis first.",
 
+  "artifact.redirecting": "Opening the report from the analysis engine…",
+  "artifact.missingTitle": "This report is not reachable",
+  "artifact.missingBody":
+    "The link points at this website, but the report lives on the analysis engine. Check the engine address on the Connect engine page, or open the report from the Dashboard.",
+  "artifact.goHome": "Go to Dashboard",
+
   "reports.title": "Agent reports",
   "reports.showAll": "Show All",
   "reports.hideAll": "Hide All",
@@ -383,6 +389,12 @@ const ZH: Record<TKey, string> = {
   "report.failed": "無法載入已排版的報告",
   "report.available": "可供閱讀",
   "report.missing": "目前尚無詳細報告，請先執行一次分析。",
+
+  "artifact.redirecting": "正在從分析引擎開啟報告…",
+  "artifact.missingTitle": "無法開啟此報告",
+  "artifact.missingBody":
+    "此連結指向本網站，但報告實際存放在分析引擎上。請在「連接引擎」頁面檢查引擎地址，或從儀表板開啟報告。",
+  "artifact.goHome": "返回儀表板",
 
   "reports.title": "代理人報告",
   "reports.showAll": "全部展開",
