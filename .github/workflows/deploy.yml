@@ -22,7 +22,6 @@ env:
   INSTANCE_ID: i-00c16218eb325facf
   SERVICE_NAME: mytradingagents-backend
   APP_ROOT: /opt/myTradingAgentsBackend
-  AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
 
 permissions:
   id-token: write   # needed for OIDC role assumption
@@ -34,16 +33,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select AWS authentication mode
+        id: aws_auth
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          if [ -n "${AWS_DEPLOY_ROLE_ARN:-}" ]; then
+            echo "mode=oidc" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=keys" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Configure AWS credentials (OIDC)
-        if: ${{ env.AWS_DEPLOY_ROLE_ARN != '' }}
+        if: ${{ steps.aws_auth.outputs.mode == 'oidc' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           # Preferred: OIDC role (no long-lived keys).
-          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Configure AWS credentials (access keys fallback)
-        if: ${{ env.AWS_DEPLOY_ROLE_ARN == '' }}
+        if: ${{ steps.aws_auth.outputs.mode == 'keys' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
