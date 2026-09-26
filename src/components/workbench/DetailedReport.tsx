@@ -134,8 +134,7 @@ function htmlToMarkdown(source: string): string {
       .map((item) => [item.querySelector(".meta-label")?.textContent?.trim(), item.querySelector(".meta-value")?.textContent?.trim()])
       .filter((row): row is [string, string] => Boolean(row[0] && row[1]));
     if (metadata.length) {
-      blocks.push("| Field | Value |", "| --- | --- |");
-      metadata.forEach(([label, value]) => blocks.push(`| ${label} | ${value} |`));
+      blocks.push(["| Field | Value |", "| --- | --- |", ...metadata.map(([label, value]) => `| ${label} | ${value} |`)].join("\n"));
     }
 
     engineCards.forEach((card) => {
@@ -158,10 +157,12 @@ function htmlToMarkdown(source: string): string {
         });
       } else if (/Timings/i.test(heading)) {
         blocks.push(`## ${heading}`);
+        const rows: string[] = [];
         card.querySelectorAll("tr").forEach((row) => {
           const cells = Array.from(row.querySelectorAll(":scope > th, :scope > td")).map((cell) => renderInline(cell));
-          if (cells.length) blocks.push(`| ${cells.join(" | ")} |`);
+          if (cells.length) rows.push(`| ${cells.join(" | ")} |`);
         });
+        if (rows.length) blocks.push([rows[0], "| --- | --- |", ...rows.slice(1)].join("\n"));
       }
     });
   } else {
@@ -379,7 +380,7 @@ export function DetailedReport({
     };
   }, [reportUrl, attempt]);
 
-  const html = useMemo(() => markdownToHtml(source), [source]);
+  const html = useMemo(() => markdownToHtml(source, false), [source]);
   const ready = Boolean(source) && !failed;
   const artifactBase = runId ? bridgeAssetUrl(`/runs/${runId}/`) : null;
   const artifacts = artifactBase ? [
