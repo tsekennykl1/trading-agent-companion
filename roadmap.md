@@ -198,6 +198,9 @@
 
 # Report loading and dashboard defaults
 
+- [ ] Verify the production frontend MCP handshake after deploying the updated frontend to the EC2 site (blocked: AWS deployment access is unavailable). The engine MCP handshake reaches the backend and correctly requires its access key.
+- [x] Run a full 0700.HK analysis, keep the interactive chart visible during progress, and verify its completed report and inline price chart PNG.
+
 - [x] Load completed reports and downloads through the configured engine artifact path.
 - [x] Default Stock country to HK and collapse the MCP connection section when charts are ready.
 - [x] Recolor the 5051 favicon red and verify the updated dashboard and report page.

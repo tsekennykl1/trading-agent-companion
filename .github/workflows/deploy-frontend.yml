@@ -45,7 +45,8 @@ jobs:
       - name: Build (Node server output)
         env:
           NITRO_PRESET: node-server
-          VITE_ENGINE_BASE_URL: ${{ vars.VITE_ENGINE_BASE_URL }}
+          VITE_API_BASE_URL: https://www.myfinance5051.com/api
+          VITE_PUBLIC_ASSET_BASE_URL: https://www.myfinance5051.com/api
         run: bun run build
 
       - name: Package the build

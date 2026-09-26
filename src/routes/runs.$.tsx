@@ -17,6 +17,11 @@ export const Route = createFileRoute("/runs/$")({
   head: () => ({
     meta: [
       { title: "Run artifact — My Trading Agents" },
+      { name: "description", content: "Open an analysis artifact from the connected My Trading Agents engine." },
+      { property: "og:title", content: "Run artifact — My Trading Agents" },
+      { property: "og:description", content: "Open an analysis artifact from the connected My Trading Agents engine." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),

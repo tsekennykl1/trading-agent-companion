@@ -48,11 +48,6 @@ export function useRunArtifacts(
     STAGE_OPTIONS.filter((stage) => selectedStages.has(stage.id)).flatMap((stage) => stage.reportKeys),
   );
   const partial = run?.partial;
-  const givenChartJson = partial?.chartJsonUrl;
-  const givenMarketData = partial?.marketDataUrl;
-  const givenChartHtml = partial?.chartHtmlUrl;
-  const givenChartPng = partial?.chartPngUrl;
-  const givenResult = partial?.resultHtmlUrl;
   const stagesKey = (run?.config.stages ?? []).join(",");
   const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
   const cache = useRef<RunArtifacts>(EMPTY);
@@ -77,13 +72,15 @@ export function useRunArtifacts(
     let timer: number | undefined;
     let firstPass = true;
 
-    const chartHtml = givenChartHtml ?? bridgeAssetUrl(`/runs/${runId}/price-chart.html`);
-    const chartPng = givenChartPng ?? bridgeAssetUrl(`/runs/${runId}/price-chart.png`);
+    // Engine-emitted absolute URLs may omit the reverse-proxy /api prefix.
+    // Use canonical URLs for known artifacts so the chart survives progress polls.
+    const chartHtml = bridgeAssetUrl(`/runs/${runId}/price-chart.html`);
+    const chartPng = bridgeAssetUrl(`/runs/${runId}/price-chart.png`);
     const legacyHtml = bridgeAssetUrl(`/runs/${runId}/chart.html`);
     const legacyPng = bridgeAssetUrl(`/runs/${runId}/chart.png`);
-    const chartJson = givenChartJson ?? `/runs/${runId}/price-chart.json`;
-    const marketDataUrl = givenMarketData ?? `/runs/${runId}/market-data`;
-    const resultHtml = givenResult ?? bridgeAssetUrl(`/runs/${runId}/result.html`);
+    const chartJson = `/runs/${runId}/price-chart.json`;
+    const marketDataUrl = `/runs/${runId}/market-data`;
+    const resultHtml = bridgeAssetUrl(`/runs/${runId}/result.html`);
 
     const loadReports = async (have: Record<string, string>) => {
       const index = await api.reportsIndex(runId);
@@ -196,7 +193,7 @@ export function useRunArtifacts(
       alive = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult, restored, run?.config.stages]);
+  }, [runId, enabled, terminal, restored, stagesKey]);
 
   return artifacts;
 }

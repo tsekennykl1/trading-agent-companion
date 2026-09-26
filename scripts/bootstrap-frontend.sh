@@ -111,6 +111,17 @@ ln -sfn "${APP_DIR}/releases/${RELEASE}" "${APP_DIR}/current"
 
 rm -rf "${TMP}"
 
+# Keep the MCP key server-side only. This private file is never in the build
+# archive or the browser bundle; an absent key leaves every MCP tool closed.
+mkdir -p "${APP_DIR}/config"
+if aws s3 cp "s3://${S3_BUCKET}/frontend/config/.env" "${APP_DIR}/config/.env"; then
+  chmod 600 "${APP_DIR}/config/.env"
+elif [ ! -f "${APP_DIR}/config/.env" ]; then
+  touch "${APP_DIR}/config/.env"
+  chmod 600 "${APP_DIR}/config/.env"
+  echo "MCP key not configured: frontend MCP tools remain closed." >&2
+fi
+
 # ── Clean up old releases (keep last 5) ─────────────────────────
 ls -1dt "${APP_DIR}/releases"/*/ 2>/dev/null | tail -n +6 | xargs rm -rf || true
 
@@ -127,6 +138,8 @@ WorkingDirectory=${APP_DIR}/current
 Environment=NODE_ENV=production
 Environment=NITRO_PORT=3000
 Environment=NITRO_HOST=0.0.0.0
+Environment=TRADING_ENGINE_URL=https://www.myfinance5051.com/api
+EnvironmentFile=${APP_DIR}/config/.env
 ExecStart=/usr/bin/node ${APP_DIR}/current/.output/server/index.mjs
 Restart=always
 RestartSec=5

@@ -1,7 +1,13 @@
 import "./lib/error-capture";
 
+import { webcrypto } from "node:crypto";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+
+// Node 18 does not expose Web Crypto globally, while MCP stream IDs require it.
+if (!globalThis.crypto) {
+  Object.defineProperty(globalThis, "crypto", { value: webcrypto, configurable: true });
+}
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
