@@ -127,6 +127,7 @@ WorkingDirectory=${APP_DIR}/current
 Environment=NODE_ENV=production
 Environment=NITRO_PORT=3000
 Environment=NITRO_HOST=0.0.0.0
+Environment=TRADING_ENGINE_URL=https://www.myfinance5051.com/api
 ExecStart=/usr/bin/node ${APP_DIR}/current/.output/server/index.mjs
 Restart=always
 RestartSec=5
