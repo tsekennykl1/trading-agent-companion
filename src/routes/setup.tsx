@@ -7,6 +7,7 @@ import { EnvBuilder } from "@/components/workbench/EnvBuilder";
 import { LlmVisibilityPanel } from "@/components/workbench/LlmVisibilityPanel";
 import { ProviderCreditPanel } from "@/components/workbench/ProviderCreditPanel";
 import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
+import { ErrorDiagnosis } from "@/components/workbench/ErrorDiagnosis";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,6 +160,7 @@ function Setup() {
             </div>
             <Button
               onClick={() => {
+                health.remove?.();
                 setBridgeUrl(url);
                 void health.refetch().then((r) =>
                   r.data
@@ -185,6 +187,8 @@ function Setup() {
             </span>
           </div>
         </section>
+
+        <div className="mt-6"><ErrorDiagnosis /></div>
 
         <div className="mt-6">
           <McpConnectionNote context="setup" />

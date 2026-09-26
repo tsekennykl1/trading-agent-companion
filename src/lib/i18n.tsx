@@ -180,8 +180,8 @@ const EN = {
   "form.riskDebate": "Aggressive + Conservative + Neutral Analyst",
 
   "lang.English": "English",
-  "lang.Traditional Chinese": "Traditional Chinese",
-  "lang.Simplified Chinese": "Simplified Chinese",
+  "lang.Traditional Chinese": "繁體中文",
+  "lang.Simplified Chinese": "简体中文",
 
   "analyst.Market Analyst": "Market Analyst",
   "analyst.Sentiment Analyst": "Sentiment Analyst",
@@ -465,9 +465,9 @@ const ZH: Record<TKey, string> = {
   "form.researchDebate": "看多及看空研究員",
   "form.riskDebate": "進取型 + 保守型 + 中立型風險分析師",
 
-  "lang.English": "英文",
+  "lang.English": "English",
   "lang.Traditional Chinese": "繁體中文",
-  "lang.Simplified Chinese": "簡體中文",
+  "lang.Simplified Chinese": "简体中文",
 
   "analyst.Market Analyst": "市場分析師",
   "analyst.Sentiment Analyst": "情緒分析師",

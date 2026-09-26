@@ -24,7 +24,14 @@ export function BridgeStatusBadge() {
   const online = !!data && !isError;
 
   useEffect(() => {
-    setBridgeUrl(getBridgeUrl());
+    const update = () => setBridgeUrl(getBridgeUrl());
+    update();
+    window.addEventListener("ta-bridge-url-changed", update);
+    window.addEventListener("storage", update);
+    return () => {
+      window.removeEventListener("ta-bridge-url-changed", update);
+      window.removeEventListener("storage", update);
+    };
   }, []);
 
   return (

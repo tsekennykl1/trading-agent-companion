@@ -176,7 +176,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                 }}
-                placeholder="700"
+                placeholder="e.g. 700"
                 required
                 aria-invalid={!!tickerError}
                 className="font-mono"
