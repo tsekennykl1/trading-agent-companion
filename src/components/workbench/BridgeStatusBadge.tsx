@@ -6,8 +6,19 @@ import { api, DEFAULT_BRIDGE_URL, getBridgeUrl } from "@/lib/trading-agents/clie
 import { cn } from "@/lib/utils";
 
 export function useBridgeHealth() {
+  const [address, setAddress] = useState(DEFAULT_BRIDGE_URL);
+  useEffect(() => {
+    const update = () => setAddress(getBridgeUrl());
+    update();
+    window.addEventListener("ta-bridge-url-changed", update);
+    window.addEventListener("storage", update);
+    return () => {
+      window.removeEventListener("ta-bridge-url-changed", update);
+      window.removeEventListener("storage", update);
+    };
+  }, []);
   return useQuery({
-    queryKey: ["bridge-health"],
+    queryKey: ["bridge-health", address],
     queryFn: api.health,
     retry: false,
     // Once the engine answers, stop hammering /health — a slow heartbeat is
