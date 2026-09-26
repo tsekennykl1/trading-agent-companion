@@ -193,7 +193,7 @@ export function useRunArtifacts(
       alive = false;
       if (timer) window.clearTimeout(timer);
     };
-  }, [runId, enabled, terminal, givenChartJson, givenMarketData, givenChartHtml, givenChartPng, givenResult, restored, run?.config.stages]);
+  }, [runId, enabled, terminal, restored, stagesKey]);
 
   return artifacts;
 }
