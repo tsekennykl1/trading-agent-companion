@@ -1,4 +1,5 @@
-import { Bot, Copy, ExternalLink } from "lucide-react";
+import { Bot, Copy, ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
@@ -22,6 +23,11 @@ export function McpConnectionNote({ context }: { context: "dashboard" | "history
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{t("mcp.title")}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">{body}</p>
+          {context !== "setup" && (
+            <Link to="/mcp-guide" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2">
+              {t("mcp.learn")} <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          )}
           {context === "setup" && (
             <>
               <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
@@ -44,14 +50,12 @@ export function McpConnectionNote({ context }: { context: "dashboard" | "history
               </div>
               <p className="mt-2 text-sm font-medium text-bear">{t("mcp.publicWarning")}</p>
               <p className="mt-2 text-xs text-muted-foreground">{t("mcp.tools")}</p>
-              <a
-                href="https://modelcontextprotocol.io/docs/getting-started/intro"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                to="/mcp-guide"
                 className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary underline underline-offset-2"
               >
-                {t("mcp.learn")} <ExternalLink className="size-3" aria-hidden="true" />
-              </a>
+                {t("mcp.learn")} <ArrowRight className="size-3" aria-hidden="true" />
+              </Link>
             </>
           )}
         </div>

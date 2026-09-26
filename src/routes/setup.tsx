@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -124,6 +125,7 @@ function CodeBlock({ code }: { code: string }) {
 
 function Setup() {
   const health = useBridgeHealth();
+  const queryClient = useQueryClient();
   const [url, setUrl] = useState(DEFAULT_BRIDGE_URL);
 
   useEffect(() => setUrl(getBridgeUrl()), []);
@@ -160,8 +162,8 @@ function Setup() {
             </div>
             <Button
               onClick={() => {
-                health.remove?.();
                 setBridgeUrl(url);
+                queryClient.setQueryData(["bridge-health"], undefined);
                 void health.refetch().then((r) =>
                   r.data
                     ? toast.success("Connected to your TradingAgents engine")
