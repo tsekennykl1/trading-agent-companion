@@ -118,6 +118,15 @@ const EN = {
     "The link points at this website, but the report lives on the analysis engine. Check the engine address on the Connect engine page, or open the report from the Dashboard.",
   "artifact.goHome": "Go to Dashboard",
 
+  "crash.panelTitle": "This section could not be shown",
+  "crash.panelBody":
+    "Something in this part of the page failed. The rest of the workbench still works.",
+  "crash.retry": "Try again",
+  "crash.reset": "Reset saved data",
+  "crash.details": "Technical details",
+  "notFound.title": "Page not found",
+  "notFound.body": "This address does not exist in the workbench.",
+
   "reports.title": "Agent reports",
   "reports.showAll": "Show All",
   "reports.hideAll": "Hide All",
@@ -395,6 +404,14 @@ const ZH: Record<TKey, string> = {
   "artifact.missingBody":
     "此連結指向本網站，但報告實際存放在分析引擎上。請在「連接引擎」頁面檢查引擎地址，或從儀表板開啟報告。",
   "artifact.goHome": "返回儀表板",
+
+  "crash.panelTitle": "此區塊無法顯示",
+  "crash.panelBody": "此部分內容載入失敗，頁面其餘功能仍可正常使用。",
+  "crash.retry": "重試",
+  "crash.reset": "清除已儲存資料",
+  "crash.details": "技術細節",
+  "notFound.title": "找不到頁面",
+  "notFound.body": "此網址在工作台中不存在。",
 
   "reports.title": "代理人報告",
   "reports.showAll": "全部展開",
