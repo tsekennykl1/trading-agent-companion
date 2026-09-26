@@ -53,13 +53,24 @@ export function useRunArtifacts(
   const givenChartHtml = partial?.chartHtmlUrl;
   const givenChartPng = partial?.chartPngUrl;
   const givenResult = partial?.resultHtmlUrl;
+  const stagesKey = (run?.config.stages ?? []).join(",");
   const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
   const cache = useRef<RunArtifacts>(EMPTY);
+  const cacheRunId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    const initial = restored && runId ? restored : EMPTY;
-    cache.current = initial;
-    setArtifacts(initial);
+    // Only wipe loaded artifacts when the run itself changes. Status polls,
+    // completion and new partial URLs re-run this effect, and resetting here
+    // made the interactive chart vanish and fall back to the static image.
+    if (cacheRunId.current !== runId) {
+      cacheRunId.current = runId;
+      const initial = restored && runId ? restored : EMPTY;
+      cache.current = initial;
+      setArtifacts(initial);
+    } else if (restored && !cache.current.chartData && restored.chartData) {
+      cache.current = { ...restored, ...cache.current, chartData: restored.chartData };
+      setArtifacts(cache.current);
+    }
     if (!runId || !enabled) return;
 
     let alive = true;
