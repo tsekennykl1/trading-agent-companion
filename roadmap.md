@@ -191,7 +191,7 @@
 
 # Report, setup, and dashboard polish
 
-- [ ] Highlight the original report; remove duplicate generated sections and show downloadable artifacts with an inline PNG.
-- [ ] Clear previous analysis immediately when New Analysis is chosen; move error explanation to Setup.
-- [ ] Refresh the connection badge after saving the engine address; adjust stock and language labels.
-- [ ] Link the MCP invitation to a detailed in-app explanation and verify the updated screens.
+- [x] Highlight the original report; remove duplicate generated sections and show downloadable artifacts with an inline PNG.
+- [x] Clear previous analysis immediately when New Analysis is chosen; move error explanation to Setup.
+- [x] Refresh the connection badge after saving the engine address; adjust stock and language labels.
+- [x] Link the MCP invitation to a detailed in-app explanation and verify the updated screens.
