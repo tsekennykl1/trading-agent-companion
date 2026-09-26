@@ -48,11 +48,6 @@ export function useRunArtifacts(
     STAGE_OPTIONS.filter((stage) => selectedStages.has(stage.id)).flatMap((stage) => stage.reportKeys),
   );
   const partial = run?.partial;
-  const givenChartJson = partial?.chartJsonUrl;
-  const givenMarketData = partial?.marketDataUrl;
-  const givenChartHtml = partial?.chartHtmlUrl;
-  const givenChartPng = partial?.chartPngUrl;
-  const givenResult = partial?.resultHtmlUrl;
   const stagesKey = (run?.config.stages ?? []).join(",");
   const [artifacts, setArtifacts] = useState<RunArtifacts>(EMPTY);
   const cache = useRef<RunArtifacts>(EMPTY);
