@@ -181,3 +181,10 @@
 - [x] Expose bounded tools for run control, progress, reports, decisions, charts, market data, and AI models.
 - [x] Document the shared MCP/HTTP queue on Dashboard, Historical Analysis, Setup, README, and LEARN.
 - [ ] Apply and publish the backend package to the backend repository (blocked: repository credentials are unavailable here).
+
+# Blank-page crash guards
+
+- [x] Add a site-wide catch-all so unknown or artifact URLs never blank the page.
+- [x] Add router-level error and not-found screens.
+- [x] Wrap dashboard panels in an error boundary with retry/reset.
+- [ ] Publish the fix and confirm a real analysis opens on the live site.

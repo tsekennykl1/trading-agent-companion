@@ -11,6 +11,7 @@ import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { CompanySnapshot } from "@/components/workbench/CompanySnapshot";
 import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
 import { ErrorDiagnosis } from "@/components/workbench/ErrorDiagnosis";
+import { PanelErrorBoundary } from "@/components/workbench/PanelErrorBoundary";
 
 import { ExportBar } from "@/components/workbench/ExportBar";
 import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
@@ -175,7 +176,7 @@ function Workbench() {
         />
       </div>
 
-      {!analysis.cleared && <div className="mb-4 min-w-0">
+      {!analysis.cleared && <PanelErrorBoundary onReset={clearAnalysis}><div className="mb-4 min-w-0">
         {!analysis.showingSample && <CompanySnapshot ticker={run.config.ticker} />}
         <LiveSnapshot run={run} artifacts={artifacts} />
 
@@ -191,9 +192,9 @@ function Workbench() {
             />
           </div>
         )}
-      </div>}
+      </div></PanelErrorBoundary>}
 
-      {!analysis.cleared && <div
+      {!analysis.cleared && <PanelErrorBoundary onReset={clearAnalysis}><div
         className="flex min-w-0 flex-col gap-4 xl:grid xl:grid-cols-[20rem_minmax(0,1fr)] xl:items-start"
         aria-busy={analysisBusy}
       >
@@ -272,7 +273,7 @@ function Workbench() {
             <ReportsSection run={run} extraReports={artifacts.reports} />
           </div>
         </main>
-      </div>}
+      </div></PanelErrorBoundary>}
     </AppShell>
   );
 }
