@@ -206,4 +206,4 @@
 
 - [x] Show the engine result's decision, agent reports, and timings in the detail page's style.
 - [x] Promote bold labels to subtitles and show the chart only once.
-- [ ] Verify a real report and clean desktop/mobile rendering.
+- [x] Verify a real report and clean desktop/mobile rendering.
