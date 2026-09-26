@@ -15,6 +15,7 @@ export function getBridgeUrl(): string {
 export function setBridgeUrl(url: string) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, url.replace(/\/$/, ""));
+  window.dispatchEvent(new Event("ta-bridge-url-changed"));
 }
 
 export class EngineHttpError extends Error {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/trading-agents/client";
 import { markdownToHtml } from "@/lib/trading-agents/report";
@@ -107,7 +107,22 @@ function cleanJsonLikeMarkdown(source: string): string {
 
 function htmlToMarkdown(source: string): string {
   const document = new DOMParser().parseFromString(source, "text/html");
+  // The engine's complete HTML repeats decision, chart, agent reports and
+  // timings already present on the dashboard. Keep those in Original only.
+  document.querySelectorAll("h2").forEach((heading) => {
+    if (/Portfolio Decision|Price Chart|Agent Reports|Timings|Artifacts/i.test(heading.textContent ?? "")) {
+      heading.closest(".card")?.remove();
+    }
+  });
+  document.querySelectorAll("details, script, style").forEach((element) => element.remove());
   const blocks: string[] = [];
+
+  document.querySelectorAll(".meta-item").forEach((element) => {
+    const label = element.querySelector(".meta-label")?.textContent?.trim();
+    const value = element.querySelector(".meta-value")?.textContent?.trim();
+    if (label && value) blocks.push(`**${label}:** ${value}`);
+    element.remove();
+  });
 
   const renderInline = (element: Element): string =>
     Array.from(element.childNodes)
@@ -338,6 +353,31 @@ export function DetailedReport({
 
   const html = useMemo(() => markdownToHtml(source), [source]);
   const ready = Boolean(source) && !failed;
+  const runId = runIdFromUrl(url);
+  const artifactBase = runId ? url.slice(0, url.indexOf(`/runs/${runId}/`) + `/runs/${runId}/`.length) : null;
+  const artifacts = artifactBase ? [
+    { filename: "market-data.json", label: "Market Data (JSON)" },
+    { filename: "price-chart.json", label: "Price Chart (JSON)" },
+    { filename: "price-chart.png", label: "Price Chart (PNG)" },
+    { filename: "price-chart.html", label: "Price Chart (Interactive)" },
+  ] : [];
+
+  const downloadArtifact = async (filename: string) => {
+    if (!artifactBase) return;
+    const artifactUrl = `${artifactBase}${filename}`;
+    try {
+      const response = await fetch(artifactUrl);
+      if (!response.ok) throw new Error("Artifact unavailable");
+      const blobUrl = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = `${ticker || runId}-${filename}`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      window.open(artifactUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <section className="panel overflow-hidden">
@@ -350,14 +390,11 @@ export function DetailedReport({
             {failed ? t("report.failed") : ready ? t("report.available") : t("report.loading")}
           </p>
         </div>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-        >
-          {t("report.original")} <ExternalLink className="size-3.5" aria-hidden="true" />
-        </a>
+        <Button asChild size="sm" variant="default" className="min-h-10 gap-2 px-4 font-semibold shadow-sm">
+          <a href={url} target="_blank" rel="noreferrer">
+            {t("report.original")} <ExternalLink className="size-4" aria-hidden="true" />
+          </a>
+        </Button>
         {failed && (
           <Button type="button" size="sm" variant="outline" onClick={() => setAttempt((n) => n + 1)}>
             <RefreshCw className="size-3.5" aria-hidden="true" /> {t("report.retry")}
@@ -386,11 +423,31 @@ export function DetailedReport({
       )}
 
       {ready && open && (
-        <article
-          aria-label={`${ticker} detailed analysis report`}
-          className={`prose-report report-columns min-w-0 overflow-x-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6 ${expanded ? "" : "max-h-[44rem] overflow-y-auto"}`}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <>
+          <article
+            aria-label={`${ticker} detailed analysis report`}
+            className={`prose-report report-columns min-w-0 overflow-x-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6 ${expanded ? "" : "max-h-[44rem] overflow-y-auto"}`}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+          {artifactBase && (
+            <div className="border-t border-rule px-4 py-5 sm:px-6">
+              <div className="flex flex-wrap gap-2">
+                {artifacts.map(({ filename, label }) => (
+                  <Button key={filename} type="button" variant="outline" size="sm" className="gap-2" onClick={() => void downloadArtifact(filename)}>
+                    <Download className="size-4" aria-hidden="true" /> {label}
+                  </Button>
+                ))}
+              </div>
+              <img
+                src={`${artifactBase}price-chart.png`}
+                alt={`${ticker} price chart`}
+                loading="lazy"
+                className="mt-4 max-h-[42rem] w-full object-contain"
+                onError={(event) => { event.currentTarget.hidden = true; }}
+              />
+            </div>
+          )}
+        </>
       )}
     </section>
   );

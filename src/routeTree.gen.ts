@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as McpGuideRouteImport } from './routes/mcp-guide'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as TechnicalAnalysisRouteImport } from './routes/technical-analysis'
@@ -43,6 +44,11 @@ const HistoryRoute = HistoryRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpGuideRoute = McpGuideRouteImport.update({
+  id: '/mcp-guide',
+  path: '/mcp-guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportRoute = ReportRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
   '/technical-analysis': typeof TechnicalAnalysisRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-guide'
     | '/report'
     | '/setup'
     | '/technical-analysis'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-guide'
     | '/report'
     | '/setup'
     | '/technical-analysis'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-guide'
     | '/report'
     | '/setup'
     | '/technical-analysis'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   HistoryRoute: typeof HistoryRoute
   McpRoute: typeof McpRoute
+  McpGuideRoute: typeof McpGuideRoute
   ReportRoute: typeof ReportRoute
   SetupRoute: typeof SetupRoute
   TechnicalAnalysisRoute: typeof TechnicalAnalysisRoute
@@ -196,6 +209,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp-guide': {
+      id: '/mcp-guide'
+      path: '/mcp-guide'
+      fullPath: '/mcp-guide'
+      preLoaderRoute: typeof McpGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report': {
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   HistoryRoute: HistoryRoute,
   McpRoute: McpRoute,
+  McpGuideRoute: McpGuideRoute,
   ReportRoute: ReportRoute,
   SetupRoute: SetupRoute,
   TechnicalAnalysisRoute: TechnicalAnalysisRoute,

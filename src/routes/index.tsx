@@ -10,7 +10,6 @@ import { ReportsSection } from "@/components/workbench/ReportsSection";
 import { LiveSnapshot } from "@/components/workbench/LiveSnapshot";
 import { CompanySnapshot } from "@/components/workbench/CompanySnapshot";
 import { McpConnectionNote } from "@/components/workbench/McpConnectionNote";
-import { ErrorDiagnosis } from "@/components/workbench/ErrorDiagnosis";
 import { PanelErrorBoundary } from "@/components/workbench/PanelErrorBoundary";
 
 import { ExportBar } from "@/components/workbench/ExportBar";
@@ -65,6 +64,7 @@ function Workbench() {
   };
 
   const openAnalysisForm = () => {
+    analysis.clear();
     setFormOpen(true);
     window.requestAnimationFrame(() => {
       document.getElementById("new-analysis")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -167,13 +167,6 @@ function Workbench() {
 
       <div className="mb-3">
         <McpConnectionNote context="dashboard" />
-      </div>
-
-      <div className="mb-4 min-w-0">
-        <ErrorDiagnosis
-          initialLog={[run.error, ...(liveRun?.partial?.warnings ?? [])].filter(Boolean).join("\n")}
-          context={`Ticker ${run.config.ticker}, date ${run.config.analysisDate}`}
-        />
       </div>
 
       {!analysis.cleared && <PanelErrorBoundary onReset={clearAnalysis}><div className="mb-4 min-w-0">
