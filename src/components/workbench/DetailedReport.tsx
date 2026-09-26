@@ -107,22 +107,8 @@ function cleanJsonLikeMarkdown(source: string): string {
 
 function htmlToMarkdown(source: string): string {
   const document = new DOMParser().parseFromString(source, "text/html");
-  // The engine's complete HTML repeats decision, chart, agent reports and
-  // timings already present on the dashboard. Keep those in Original only.
-  document.querySelectorAll("h2").forEach((heading) => {
-    if (/Portfolio Decision|Price Chart|Agent Reports|Timings|Artifacts/i.test(heading.textContent ?? "")) {
-      heading.closest(".card")?.remove();
-    }
-  });
-  document.querySelectorAll("details, script, style").forEach((element) => element.remove());
+  document.querySelectorAll("script, style, .raw-toggle").forEach((element) => element.remove());
   const blocks: string[] = [];
-
-  document.querySelectorAll(".meta-item").forEach((element) => {
-    const label = element.querySelector(".meta-label")?.textContent?.trim();
-    const value = element.querySelector(".meta-value")?.textContent?.trim();
-    if (label && value) blocks.push(`**${label}:** ${value}`);
-    element.remove();
-  });
 
   const renderInline = (element: Element): string =>
     Array.from(element.childNodes)
@@ -138,20 +124,58 @@ function htmlToMarkdown(source: string): string {
       .join("")
       .trim();
 
-  document.body.querySelectorAll("h1, h2, h3, h4, p, li, tr, pre").forEach((element) => {
-    const text = renderInline(element);
-    if (!text) return;
-    if (/^H[1-4]$/.test(element.tagName)) {
-      blocks.push(`${"#".repeat(Number(element.tagName.slice(1)))} ${text}`);
-    } else if (element.tagName === "LI") {
-      blocks.push(`- ${text}`);
-    } else if (element.tagName === "TR") {
-      const cells = Array.from(element.querySelectorAll(":scope > th, :scope > td")).map((cell) => renderInline(cell));
-      if (cells.length) blocks.push(`| ${cells.join(" | ")} |`);
-    } else {
-      blocks.push(text);
+  // The engine nests text inside divs and closed <details>, not paragraphs.
+  // Read the known sections directly so text is not lost or repeated.
+  const engineCards = document.querySelectorAll(".wrap > .card");
+  if (engineCards.length) {
+    const title = document.querySelector(".header-strip h1")?.textContent?.trim();
+    if (title) blocks.push(`# ${title}`);
+    const metadata = Array.from(document.querySelectorAll(".meta-item"))
+      .map((item) => [item.querySelector(".meta-label")?.textContent?.trim(), item.querySelector(".meta-value")?.textContent?.trim()])
+      .filter((row): row is [string, string] => Boolean(row[0] && row[1]));
+    if (metadata.length) {
+      blocks.push("| Field | Value |", "| --- | --- |");
+      metadata.forEach(([label, value]) => blocks.push(`| ${label} | ${value} |`));
     }
-  });
+
+    engineCards.forEach((card) => {
+      const heading = card.querySelector(":scope > h2")?.textContent?.trim() ?? "";
+      if (/Price Chart|Artifacts/i.test(heading)) return; // Chart appears once below; downloads have their own controls.
+      if (/Portfolio Decision/i.test(heading)) {
+        blocks.push(`## ${heading}`);
+        const action = card.querySelector(".decision-action")?.textContent?.trim();
+        const confidence = card.querySelector(".decision-confidence")?.textContent?.trim();
+        if (action) blocks.push(`### ${titleCase(action)}`);
+        if (confidence) blocks.push(confidence);
+        const summary = card.querySelector(".decision-summary")?.textContent?.trim();
+        if (summary) blocks.push(summary);
+      } else if (/Agent Reports/i.test(heading)) {
+        blocks.push(`## ${heading}`);
+        card.querySelectorAll(".report-section").forEach((section) => {
+          const name = section.querySelector("summary")?.textContent?.trim();
+          const body = section.querySelector(".report-body")?.textContent?.trim();
+          if (name && body) blocks.push(`### ${name}`, body);
+        });
+      } else if (/Timings/i.test(heading)) {
+        blocks.push(`## ${heading}`);
+        card.querySelectorAll("tr").forEach((row) => {
+          const cells = Array.from(row.querySelectorAll(":scope > th, :scope > td")).map((cell) => renderInline(cell));
+          if (cells.length) blocks.push(`| ${cells.join(" | ")} |`);
+        });
+      }
+    });
+  } else {
+    document.body.querySelectorAll("h1, h2, h3, h4, p, li, tr, pre").forEach((element) => {
+      const text = renderInline(element);
+      if (!text) return;
+      if (/^H[1-4]$/.test(element.tagName)) blocks.push(`${"#".repeat(Number(element.tagName.slice(1)))} ${text}`);
+      else if (element.tagName === "LI") blocks.push(`- ${text}`);
+      else if (element.tagName === "TR") {
+        const cells = Array.from(element.querySelectorAll(":scope > th, :scope > td")).map((cell) => renderInline(cell));
+        if (cells.length) blocks.push(`| ${cells.join(" | ")} |`);
+      } else blocks.push(text);
+    });
+  }
 
   return blocks.join("\n\n").trim() || document.body.textContent?.trim() || source;
 }

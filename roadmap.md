@@ -201,3 +201,9 @@
 - [x] Load completed reports and downloads through the configured engine artifact path.
 - [x] Default Stock country to HK and collapse the MCP connection section when charts are ready.
 - [x] Recolor the 5051 favicon red and verify the updated dashboard and report page.
+
+# Full detail report presentation
+
+- [x] Show the engine result's decision, agent reports, and timings in the detail page's style.
+- [x] Promote bold labels to subtitles and show the chart only once.
+- [ ] Verify a real report and clean desktop/mobile rendering.

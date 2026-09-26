@@ -83,7 +83,7 @@ function escapeHtml(s: string) {
 
 /** Promote bold field labels from model output into real subheadings. */
 function normalizeReportMarkdown(md: string): string {
-  const labelledField = /\*\*([^*\n]{2,50}?)(?:(?::\*\*|\*\*:)[ \t]*|\*\*(?=\s*$))/g;
+  const labelledField = /\*\*([^*\n]{2,70}?)(?:(?::\*\*|\*\*[:：])[ \t]*|\*\*(?=\s*$))/g;
 
   return md
     .split("\n")
