@@ -45,7 +45,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
     <div className="min-h-screen bg-background">
 
       <header className="sticky top-0 z-30 border-b border-rule bg-surface/90 backdrop-blur">
-        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:px-5 lg:px-6 2xl:px-8">
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-3 py-3 sm:flex sm:flex-wrap sm:gap-x-5 sm:px-5 lg:flex-nowrap lg:gap-x-3 lg:px-6 xl:gap-x-4 2xl:px-8">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Activity className="size-4" />
@@ -55,7 +55,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             </span>
           </Link>
 
-          <nav className="order-3 col-span-2 -mx-3 flex snap-x items-center gap-1 overflow-x-auto px-3 pb-0.5 text-sm sm:order-none sm:col-auto sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
+          <nav className="order-3 col-span-2 -mx-3 flex snap-x items-center gap-1 overflow-x-auto px-3 pb-0.5 text-sm sm:order-none sm:col-auto sm:mx-0 sm:shrink-0 sm:overflow-visible sm:px-0 sm:pb-0">
             {NAV.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
@@ -70,7 +70,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             ))}
           </nav>
 
-          <div className="order-4 col-span-2 flex shrink-0 flex-wrap items-center gap-2 sm:order-none sm:col-auto sm:ml-auto">
+          <div className="order-4 col-span-2 flex min-w-0 shrink flex-wrap items-center gap-2 sm:order-none sm:col-auto sm:ml-auto lg:flex-nowrap">
             {actions}
             <FontSizeControls />
             <LanguageSwitch />
