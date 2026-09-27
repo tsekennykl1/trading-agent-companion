@@ -126,9 +126,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
     setConfig((current) => {
       const next = { ...current, [key]: value };
-      onConfigChange?.(next);
       return next;
     });
+  useEffect(() => { onConfigChange?.(config); }, [config, onConfigChange]);
 
   const stages = config.stages ?? DEFAULT_STAGES;
   const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
