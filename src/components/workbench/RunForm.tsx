@@ -52,10 +52,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   };
   const [market, setMarket] = useState<"HK" | "Other">(() => marketFor(defaultConfig.ticker));
   const [tickerError, setTickerError] = useState<string | null>(null);
+  // Set when a suggestion is picked (or the field is cleared) so the list hides.
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   const digits = config.ticker.trim().replace(/\.HK$/i, "");
   const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
   const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
-  const suggestions = market === "HK" && /^\d{1,5}$/.test(digits)
+  // Re-filter the bundled HKEX directory on every keypress while the user types.
+  const suggestions = !suggestionDismissed && market === "HK" && /^\d{1,5}$/.test(digits)
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
   useEffect(() => {
