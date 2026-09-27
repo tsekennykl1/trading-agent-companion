@@ -59,6 +59,11 @@ function Workbench() {
     if (analysisBusy) setFormOpen(false);
   }, [analysisBusy]);
 
+  // If the run fails to start, reopen the form so the user can fix and retry.
+  useEffect(() => {
+    if (analysis.startFailures > 0) setFormOpen(true);
+  }, [analysis.startFailures]);
+
   useEffect(() => {
     if (chartReady) setMcpOpen(false);
   }, [chartReady]);
