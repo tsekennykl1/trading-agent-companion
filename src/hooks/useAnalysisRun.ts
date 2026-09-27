@@ -277,6 +277,7 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
     detailReportUrl,
     latestStep: analysisBusy ? liveRun?.agents.at(-1)?.agent : undefined,
     starting: startRun.isPending,
+    startFailures,
     start: (config: RunConfig) => startRun.mutate(config),
     cancelRun,
   };
