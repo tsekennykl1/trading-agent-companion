@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, Download, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, bridgeAssetUrl } from "@/lib/trading-agents/client";
-import { markdownToHtml } from "@/lib/trading-agents/report";
+import { markdownToHtml, removeInternalCitations } from "@/lib/trading-agents/report";
 import { useT } from "@/lib/i18n";
 
 function titleCase(value: string): string {
@@ -273,7 +273,7 @@ function stripSystemSections(source: string): string {
 }
 
 export function readableArtifact(source: string): string {
-  return stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0)));
+  return removeInternalCitations(stripSystemSections(cleanJsonLikeMarkdown(decodeString(source, 0))));
 }
 
 /** `/runs/<id>/result.html` → `<id>`, so we can fall back to the report files. */

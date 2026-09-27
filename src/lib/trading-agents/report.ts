@@ -1,5 +1,18 @@
 import { REPORT_SECTIONS, type RunRecord } from "./types";
 
+/** Model-generated internal source IDs are not usable citations or links. */
+export function removeInternalCitations(text: string): string {
+  return text
+    // e.g. citeturn3view3 or citeturn3view3turn4search1
+    .replace(/\uE200cite(?:\uE202turn\d+(?:view|search|file|news)\d+)+\uE201/gi, "")
+    // Some engine output loses the special delimiters but leaves the source IDs.
+    .replace(/(?:\bcite\s+)?\bturn\d+(?:view|search|file|news)\d+\b/gi, "")
+    .replace(/[\uE200-\uE20F]/g, "")
+    .replace(/【\s*】/g, "")
+    .replace(/ {2,}/g, " ")
+    .replace(/ +([,.;:])/g, "$1");
+}
+
 function fmt(n?: number) {
   return n === undefined ? "—" : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
@@ -176,7 +189,7 @@ export function markdownToHtml(md: string, compactFields = true): string {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/_(.+?)_/g, "<em>$1</em>");
 
-  const cleaned = md.replace(/[ \t]+\\[ \t]*$/gm, "");
+  const cleaned = removeInternalCitations(md).replace(/[ \t]+\\[ \t]*$/gm, "");
   const normalized = normalizeReportMarkdown(cleaned);
   for (const raw of (compactFields ? compactFieldGroups(normalized) : normalized).split("\n")) {
     const line = raw.trimEnd();
