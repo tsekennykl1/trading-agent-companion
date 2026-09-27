@@ -52,10 +52,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   };
   const [market, setMarket] = useState<"HK" | "Other">(() => marketFor(defaultConfig.ticker));
   const [tickerError, setTickerError] = useState<string | null>(null);
+  // Set when a suggestion is picked (or the field is cleared) so the list hides.
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   const digits = config.ticker.trim().replace(/\.HK$/i, "");
   const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
   const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
-  const suggestions = market === "HK" && /^\d{1,5}$/.test(digits)
+  // Re-filter the bundled HKEX directory on every keypress while the user types.
+  const suggestions = !suggestionDismissed && market === "HK" && /^\d{1,5}$/.test(digits)
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
   useEffect(() => {
@@ -209,6 +212,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 onChange={(e) => {
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
+                  setSuggestionDismissed(false);
                 }}
                 placeholder="eg. 700"
                 required
@@ -236,7 +240,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
-                {suggestions.map(([code, names]) => <Button key={code} type="button" variant="ghost" className="flex min-h-9 w-full justify-start gap-2 truncate text-xs" onClick={() => update("ticker", String(Number(code)))}>
+                {suggestions.map(([code, names]) => <Button key={code} type="button" variant="ghost" className="flex min-h-9 w-full justify-start gap-2 truncate text-xs" onClick={() => { update("ticker", String(Number(code))); setSuggestionDismissed(true); }}>
                   <span className="font-mono">{code}</span><span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
                 </Button>)}
               </div>
