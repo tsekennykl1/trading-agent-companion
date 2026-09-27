@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, ExternalLink, KeyRound, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/lib/trading-agents/client";
+import { getEnabledLlms, isLlmEnabled, subscribeEnabledLlms } from "@/lib/trading-agents/llm-prefs";
 import type {
   ActiveProvider,
+  LlmCredits,
   ProviderCredit,
   ProviderSummary,
 } from "@/lib/trading-agents/client";
@@ -65,6 +67,29 @@ export function ProviderCreditPanel() {
   const [credit, setCredit] = useState<ProviderCredit | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openaiCredits, setOpenaiCredits] = useState<LlmCredits | null>(null);
+  const [enabled, setEnabled] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    setEnabled(getEnabledLlms());
+    return subscribeEnabledLlms(() => setEnabled(getEnabledLlms()));
+  }, []);
+
+  const loadOpenaiCredits = useCallback(async (provider: string | null | undefined) => {
+    if (provider !== "openai" && provider !== "azure_openai") {
+      setOpenaiCredits(null);
+      return;
+    }
+    try {
+      setOpenaiCredits(await api.llmCredits());
+    } catch {
+      setOpenaiCredits({
+        provider: "openai",
+        available: false,
+        message: "The engine has no /llm/credits endpoint yet.",
+      });
+    }
+  }, []);
 
   const load = useCallback(async (provider?: string) => {
     setLoading(true);
@@ -75,19 +100,29 @@ export function ProviderCreditPanel() {
       setProviders(list.providers);
       const target = provider ?? list.active.provider ?? undefined;
       setCredit(target ? await api.providerCredit(target) : null);
+      void loadOpenaiCredits(target);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The engine did not answer.");
       setCredit(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadOpenaiCredits]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const configured = useMemo(() => providers.filter((p) => p.configured), [providers]);
+  // Only providers with a key AND ticked under "Available AI models" appear;
+  // the one currently in use always stays listed so the selection is visible.
+  const configured = useMemo(
+    () =>
+      providers.filter(
+        (p) => (p.configured && isLlmEnabled(enabled, p.provider)) || p.provider === active?.provider,
+      ),
+    [providers, enabled, active?.provider],
+  );
+  const activeSummary = providers.find((p) => p.provider === active?.provider);
 
   const switchProvider = async (provider: string) => {
     setLoading(true);
@@ -95,6 +130,7 @@ export function ProviderCreditPanel() {
       const res = await api.setActiveProvider(provider);
       setActive(res.active);
       setCredit(res.credit);
+      void loadOpenaiCredits(res.active.provider);
       toast.success(`Now using ${res.credit.label}. Restart the engine to apply it.`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not switch provider");
@@ -103,8 +139,10 @@ export function ProviderCreditPanel() {
     }
   };
 
-  const display =
-    credit && credit.balance !== null && credit.currency
+  const oa = openaiCredits?.available && typeof openaiCredits.remaining_usd === "number" ? openaiCredits : null;
+  const display = oa
+    ? { ...creditDisplay(oa.remaining_usd as number, "USD"), low: oa.low_balance ?? (oa.remaining_usd as number) < USD_LOW }
+    : credit && credit.balance !== null && credit.currency
       ? creditDisplay(credit.balance, credit.currency)
       : null;
 
@@ -115,8 +153,8 @@ export function ProviderCreditPanel() {
           <p className="font-medium">AI provider and credit</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Checks the key saved in your engine and, where the provider publishes it, how much
-            credit is left. DeepSeek and OpenRouter report a balance; the others only confirm the
-            key works.
+            credit is left. DeepSeek, OpenRouter and OpenAI (via the engine's credit tracker) report
+            a balance; the others only confirm the key works.
           </p>
         </div>
         <Button
@@ -177,12 +215,48 @@ export function ProviderCreditPanel() {
                 </span>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  {credit?.supports_balance === false
-                    ? "This provider does not publish a balance"
-                    : "—"}
+                  {openaiCredits && !openaiCredits.available
+                    ? "Credit tracking not set up"
+                    : credit?.supports_balance === false
+                      ? "This provider does not publish a balance"
+                      : "—"}
                 </span>
               )}
             </div>
+            {oa && (
+              <div className="space-y-1">
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full ${oa.low_balance ? "bg-bear" : "bg-bull"}`}
+                    style={{ width: `${Math.min(100, Math.max(0, oa.remaining_pct ?? 0))}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Used ${(oa.used_usd ?? 0).toFixed(2)} of ${(oa.budget_usd ?? 0).toFixed(2)} budget
+                  {oa.query_window_days ? ` (last ${oa.query_window_days} days)` : ""}
+                  {oa.as_of ? ` · as of ${new Date(oa.as_of).toLocaleString()}` : ""}
+                </p>
+                {oa.low_balance && (
+                  <p className="text-xs text-bear">Low credit balance — an analysis may fail mid-run.</p>
+                )}
+              </div>
+            )}
+            {openaiCredits && !openaiCredits.available && (
+              <p className="text-xs text-muted-foreground">
+                {openaiCredits.message ??
+                  "Set OPENAI_ADMIN_KEY and OPENAI_CREDIT_BUDGET in the engine .env to track credit."}
+              </p>
+            )}
+            {openaiCredits?.billing_url && (
+              <a
+                href={openaiCredits.billing_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs underline"
+              >
+                <ExternalLink className="size-3" /> Open OpenAI billing
+              </a>
+            )}
             {credit && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 {credit.status === "valid" || credit.status === "no_key_required" ? (
@@ -192,6 +266,25 @@ export function ProviderCreditPanel() {
                 )}
                 {credit.message ?? STATUS_TEXT[credit.status] ?? credit.status}
               </p>
+            )}
+          </div>
+
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <KeyRound className="size-3.5" />
+            <span>API key:</span>
+            {activeSummary && activeSummary.env_keys.length > 0 ? (
+              activeSummary.env_keys.map((k) => (
+                <code key={k} className="rounded bg-muted px-1 py-0.5 font-mono">
+                  {k}
+                </code>
+              ))
+            ) : (
+              <span>{activeSummary ? "none needed" : "—"}</span>
+            )}
+            {activeSummary && activeSummary.env_keys.length > 0 && (
+              <span className={activeSummary.configured ? "text-bull" : "text-bear"}>
+                {activeSummary.configured ? "saved" : "missing"}
+              </span>
             )}
           </div>
 

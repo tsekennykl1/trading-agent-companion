@@ -1,6 +1,6 @@
 // Which AI providers the user wants to see in the New Analysis form.
 // Stored in the browser; an empty/absent list uses the safe default choices.
-const KEY = "ta-enabled-llms";
+const KEY = "ta-enabled-llms-v2";
 const EVENT = "ta-enabled-llms-changed";
 
 export function getEnabledLlms(): string[] | null {

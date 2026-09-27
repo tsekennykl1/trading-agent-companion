@@ -141,6 +141,11 @@ export const api = {
   providerCredit: (provider?: string) =>
     request<ProviderCredit>(`/providers/credit${provider ? `?provider=${encodeURIComponent(provider)}` : ""}`),
 
+  /** GET /llm/config — OpenAI endpoint settings and credit-tracking capability. */
+  llmConfig: () => request<LlmConfig>("/llm/config"),
+  /** GET /llm/credits — OpenAI remaining credit (budget minus usage). */
+  llmCredits: () => request<LlmCredits>("/llm/credits"),
+
   /** POST /providers/active — switch the engine to another configured provider. */
   setActiveProvider: (provider: string, deepModel?: string, quickModel?: string) =>
     request<{ active: ActiveProvider; credit: ProviderCredit; restart_required?: boolean }>(
@@ -252,4 +257,29 @@ export interface HkSecurity {
   name_en?: string | null;
   name_zh?: string | null;
   category?: string | null;
+}
+
+export interface LlmConfig {
+  provider: string;
+  deep_think_model?: string | null;
+  quick_think_model?: string | null;
+  budget_usd?: number | null;
+  has_admin_key?: boolean;
+  billing_dashboard_url?: string;
+  capabilities?: { credits_api?: boolean; fred_enabled?: boolean };
+}
+
+export interface LlmCredits {
+  provider: string;
+  available: boolean;
+  budget_usd?: number;
+  used_usd?: number;
+  remaining_usd?: number;
+  remaining_pct?: number;
+  low_balance?: boolean;
+  query_window_days?: number;
+  as_of?: string;
+  billing_url?: string;
+  message?: string;
+  error?: string;
 }
