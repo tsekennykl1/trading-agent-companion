@@ -54,6 +54,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const [tickerError, setTickerError] = useState<string | null>(null);
   // Set when a suggestion is picked (or the field is cleared) so the list hides.
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  // Remembers the picked code so later unrelated edits (e.g. the analysis
+  // date round-tripping through the saved form) can't revive the list.
+  const [pickedCode, setPickedCode] = useState<string | null>(null);
   const digits = config.ticker.trim().replace(/\.HK$/i, "");
   const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
   const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
