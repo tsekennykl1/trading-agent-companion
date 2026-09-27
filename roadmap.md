@@ -218,3 +218,7 @@
 - [x] Describe the 3–10-minute analysis duration and add an end-to-end architecture page linked from the MCP guide.
 - [x] Add hosted/local/custom engine choices and collapse the alternative bridge by default.
 - [x] Check narrow-phone and desktop page widths, report chart, and preview status.
+
+# Report citation cleanup
+
+- [x] Remove internal AI source IDs from displayed and exported reports without changing real links.
