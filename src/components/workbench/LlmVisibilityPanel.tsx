@@ -59,8 +59,17 @@ export function LlmVisibilityPanel() {
               checked={provider.configured && isLlmEnabled(enabled, provider.provider)}
               onCheckedChange={(checked) => toggle(provider.provider, checked === true)}
             />
-            <span className="min-w-0 flex-1 truncate">{provider.label}</span>
-            {!provider.configured && <span className="text-xs text-muted-foreground">no key</span>}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{provider.label}</span>
+              {provider.env_keys?.length > 0 && (
+                <span className="block truncate font-mono text-[11px] text-muted-foreground">
+                  {provider.env_keys[0]}
+                </span>
+              )}
+            </span>
+            <span className={`text-xs ${provider.configured ? "text-bull" : "text-muted-foreground"}`}>
+              {provider.configured ? (provider.env_keys?.length ? "key saved" : "no key needed") : "no key"}
+            </span>
           </label>
         ))}
       </div>
