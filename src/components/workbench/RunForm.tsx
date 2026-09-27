@@ -216,6 +216,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   setTickerError(null);
                   setSuggestionDismissed(false);
                 }}
+                onBlur={() => setSuggestionDismissed(true)}
                 placeholder="eg. 700"
                 required
                 aria-invalid={!!tickerError}
