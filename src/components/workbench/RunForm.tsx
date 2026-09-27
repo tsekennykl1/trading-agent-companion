@@ -38,6 +38,8 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const [stockNames, setStockNames] = useState<Record<string, [string, string]>>(() => ({ ...INITIAL_HK_STOCK_NAMES }));
   const [config, setConfig] = useState<RunConfig>({
     ...defaultConfig,
+    // Deep depth is disabled in the form; a saved "Deep" choice falls back to Medium.
+    researchDepth: defaultConfig.researchDepth === "Deep" ? "Medium" : defaultConfig.researchDepth,
     language: defaultConfig.language || "English",
     stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
@@ -302,7 +304,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               <SelectContent>
                 <SelectItem value="Shallow">{t("form.depthShallow")}</SelectItem>
                 <SelectItem value="Medium">{t("form.depthMedium")}</SelectItem>
-                <SelectItem value="Deep">{t("form.depthDeep")}</SelectItem>
+                <SelectItem value="Deep" disabled title="Not available">
+                  {t("form.depthDeep")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
