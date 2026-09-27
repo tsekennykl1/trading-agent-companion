@@ -14,11 +14,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ANALYST_OPTIONS, DEFAULT_STAGES, STAGE_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
-import { fill, useT, type TKey } from "@/lib/i18n";
+import { fill, useLanguage, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
 import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
-import { useLanguage } from "@/lib/i18n";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -115,7 +114,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     const raw = config.ticker.trim().toUpperCase();
     if (market !== "HK") return raw;
     const digits = raw.replace(/\.HK$/i, "");
-    if (!/^\d{1,4}$/.test(digits)) {
+    if (!/^\d{1,5}$/.test(digits)) {
       setTickerError(t("form.hkDigits"));
       return null;
     }
