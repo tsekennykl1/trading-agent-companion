@@ -248,9 +248,25 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
-                {suggestions.map(([code, names]) => <Button key={code} type="button" variant="ghost" className="flex min-h-9 w-full justify-start gap-2 truncate text-xs" onClick={() => { update("ticker", String(Number(code))); setSuggestionDismissed(true); setPickedCode(String(Number(code))); }}>
-                  <span className="font-mono">{code}</span><span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
-                </Button>)}
+                {suggestions.map(([code, names]) => (
+                  <Button
+                    key={code}
+                    type="button"
+                    variant="ghost"
+                    className="flex min-h-9 w-full justify-start gap-2 truncate text-xs"
+                    // Select on pointer-down: the input's onBlur would otherwise
+                    // dismiss the list before a click event reaches the button.
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      update("ticker", String(Number(code)));
+                      setSuggestionDismissed(true);
+                      setPickedCode(String(Number(code)));
+                    }}
+                  >
+                    <span className="font-mono">{code}</span>
+                    <span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
+                  </Button>
+                ))}
               </div>
             )}
           </div>
