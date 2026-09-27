@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ANALYST_OPTIONS, DEFAULT_STAGES, STAGE_OPTIONS, type RunConfig } from "@/lib/trading-agents/types";
-import { fill, useT, type TKey } from "@/lib/i18n";
+import { fill, useLanguage, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
+import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -33,6 +34,8 @@ const REPORT_LANGUAGES = ["English", "Traditional Chinese", "Simplified Chinese"
 
 export function RunForm({ defaultConfig, running, disabled, compact = false, onRun, onCancel, onConfigChange }: Props) {
   const t = useT();
+  const { lang } = useLanguage();
+  const [stockNames, setStockNames] = useState<Record<string, [string, string]>>(() => ({ ...INITIAL_HK_STOCK_NAMES }));
   const [config, setConfig] = useState<RunConfig>({
     ...defaultConfig,
     language: defaultConfig.language || "English",
@@ -40,6 +43,24 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   });
   const [market, setMarket] = useState<"HK" | "Other">("HK");
   const [tickerError, setTickerError] = useState<string | null>(null);
+  const digits = config.ticker.trim().replace(/\.HK$/i, "");
+  const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
+  const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
+  const suggestions = market === "HK" && /^\d{1,5}$/.test(digits)
+    ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
+    : [];
+  useEffect(() => {
+    if (market !== "HK" || !stockCode || stockNames[stockCode]) return;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      void api.hkSecurity(`${stockCode}.HK`).then((row) => {
+        if (active && row.available && row.name_en && row.name_zh) {
+          setStockNames((current) => ({ ...current, [stockCode]: [row.name_en ?? "", row.name_zh ?? ""] }));
+        }
+      }).catch(() => {});
+    }, 180);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [market, stockCode, stockNames]);
   const providersQuery = useQuery({
     queryKey: ["configured-providers"],
     queryFn: api.providers,
@@ -64,10 +85,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   );
 
 
-  // The analysis date is filled in after hydration, so adopt it once it arrives.
+  // Only adopt the initial date after hydration; subsequent form edits are local.
   useEffect(() => {
     if (!defaultConfig.analysisDate) return;
-    setConfig({
+    setConfig((current) => current.analysisDate ? current : {
       ...defaultConfig,
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
@@ -93,7 +114,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     const raw = config.ticker.trim().toUpperCase();
     if (market !== "HK") return raw;
     const digits = raw.replace(/\.HK$/i, "");
-    if (!/^\d{1,4}$/.test(digits)) {
+    if (!/^\d{1,5}$/.test(digits)) {
       setTickerError(t("form.hkDigits"));
       return null;
     }
@@ -101,12 +122,11 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     return `${digits.padStart(4, "0")}.HK`;
   };
 
-  const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
-    setConfig((current) => {
-      const next = { ...current, [key]: value };
-      onConfigChange?.(next);
-      return next;
-    });
+  const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) => {
+    const next = { ...config, [key]: value };
+    setConfig(next);
+    onConfigChange?.(next);
+  };
 
   const stages = config.stages ?? DEFAULT_STAGES;
   const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
@@ -197,6 +217,14 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               </Select>
             </div>
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
+            {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
+            {suggestions.length > 0 && digits.length < 4 && (
+              <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
+                {suggestions.map(([code, names]) => <Button key={code} type="button" variant="ghost" className="flex min-h-9 w-full justify-start gap-2 truncate text-xs" onClick={() => update("ticker", String(Number(code)))}>
+                  <span className="font-mono">{code}</span><span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
+                </Button>)}
+              </div>
+            )}
           </div>
 
           <div className="min-w-0 space-y-1.5">

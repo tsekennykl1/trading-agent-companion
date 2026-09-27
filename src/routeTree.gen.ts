@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as McpArchitectureRouteImport } from './routes/mcp-architecture'
 import { Route as McpGuideRouteImport } from './routes/mcp-guide'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as SetupRouteImport } from './routes/setup'
@@ -44,6 +45,11 @@ const HistoryRoute = HistoryRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpArchitectureRoute = McpArchitectureRouteImport.update({
+  id: '/mcp-architecture',
+  path: '/mcp-architecture',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpGuideRoute = McpGuideRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-architecture': typeof McpArchitectureRoute
   '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-architecture': typeof McpArchitectureRoute
   '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/history': typeof HistoryRoute
   '/mcp': typeof McpRoute
+  '/mcp-architecture': typeof McpArchitectureRoute
   '/mcp-guide': typeof McpGuideRoute
   '/report': typeof ReportRoute
   '/setup': typeof SetupRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-architecture'
     | '/mcp-guide'
     | '/report'
     | '/setup'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-architecture'
     | '/mcp-guide'
     | '/report'
     | '/setup'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/history'
     | '/mcp'
+    | '/mcp-architecture'
     | '/mcp-guide'
     | '/report'
     | '/setup'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   HistoryRoute: typeof HistoryRoute
   McpRoute: typeof McpRoute
+  McpArchitectureRoute: typeof McpArchitectureRoute
   McpGuideRoute: typeof McpGuideRoute
   ReportRoute: typeof ReportRoute
   SetupRoute: typeof SetupRoute
@@ -209,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp-architecture': {
+      id: '/mcp-architecture'
+      path: '/mcp-architecture'
+      fullPath: '/mcp-architecture'
+      preLoaderRoute: typeof McpArchitectureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp-guide': {
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   HistoryRoute: HistoryRoute,
   McpRoute: McpRoute,
+  McpArchitectureRoute: McpArchitectureRoute,
   McpGuideRoute: McpGuideRoute,
   ReportRoute: ReportRoute,
   SetupRoute: SetupRoute,

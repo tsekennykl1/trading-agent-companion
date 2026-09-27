@@ -1,4 +1,4 @@
-import { Bot, Copy, ArrowRight } from "lucide-react";
+import { Bot, Copy, ArrowRight, ExternalLink } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function McpConnectionNote({ context }: { context: "dashboard" | "history
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{t("mcp.title")}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">{body}</p>
+          <a href="/mcp-architecture" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2">Analysis architecture <ExternalLink className="size-3.5" aria-hidden="true" /></a>
           {context !== "setup" && (
             <Link to="/mcp-guide" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2">
               {t("mcp.learn")} <ArrowRight className="size-4" aria-hidden="true" />

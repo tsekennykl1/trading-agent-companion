@@ -210,3 +210,11 @@
 - [x] Show the engine result's decision, agent reports, and timings in the detail page's style.
 - [x] Promote bold labels to subtitles and show the chart only once.
 - [x] Verify a real report and clean desktop/mobile rendering.
+
+# Stock lookup, report chart, architecture and setup refinements
+
+- [x] Show the static price chart before the report content, and English and Chinese stock names in the detail title.
+- [x] Load bilingual HKEX stock mappings at startup for suggestions while typing, with engine fallback for missing codes.
+- [x] Describe the 3–10-minute analysis duration and add an end-to-end architecture page linked from the MCP guide.
+- [x] Add hosted/local/custom engine choices and collapse the alternative bridge by default.
+- [x] Check narrow-phone and desktop page widths, report chart, and preview status.

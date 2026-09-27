@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { downloadFile, markdownToHtml } from "@/lib/trading-agents/report";
 import { SAMPLE_DETAIL_REPORT } from "@/lib/trading-agents/sample-run";
 import { useT } from "@/lib/i18n";
+import { useHkStockNames } from "@/hooks/useHkStockNames";
 
 const TITLE = "Detailed analysis report — My Trading Agents";
 const DESCRIPTION =
@@ -65,13 +66,14 @@ function ReportPage() {
   const search = Route.useSearch();
   const url = search.url;
   const ticker = search.ticker;
+  const names = useHkStockNames(ticker);
   const t = useT();
   const isSample = url === "sample";
   const [markdown, setMarkdown] = useState(isSample ? SAMPLE_DETAIL_REPORT : "");
   const [loading, setLoading] = useState(!isSample);
 
   const ready = markdown.trim().length > 0;
-  const title = `${t("report.title")}${ticker ? ` — ${ticker}` : ""}`;
+  const title = `${t("report.title")}${ticker ? ` — ${ticker}` : ""}${names.en ? ` · ${names.en}` : ""}${names.zh ? ` · ${names.zh}` : ""}`;
   const slug = (ticker || "run").replace(/[^a-z0-9.]/gi, "_");
 
   const saveMarkdown = () => {
