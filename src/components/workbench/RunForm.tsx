@@ -219,6 +219,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   update("ticker", e.target.value.toUpperCase());
                   setTickerError(null);
                   setSuggestionDismissed(false);
+                  setPickedCode(null);
                 }}
                 onBlur={() => setSuggestionDismissed(true)}
                 placeholder="eg. 700"
