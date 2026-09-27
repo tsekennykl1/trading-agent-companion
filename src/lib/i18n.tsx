@@ -153,7 +153,7 @@ const EN = {
   "mcp.learn": "MCP client guide",
 
   "form.title": "New analysis",
-  "form.subtitle": "Choose the market, date, research depth, and specialists for this run.",
+  "form.subtitle": "The analysis process may take 3–10 minutes based on the AI model and the number of analysis reports selected.",
   "form.ticker": "Stocks",
   "form.market": "Market",
   "form.marketHK": "HK",
@@ -439,7 +439,7 @@ const ZH: Record<TKey, string> = {
   "mcp.learn": "MCP 用戶端指南",
 
   "form.title": "新增分析",
-  "form.subtitle": "選擇標的、日期、研究深度與參與的分析師。",
+  "form.subtitle": "分析過程可能需時 3–10 分鐘，視乎所選 AI 模型及分析報告數量。",
   "form.ticker": "股票",
   "form.market": "市場",
   "form.marketHK": "香港",

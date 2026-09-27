@@ -11,11 +11,15 @@ import { useBridgeHealth } from "@/components/workbench/BridgeStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DEFAULT_BRIDGE_URL, getBridgeUrl, setBridgeUrl } from "@/lib/trading-agents/client";
 
 const TITLE = "Connect your TradingAgents engine — My Trading Agents setup";
 const DESCRIPTION =
   "Run TradingAgents analyses with live progress, market charts, agent reports, confidence views, and an exportable decision memo.";
+const HOSTED_ENGINE = "https://www.myfinance5051.com/api";
+const LOCAL_ENGINE = "http://127.0.0.1:8000";
+const engineChoice = (address: string) => [HOSTED_ENGINE, LOCAL_ENGINE].includes(address) ? address : "other";
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
@@ -124,6 +128,7 @@ function CodeBlock({ code }: { code: string }) {
 function Setup() {
   const health = useBridgeHealth();
   const [url, setUrl] = useState(DEFAULT_BRIDGE_URL);
+  const [bridgeVisible, setBridgeVisible] = useState(false);
 
   useEffect(() => setUrl(getBridgeUrl()), []);
 
@@ -146,20 +151,25 @@ function Setup() {
         <section className="panel mt-6 p-4 sm:p-5">
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <div className="min-w-0 space-y-1.5">
-              <Label htmlFor="bridge" className="label-caps">
+              <Label htmlFor="bridge-choice" className="label-caps">
                 Engine address
               </Label>
-              <Input
-                id="bridge"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder={DEFAULT_BRIDGE_URL}
-                className="font-mono"
-              />
+              <Select value={engineChoice(url)} onValueChange={(value) => setUrl(value === "other" ? "" : value)}>
+                <SelectTrigger id="bridge-choice" className="w-full min-w-0 font-mono text-xs sm:text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={HOSTED_ENGINE}>{HOSTED_ENGINE}</SelectItem>
+                  <SelectItem value={LOCAL_ENGINE}>{LOCAL_ENGINE}</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              {engineChoice(url) === "other" && <Input id="bridge" aria-label="Custom engine address" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-engine.example/api" className="font-mono" />}
             </div>
             <Button
               onClick={() => {
-                setBridgeUrl(url);
+                let parsed: URL;
+                try { parsed = new URL(url.trim()); } catch { toast.error("Enter a valid engine address"); return; }
+                if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) { toast.error("Enter an HTTP or HTTPS address without credentials"); return; }
+                setBridgeUrl(parsed.href.replace(/\/$/, ""));
                 void health.refetch().then((r) =>
                   r.data
                     ? toast.success("Connected to your TradingAgents engine")
@@ -195,9 +205,12 @@ function Setup() {
 
         <LlmVisibilityPanel />
 
-        <div className="panel mt-6 grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-center sm:p-5">
-          <div className="mr-auto">
-            <p className="font-medium">Single-file bridge (alternative)</p>
+        <div className="mt-6 border-t border-rule pt-4">
+          <Button type="button" variant="ghost" aria-expanded={bridgeVisible} onClick={() => setBridgeVisible((current) => !current)} className="min-h-11 gap-2 px-0">
+            {bridgeVisible ? "Hide" : "Show"} Single-file bridge (alternative)
+          </Button>
+          {bridgeVisible && <div className="mt-2 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
+            <div className="mr-auto">
             <p className="text-sm text-muted-foreground">
               If you do not want the full engine repository, this one Python file wraps TradingAgentsGraph
               and streams progress to this dashboard.
@@ -208,6 +221,7 @@ function Setup() {
               <Download className="size-4" /> Download ta_bridge.py
             </a>
           </Button>
+          </div>}
         </div>
 
         <h2 className="mt-10 text-xl font-semibold">Setup steps</h2>

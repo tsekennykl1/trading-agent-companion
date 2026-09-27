@@ -14,3 +14,5 @@
 - Convert the full engine `result.html` into the detail page's report presentation, omitting its embedded chart and artifact links because the page supplies one chart and separate downloads.
 - Rebuild known run artifact URLs from the configured engine base and run ID, because engine-emitted absolute URLs can omit reverse-proxy path prefixes.
 - Use `https://www.myfinance5051.com/api` as the production engine and artifact base in both browser builds and server-side MCP tools.
+- Bundle the engine's HKEX bilingual securities directory for immediate ticker suggestions, and use the engine security lookup for missing exact codes, because typing must remain responsive without network access.
+- Keep end-to-end architecture reference at `/mcp-architecture`, linked from the MCP guide and invitation, while `/mcp` remains protocol-only.

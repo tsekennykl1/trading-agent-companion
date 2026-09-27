@@ -452,6 +452,15 @@ export function DetailedReport({
 
       {ready && open && (
         <>
+          {artifactBase && expanded && (
+            <img
+              src={`${artifactBase}price-chart.png`}
+              alt={`${ticker} price chart`}
+              loading="lazy"
+              className="mx-auto block max-h-[42rem] w-full object-contain px-4 py-4 sm:px-6"
+              onError={(event) => { event.currentTarget.hidden = true; }}
+            />
+          )}
           <article
             aria-label={`${ticker} detailed analysis report`}
             className={`prose-report report-columns min-w-0 overflow-x-auto px-4 py-5 text-sm break-words sm:px-6 sm:py-6 ${expanded ? "" : "max-h-[44rem] overflow-y-auto"}`}
@@ -466,13 +475,6 @@ export function DetailedReport({
                   </Button>
                 ))}
               </div>
-              <img
-                src={`${artifactBase}price-chart.png`}
-                alt={`${ticker} price chart`}
-                loading="lazy"
-                className="mt-4 max-h-[42rem] w-full object-contain"
-                onError={(event) => { event.currentTarget.hidden = true; }}
-              />
             </div>
           )}
         </>
