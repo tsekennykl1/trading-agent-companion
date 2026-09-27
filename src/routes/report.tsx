@@ -99,7 +99,7 @@ function ReportPage() {
   };
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-1.5" aria-busy={!ready} aria-live="polite">
+    <div className="flex flex-wrap items-center gap-1.5 lg:flex-nowrap" aria-busy={!ready} aria-live="polite">
       {!ready ? (
         <span className="flex items-center gap-2 text-xs font-medium text-primary" role="status">
           <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />

@@ -61,7 +61,7 @@ export function BridgeStatusBadge() {
       <span className="font-medium">
         {isLoading ? "Checking…" : online ? "Connected" : "Offline"}
       </span>
-      <span className="max-w-36 truncate font-mono text-[10px] text-muted-foreground sm:max-w-48">{bridgeUrl}</span>
+      <span className="max-w-36 truncate font-mono text-[10px] text-muted-foreground sm:max-w-48 lg:max-w-32">{bridgeUrl}</span>
       <ExternalLink className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>
   );
