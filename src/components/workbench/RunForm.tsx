@@ -178,11 +178,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             "grid min-w-0 gap-3",
              compact
                ? "sm:grid-cols-2 xl:grid-cols-1"
-               : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
+               : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
           )}
         >
 
-          <div className="min-w-0 space-y-1.5">
+
+          <div className={cn("min-w-0 space-y-1.5", !compact && "xl:col-span-2")}>
+
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
             </Label>
