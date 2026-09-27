@@ -58,9 +58,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
   const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
   // Re-filter the bundled HKEX directory on every keypress while the user types.
-  // Hidden once the code fully resolves to a known stock, so unrelated edits
-  // (e.g. picking the analysis date) don't bring the list back.
-  const suggestions = !suggestionDismissed && !matchedNames && market === "HK" && /^\d{1,5}$/.test(digits)
+  // Hidden once a complete code (4+ digits) resolves to a known stock, so
+  // unrelated edits (e.g. picking the analysis date) don't bring the list back.
+  const resolved = digits.length >= 4 && matchedNames;
+  const suggestions = !suggestionDismissed && !resolved && market === "HK" && /^\d{1,5}$/.test(digits)
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
   useEffect(() => {
