@@ -29,6 +29,8 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
   const [cachedArtifacts, setCachedArtifacts] = useState<RunArtifacts | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  // Increments every time a run fails to start, so the page can reopen the form.
+  const [startFailures, setStartFailures] = useState(0);
 
   // --- polling ------------------------------------------------------------
   // Cheap readiness poll (GET /runs/{id}/status). Engines that do not serve it
@@ -157,6 +159,13 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
       toast.error(rejected ? t("toast.rejected") : t("toast.unreachable"), {
         description: rejected ? e.message : `${e.message}. ${t("toast.checkSetup")}`,
       });
+      // The run never started: put the dashboard back into a useful state
+      // (sample content visible, form can be reopened) instead of a blank page.
+      setStartedAt(null);
+      setElapsed(0);
+      setCleared(false);
+      setShowingSample(true);
+      setStartFailures((n) => n + 1);
     },
   });
 
