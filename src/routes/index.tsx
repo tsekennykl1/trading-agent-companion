@@ -170,7 +170,7 @@ function Workbench() {
         </Button>
         {formOpen && (
           <div className="min-w-0 rounded-xl border-2 border-primary/40 bg-primary/5 p-2 shadow-sm sm:p-3">
-            <RunForm key={defaultConfig.analysisDate} {...formProps} />
+            <RunForm {...formProps} />
           </div>
         )}
       </section>
