@@ -50,7 +50,7 @@ export function BridgeStatusBadge() {
       to="/setup"
       aria-label={`${isLoading ? "Checking" : online ? "Connected" : "Offline"}: ${bridgeUrl}. Open connection settings.`}
       title="Open connection settings"
-      className="flex min-h-9 max-w-full items-center gap-2 rounded-full border border-rule bg-card px-2.5 py-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted sm:px-3"
+      className="flex min-h-9 min-w-0 max-w-full items-center gap-2 rounded-full border border-rule bg-card px-2.5 py-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted sm:px-3"
     >
       <span
         className={cn(
@@ -61,7 +61,7 @@ export function BridgeStatusBadge() {
       <span className="font-medium">
         {isLoading ? "Checking…" : online ? "Connected" : "Offline"}
       </span>
-      <span className="max-w-36 truncate font-mono text-[10px] text-muted-foreground sm:max-w-48">{bridgeUrl}</span>
+      <span className="max-w-36 truncate font-mono text-[10px] text-muted-foreground sm:max-w-48 lg:max-w-32">{bridgeUrl}</span>
       <ExternalLink className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>
   );

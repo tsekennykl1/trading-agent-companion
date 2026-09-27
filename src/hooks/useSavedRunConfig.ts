@@ -12,6 +12,9 @@ const STORAGE_KEY = "ta-analysis-form-v1";
 
 const BLANK_CONFIG: RunConfig = {
   ...SAMPLE_RUN.config,
+  // Start with an empty stock code — the sample run's 0700.HK is demo data,
+  // not a suggestion the trader should have to clear every time.
+  ticker: "",
   analysisDate: "",
   analysts: ["Market Analyst"],
   stages: DEFAULT_STAGES,

@@ -99,7 +99,7 @@ function ReportPage() {
   };
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-1.5" aria-busy={!ready} aria-live="polite">
+    <div className="flex flex-wrap items-center gap-1.5 lg:flex-nowrap" aria-busy={!ready} aria-live="polite">
       {!ready ? (
         <span className="flex items-center gap-2 text-xs font-medium text-primary" role="status">
           <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
@@ -123,12 +123,14 @@ function ReportPage() {
 
   return (
     <AppShell actions={url ? actions : undefined}>
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Button asChild size="sm" variant="outline" className="min-h-9 gap-2">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> {t("report.back")}
-          </Link>
-        </Button>
+      <div className="mb-5 space-y-2.5">
+        <div>
+          <Button asChild size="sm" variant="outline" className="min-h-9 gap-2">
+            <Link to="/">
+              <ArrowLeft className="size-4" /> {t("report.back")}
+            </Link>
+          </Button>
+        </div>
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
       </div>
 
