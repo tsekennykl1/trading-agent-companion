@@ -41,7 +41,14 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     language: defaultConfig.language || "English",
     stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
-  const [market, setMarket] = useState<"HK" | "Other">("HK");
+  // Derive the market from the ticker so a saved non-HK ticker (e.g. AAPL)
+  // keeps "Other" selected across remounts instead of snapping back to HK.
+  const marketFor = (ticker: string): "HK" | "Other" => {
+    const raw = ticker.trim();
+    if (!raw) return "HK";
+    return /\.HK$/i.test(raw) || /^\d{1,5}$/.test(raw) ? "HK" : "Other";
+  };
+  const [market, setMarket] = useState<"HK" | "Other">(() => marketFor(defaultConfig.ticker));
   const [tickerError, setTickerError] = useState<string | null>(null);
   const digits = config.ticker.trim().replace(/\.HK$/i, "");
   const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
@@ -93,7 +100,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
-    setMarket("HK");
+    setMarket((current) => (current === "Other" ? current : marketFor(defaultConfig.ticker)));
   }, [defaultConfig.analysisDate]);
 
   useEffect(() => {
