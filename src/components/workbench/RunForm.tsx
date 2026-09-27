@@ -99,6 +99,8 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     if (!defaultConfig.analysisDate) return;
     setConfig((current) => current.analysisDate ? current : {
       ...defaultConfig,
+      // Deep depth is disabled in the form; a saved "Deep" choice falls back to Medium.
+      researchDepth: defaultConfig.researchDepth === "Deep" ? "Medium" : defaultConfig.researchDepth,
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
