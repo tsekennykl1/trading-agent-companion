@@ -123,12 +123,11 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     return `${digits.padStart(4, "0")}.HK`;
   };
 
-  const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) =>
-    setConfig((current) => {
-      const next = { ...current, [key]: value };
-      return next;
-    });
-  useEffect(() => { onConfigChange?.(config); }, [config, onConfigChange]);
+  const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) => {
+    const next = { ...config, [key]: value };
+    setConfig(next);
+    onConfigChange?.(next);
+  };
 
   const stages = config.stages ?? DEFAULT_STAGES;
   const analystStages = STAGE_OPTIONS.filter((s) => s.analyst);
