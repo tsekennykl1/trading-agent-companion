@@ -104,6 +104,9 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   }, [defaultConfig.analysisDate]);
 
   useEffect(() => {
+    // Wait for the saved form to hydrate (it always sets today's date);
+    // otherwise this would save the blank pre-hydration config over it.
+    if (!defaultConfig.analysisDate) return;
     const first = configuredProviders[0];
     if (!first || configuredProviders.some((provider) => provider.provider === config.provider)) return;
     const next = {
