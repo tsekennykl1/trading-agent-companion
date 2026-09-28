@@ -23,8 +23,10 @@ export function useAnalysisRun(rememberConfig: (config: RunConfig) => void) {
   const t = useT();
 
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [showingSample, setShowingSample] = useState(true);
-  const [cleared, setCleared] = useState(false);
+  // First load starts empty: the 0700.HK sample only appears when the user
+  // presses the Sample button (or a cached real run is restored below).
+  const [showingSample, setShowingSample] = useState(false);
+  const [cleared, setCleared] = useState(true);
   const [cachedRun, setCachedRun] = useState<RunRecord | null>(null);
   const [cachedArtifacts, setCachedArtifacts] = useState<RunArtifacts | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
