@@ -33,7 +33,7 @@ export function RouteErrorFallback({ error }: ErrorComponentProps) {
         <details className="mt-6 text-left text-xs text-muted-foreground">
           <summary className="cursor-pointer text-center">Technical details</summary>
           <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px]">
-            {error.message}
+            {error instanceof Error ? error.message : String(error)}
           </pre>
         </details>
       </div>
