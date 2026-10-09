@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
 /**
@@ -5,7 +6,7 @@ import { Link } from "@tanstack/react-router";
  * define its own. They must not depend on app context (language, query
  * client), because they also run when that context is what failed.
  */
-export function RouteErrorFallback({ error }: { error: Error }) {
+export function RouteErrorFallback({ error }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
