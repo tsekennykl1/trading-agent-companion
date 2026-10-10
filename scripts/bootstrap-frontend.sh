@@ -34,7 +34,17 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 echo "Node version: $(node --version)"
 
-# ── Install nginx + write config (idempotent, same as backend) ──
+# ── Nginx: install only — config is owned by backend bootstrap ──
+# The backend's bootstrap.sh writes the full nginx config (myfinance.conf
+# + mytradingagents.conf) with all four location blocks:
+#   location = /api      → backend (exact match for health check)
+#   location /api/mcp    → backend (streaming/SSE)
+#   location /api/       → backend (prefix-strip)
+#   location /           → frontend (Nitro on port 3000)
+#
+# Writing a second, simpler config here would overwrite the backend's
+# version — removing the exact /api match and the MCP streaming block.
+# So the frontend script only ensures nginx is installed and running.
 if ! command -v nginx >/dev/null 2>&1; then
   if [ "${PKG_MGR}" = "dnf" ]; then
     dnf install -y nginx
@@ -43,12 +53,21 @@ if ! command -v nginx >/dev/null 2>&1; then
   fi
 fi
 
-cat > /etc/nginx/conf.d/mytradingagents.conf <<'NGINX_EOF'
+# If the backend has never deployed yet (no config exists at all),
+# write a minimal frontend-only config so the frontend can still start.
+# The backend's next deploy will overwrite this with the full version.
+if [ ! -f /etc/nginx/conf.d/mytradingagents.conf ] && \
+   [ ! -f /etc/nginx/conf.d/myfinance.conf ]; then
+  echo "No backend nginx config found — writing minimal frontend-only config"
+  cat > /etc/nginx/conf.d/mytradingagents.conf <<'NGINX_FALLBACK'
 server {
     listen 80;
     server_name _;
 
-    # ── Backend API: /api/* → uvicorn on port 8000 ──
+    # Minimal frontend-only config.
+    # The backend's bootstrap.sh will overwrite this with the full
+    # multi-location config on its next deploy.
+
     location /api/ {
         proxy_pass http://127.0.0.1:8000/;
         proxy_set_header Host              $host;
@@ -63,7 +82,6 @@ server {
         proxy_send_timeout  300s;
     }
 
-    # ── Frontend: everything else → Nitro/Node on port 3000 ──
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host              $host;
@@ -76,10 +94,15 @@ server {
         proxy_set_header Connection "upgrade";
     }
 }
-NGINX_EOF
+NGINX_FALLBACK
+fi
 
+# Remove the default server block on BOTH distros
 if [ -f /etc/nginx/conf.d/default.conf ]; then
   mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.disabled
+fi
+if [ -L /etc/nginx/sites-enabled/default ]; then
+  rm -f /etc/nginx/sites-enabled/default
 fi
 
 nginx -t
@@ -159,6 +182,11 @@ echo "=== systemctl status (frontend) ==="
 systemctl status "${SERVICE}.service" --no-pager || true
 echo "=== journalctl (last 50 lines) ==="
 journalctl -u "${SERVICE}.service" -n 50 --no-pager || true
+echo "=== nginx config in effect ==="
+echo "--- mytradingagents.conf ---"
+cat /etc/nginx/conf.d/mytradingagents.conf 2>/dev/null || echo "(not present)"
+echo "--- myfinance.conf ---"
+cat /etc/nginx/conf.d/myfinance.conf 2>/dev/null || echo "(not present)"
 
 # ── Health check loop (up to 60 seconds) ────────────────────────
 for i in $(seq 1 12); do
