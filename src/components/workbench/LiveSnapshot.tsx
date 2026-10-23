@@ -7,7 +7,7 @@ import { ChartDataPanel } from "@/components/workbench/ChartDataPanel";
 import { SnapshotResults } from "@/components/workbench/SnapshotResults";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useHkStockNames } from "@/hooks/useHkStockNames";
+import { useStockNames } from "@/hooks/useStockNames";
 import { INDICATORS, defaultVisible, type IndicatorKey } from "@/lib/trading-agents/indicators";
 import { useT } from "@/lib/i18n";
 import { canUseBrowserUrl } from "@/lib/trading-agents/url";
@@ -68,8 +68,8 @@ export function LiveSnapshot({ run, artifacts }: { run: RunRecord; artifacts?: R
       : undefined);
   const pricePoints = p?.pricePoints ?? (market?.prices.length || chartData?.rows.length || undefined);
   const stockName = p?.stockName ?? market?.stockName ?? chartData?.meta?.stockName;
-  // Hong Kong listings show the official HKEX English and Chinese names.
-  const hkNames = useHkStockNames(
+  // HK listings show the official HKEX English and Chinese names; US listings the directory name.
+  const hkNames = useStockNames(
     run.config.ticker,
     { ...(p?.stockNameEn ? { en: p.stockNameEn } : {}), ...(p?.stockNameZh ? { zh: p.stockNameZh } : {}) },
     run.source === "sample",

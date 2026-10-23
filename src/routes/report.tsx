@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { downloadFile, markdownToHtml } from "@/lib/trading-agents/report";
 import { SAMPLE_DETAIL_REPORT } from "@/lib/trading-agents/sample-run";
 import { useT } from "@/lib/i18n";
-import { useHkStockNames } from "@/hooks/useHkStockNames";
+import { useStockNames } from "@/hooks/useStockNames";
 
 const TITLE = "Detailed analysis report — My Trading Agents";
 const DESCRIPTION =
@@ -66,7 +66,7 @@ function ReportPage() {
   const search = Route.useSearch();
   const url = search.url;
   const ticker = search.ticker;
-  const names = useHkStockNames(ticker);
+  const names = useStockNames(ticker);
   const t = useT();
   const isSample = url === "sample";
   const [markdown, setMarkdown] = useState(isSample ? SAMPLE_DETAIL_REPORT : "");
