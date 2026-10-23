@@ -14,6 +14,6 @@
 - Convert the full engine `result.html` into the detail page's report presentation, omitting its embedded chart and artifact links because the page supplies one chart and separate downloads.
 - Rebuild known run artifact URLs from the configured engine base and run ID, because engine-emitted absolute URLs can omit reverse-proxy path prefixes.
 - Use `https://www.myfinance5051.com/api` as the production engine and artifact base in both browser builds and server-side MCP tools.
-- Bundle the engine's HKEX bilingual securities directory for immediate ticker suggestions, and use the engine security lookup for missing exact codes, because typing must remain responsive without network access.
+- Bundle the engine's HKEX bilingual securities directory for immediate HK ticker suggestions; take US suggestions from the engine's US list preloaded once on app start (react-query, 24h stale, last good copy in localStorage); use the engine security lookup for missing exact codes, because typing must remain responsive without network access.
 - Keep end-to-end architecture reference at `/mcp-architecture`, linked from the MCP guide and invitation, while `/mcp` remains protocol-only.
-- Infer the stock market from the typed code (numeric and on the HKEX list = HK, letters = non-HK) instead of a market picker, because the bundled/engine HKEX list is the source of truth.
+- Infer the stock market from the typed code (numeric and on the HKEX list = HK, letters on the US list = US, other letter codes sent as typed) instead of a market picker, because the bundled/engine HKEX list is the source of truth.
