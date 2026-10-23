@@ -249,6 +249,8 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               }}
               onBlur={() => setSuggestionDismissed(true)}
               placeholder="eg. 700"
+              autoComplete="off"
+              spellCheck={false}
               required
               aria-invalid={!!tickerError}
               className="font-mono placeholder:text-xs"
@@ -264,7 +266,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                 {matchedUs[2] && <span className="text-muted-foreground"> · {matchedUs[2]}</span>}
               </p>
             )}
-            {tickerKind.kind === "other" && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
+            {tickerKind.kind === "other" && usSuggestions.length === 0 && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
                 {suggestions.map(([code, names]) => (
