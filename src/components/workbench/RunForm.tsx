@@ -18,6 +18,7 @@ import { fill, useLanguage, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
 import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
+import { classifyTicker, numericHkCode } from "@/lib/trading-agents/ticker";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -43,42 +44,47 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     language: defaultConfig.language || "English",
     stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
-  // Derive the market from the ticker so a saved non-HK ticker (e.g. AAPL)
-  // keeps "Other" selected across remounts instead of snapping back to HK.
-  const marketFor = (ticker: string): "HK" | "Other" => {
-    const raw = ticker.trim();
-    if (!raw) return "HK";
-    return /\.HK$/i.test(raw) || /^\d{1,5}$/.test(raw) ? "HK" : "Other";
-  };
-  const [market, setMarket] = useState<"HK" | "Other">(() => marketFor(defaultConfig.ticker));
   const [tickerError, setTickerError] = useState<string | null>(null);
+  // Numeric codes the engine's HKEX list confirmed are not listed.
+  const [unlistedCodes, setUnlistedCodes] = useState<Set<string>>(() => new Set());
+  const [checkingTicker, setCheckingTicker] = useState(false);
   // Set when a suggestion is picked (or the field is cleared) so the list hides.
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   // Remembers the picked code so later unrelated edits (e.g. the analysis
   // date round-tripping through the saved form) can't revive the list.
   const [pickedCode, setPickedCode] = useState<string | null>(null);
-  const digits = config.ticker.trim().replace(/\.HK$/i, "");
-  const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
-  const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
+  const digits = config.ticker.trim().toUpperCase().replace(/\.HK$/, "");
+  const stockCode = numericHkCode(config.ticker) ?? "";
+  const tickerKind = classifyTicker(config.ticker, stockNames);
+  const matchedNames = tickerKind.kind === "hk" ? stockNames[tickerKind.code] : undefined;
   // Re-filter the bundled HKEX directory on every keypress while the user types.
   // Hidden once a complete code (4+ digits) resolves to a known stock, so
   // unrelated edits (e.g. picking the analysis date) don't bring the list back.
   const resolved = digits.length >= 4 && matchedNames;
-  const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && market === "HK" && /^\d{1,5}$/.test(digits)
+  const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && stockCode
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
+
+  /** Ask the engine's HKEX list about a code missing from the bundled copy. */
+  const lookupHkCode = async (code: string): Promise<boolean> => {
+    try {
+      const row = await api.hkSecurity(`${code}.HK`);
+      if (row.available) {
+        setStockNames((current) => ({ ...current, [code]: [row.name_en ?? "", row.name_zh ?? row.name_en ?? ""] }));
+        return true;
+      }
+      setUnlistedCodes((current) => new Set(current).add(code));
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
-    if (market !== "HK" || !stockCode || stockNames[stockCode]) return;
-    let active = true;
-    const timer = window.setTimeout(() => {
-      void api.hkSecurity(`${stockCode}.HK`).then((row) => {
-        if (active && row.available && row.name_en && row.name_zh) {
-          setStockNames((current) => ({ ...current, [stockCode]: [row.name_en ?? "", row.name_zh ?? ""] }));
-        }
-      }).catch(() => {});
-    }, 180);
-    return () => { active = false; window.clearTimeout(timer); };
-  }, [market, stockCode, stockNames]);
+    if (!stockCode || stockNames[stockCode] || unlistedCodes.has(stockCode)) return;
+    const timer = window.setTimeout(() => void lookupHkCode(stockCode), 180);
+    return () => window.clearTimeout(timer);
+  }, [stockCode, stockNames, unlistedCodes]);
   const providersQuery = useQuery({
     queryKey: ["configured-providers"],
     queryFn: api.providers,
@@ -113,7 +119,6 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
-    setMarket((current) => (current === "Other" ? current : marketFor(defaultConfig.ticker)));
   }, [defaultConfig.analysisDate]);
 
   useEffect(() => {
@@ -132,17 +137,27 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     onConfigChange?.(next);
   }, [configuredProviders, config, onConfigChange]);
 
-  /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
-  const resolveTicker = (): string | null => {
-    const raw = config.ticker.trim().toUpperCase();
-    if (market !== "HK") return raw;
-    const digits = raw.replace(/\.HK$/i, "");
-    if (!/^\d{1,5}$/.test(digits)) {
-      setTickerError(t("form.hkDigits"));
+  /**
+   * Numeric codes are HK stocks only when on the HKEX list (bundled copy first,
+   * then the engine's database); they're zero-padded (700 → 0700.HK).
+   * Anything with letters is a non-HK ticker and is sent as typed.
+   */
+  const resolveTicker = async (): Promise<string | null> => {
+    const kind = classifyTicker(config.ticker, stockNames);
+    if (kind.kind === "empty") return null;
+    if (kind.kind === "other" || kind.kind === "hk") {
+      setTickerError(null);
+      return kind.ticker;
+    }
+    setCheckingTicker(true);
+    const listed = unlistedCodes.has(kind.code) ? false : await lookupHkCode(kind.code);
+    setCheckingTicker(false);
+    if (!listed) {
+      setTickerError(fill(t("form.notHkStock"), { code: kind.code }));
       return null;
     }
     setTickerError(null);
-    return `${digits.padStart(4, "0")}.HK`;
+    return `${kind.code}.HK`;
   };
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) => {
@@ -180,9 +195,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   return (
     <form
       className="panel overflow-hidden"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        const ticker = resolveTicker();
+        if (checkingTicker) return;
+        const ticker = await resolveTicker();
         if (!ticker) return;
         const submitted = { ...config, ticker };
         setConfig(submitted);
@@ -211,41 +227,27 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
             </Label>
-            <div className="flex min-w-0 gap-2">
-              <Input
-                id="ticker"
-                value={config.ticker}
-                onChange={(e) => {
-                  update("ticker", e.target.value.toUpperCase());
-                  setTickerError(null);
-                  setSuggestionDismissed(false);
-                  setPickedCode(null);
-                }}
-                onBlur={() => setSuggestionDismissed(true)}
-                placeholder="eg. 700"
-                required
-                aria-invalid={!!tickerError}
-                className="font-mono placeholder:text-xs"
-
-              />
-              <Select
-                value={market}
-                onValueChange={(v) => {
-                  setMarket(v as "HK" | "Other");
-                  setTickerError(null);
-                }}
-              >
-                <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
-                  <SelectValue>{market === "HK" ? t("form.marketHK") : t("form.marketOther")}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="HK">{t("form.marketHK")}</SelectItem>
-                  <SelectItem value="Other">{t("form.marketOther")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Input
+              id="ticker"
+              value={config.ticker}
+              onChange={(e) => {
+                update("ticker", e.target.value.toUpperCase());
+                setTickerError(null);
+                setSuggestionDismissed(false);
+                setPickedCode(null);
+              }}
+              onBlur={() => setSuggestionDismissed(true)}
+              placeholder="eg. 700"
+              required
+              aria-invalid={!!tickerError}
+              className="font-mono placeholder:text-xs"
+            />
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
+            {!tickerError && tickerKind.kind === "unlisted" && unlistedCodes.has(tickerKind.code) && (
+              <p className="text-xs text-bear">{fill(t("form.notHkStock"), { code: tickerKind.code })}</p>
+            )}
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
+            {tickerKind.kind === "other" && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
                 {suggestions.map(([code, names]) => (
@@ -415,7 +417,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               <Square className="size-4" /> {t("form.stop")}
             </Button>
           ) : (
-            <Button type="submit" disabled={disabled || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
+            <Button type="submit" disabled={disabled || checkingTicker || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
               <Play className="size-4" /> {t("form.run")}
             </Button>
           )}
