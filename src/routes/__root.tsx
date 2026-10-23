@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { ReadyOverlay } from "@/components/workbench/ReadyOverlay";
 import { LanguageProvider } from "@/lib/i18n";
+import { useUsSecurities } from "@/hooks/useUsSecurities";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -124,12 +125,19 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Fetches the US stock directory once on app start so suggestions are instant. */
+function PreloadUsSecurities() {
+  useUsSecurities();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
+        <PreloadUsSecurities />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster position="top-right" richColors />

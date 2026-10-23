@@ -222,3 +222,9 @@
 # Report citation cleanup
 
 - [x] Remove internal AI source IDs from displayed and exported reports without changing real links.
+
+# US stock suggestions
+- [x] Preload the engine's US stock list on app start, with an offline copy.
+- [x] Suggest US stocks on every keypress and fill the picked ticker.
+- [x] Detect US tickers and show US names in the snapshot and report titles.
+- [x] Add ticker classification tests for US codes.

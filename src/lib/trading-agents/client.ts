@@ -6,6 +6,7 @@ import { normalizeRun, readRunStatus, type RunStatus } from "./normalize-run";
 import { runConfigPayload } from "./run-payload";
 import { readMarketData, readPriceChart, type MarketData, type PriceChartData } from "./chart-data";
 import { readReportContent, readReportsIndex } from "./reports";
+import { readUsSecurities, type UsSecurities } from "./us-securities";
 
 export { canUseBrowserUrl, PUBLIC_ASSET_BASE_URL, resolvePublicUrl } from "./url";
 export { DEFAULT_BRIDGE_URL, EngineHttpError, bridgeAssetUrl, getBridgeUrl, setBridgeUrl } from "./http";
@@ -131,9 +132,15 @@ export const api = {
   /** GET /market/earnings — last quarters of EPS reported vs estimated. */
   companyEarnings: (ticker: string) =>
     request<CompanyEarnings>(`/market/earnings?ticker=${encodeURIComponent(ticker)}`),
-  /** GET /market/security — HKEX directory: English + Chinese name for a .HK ticker. */
-  hkSecurity: (ticker: string) =>
+  /**
+   * GET /market/security — one row of the engine's stock directory: English +
+   * Chinese name for a .HK ticker, English name + exchange for a US ticker.
+   */
+  security: (ticker: string) =>
     request<HkSecurity>(`/market/security?ticker=${encodeURIComponent(ticker)}`),
+  /** GET /market/securities?market=US — the whole US directory, or null if unreadable. */
+  usSecurities: async (): Promise<UsSecurities | null> =>
+    readUsSecurities(await request<unknown>("/market/securities?market=US")),
 
   /** GET /providers — active LLM plus every provider with a key saved. */
   providers: () => request<ProvidersResponse>("/providers"),
@@ -248,12 +255,14 @@ export interface ProvidersResponse {
   providers: ProviderSummary[];
 }
 
-/** One row of the engine's HKEX securities directory. */
+/** One row of the engine's securities directory (HKEX or US). */
 export interface HkSecurity {
   available: boolean;
   message?: string;
   ticker?: string;
   code?: string;
+  market?: string | null;
+  exchange?: string | null;
   name_en?: string | null;
   name_zh?: string | null;
   category?: string | null;

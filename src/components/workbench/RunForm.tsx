@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
 import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
 import { classifyTicker, numericHkCode } from "@/lib/trading-agents/ticker";
+import { suggestUsSecurities } from "@/lib/trading-agents/us-securities";
+import { useUsSecurities } from "@/hooks/useUsSecurities";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -53,10 +55,12 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   // Remembers the picked code so later unrelated edits (e.g. the analysis
   // date round-tripping through the saved form) can't revive the list.
   const [pickedCode, setPickedCode] = useState<string | null>(null);
+  const usList = useUsSecurities();
   const digits = config.ticker.trim().toUpperCase().replace(/\.HK$/, "");
   const stockCode = numericHkCode(config.ticker) ?? "";
-  const tickerKind = classifyTicker(config.ticker, stockNames);
+  const tickerKind = classifyTicker(config.ticker, stockNames, usList);
   const matchedNames = tickerKind.kind === "hk" ? stockNames[tickerKind.code] : undefined;
+  const matchedUs = tickerKind.kind === "us" ? usList?.[tickerKind.ticker] : undefined;
   // Re-filter the bundled HKEX directory on every keypress while the user types.
   // Hidden once a complete code (4+ digits) resolves to a known stock, so
   // unrelated edits (e.g. picking the analysis date) don't bring the list back.
@@ -64,11 +68,17 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && stockCode
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
+  // Letter codes filter the preloaded US directory on every keypress.
+  const showUs = !suggestionDismissed && !stockCode && digits !== pickedCode;
+  const usSuggestions = useMemo(
+    () => (showUs ? suggestUsSecurities(config.ticker, usList) : []),
+    [showUs, config.ticker, usList],
+  );
 
   /** Ask the engine's HKEX list about a code missing from the bundled copy. */
   const lookupHkCode = async (code: string): Promise<boolean> => {
     try {
-      const row = await api.hkSecurity(`${code}.HK`);
+      const row = await api.security(`${code}.HK`);
       if (row.available) {
         setStockNames((current) => ({ ...current, [code]: [row.name_en ?? "", row.name_zh ?? row.name_en ?? ""] }));
         return true;
@@ -140,12 +150,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   /**
    * Numeric codes are HK stocks only when on the HKEX list (bundled copy first,
    * then the engine's database); they're zero-padded (700 → 0700.HK).
-   * Anything with letters is a non-HK ticker and is sent as typed.
+   * Letter codes on the US list use its form (BRK.B → BRK-B); any other
+   * letter code is sent as typed.
    */
   const resolveTicker = async (): Promise<string | null> => {
-    const kind = classifyTicker(config.ticker, stockNames);
+    const kind = classifyTicker(config.ticker, stockNames, usList);
     if (kind.kind === "empty") return null;
-    if (kind.kind === "other" || kind.kind === "hk") {
+    if (kind.kind === "other" || kind.kind === "hk" || kind.kind === "us") {
       setTickerError(null);
       return kind.ticker;
     }
@@ -238,6 +249,8 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               }}
               onBlur={() => setSuggestionDismissed(true)}
               placeholder="eg. 700"
+              autoComplete="off"
+              spellCheck={false}
               required
               aria-invalid={!!tickerError}
               className="font-mono placeholder:text-xs"
@@ -247,7 +260,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               <p className="text-xs text-bear">{fill(t("form.notHkStock"), { code: tickerKind.code })}</p>
             )}
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
-            {tickerKind.kind === "other" && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
+            {matchedUs && (
+              <p role="status" className="text-xs font-medium text-primary">
+                {(lang === "zh" && matchedUs[1]) || matchedUs[0]}
+                {matchedUs[2] && <span className="text-muted-foreground"> · {matchedUs[2]}</span>}
+              </p>
+            )}
+            {tickerKind.kind === "other" && usSuggestions.length === 0 && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
                 {suggestions.map(([code, names]) => (
@@ -267,6 +286,28 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   >
                     <span className="font-mono">{code}</span>
                     <span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+            {usSuggestions.length > 0 && (
+              <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
+                {usSuggestions.map(([ticker, row]) => (
+                  <Button
+                    key={ticker}
+                    type="button"
+                    variant="ghost"
+                    className="flex min-h-9 w-full justify-start gap-2 truncate text-xs"
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      update("ticker", ticker);
+                      setSuggestionDismissed(true);
+                      setPickedCode(ticker);
+                    }}
+                  >
+                    <span className="font-mono">{ticker}</span>
+                    <span className="truncate">{(lang === "zh" && row[1]) || row[0]}</span>
+                    {row[2] && <span className="shrink-0 text-muted-foreground">· {row[2]}</span>}
                   </Button>
                 ))}
               </div>
