@@ -18,6 +18,7 @@ import { fill, useLanguage, useT, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
 import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
+import { classifyTicker, numericHkCode } from "@/lib/trading-agents/ticker";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -118,7 +119,6 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
       language: defaultConfig.language || "English",
       stages: defaultConfig.stages ?? DEFAULT_STAGES,
     });
-    setMarket((current) => (current === "Other" ? current : marketFor(defaultConfig.ticker)));
   }, [defaultConfig.analysisDate]);
 
   useEffect(() => {
@@ -137,17 +137,27 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     onConfigChange?.(next);
   }, [configuredProviders, config, onConfigChange]);
 
-  /** HK codes are numeric and zero-padded to four digits (e.g. 700 → 0700.HK). */
-  const resolveTicker = (): string | null => {
-    const raw = config.ticker.trim().toUpperCase();
-    if (market !== "HK") return raw;
-    const digits = raw.replace(/\.HK$/i, "");
-    if (!/^\d{1,5}$/.test(digits)) {
-      setTickerError(t("form.hkDigits"));
+  /**
+   * Numeric codes are HK stocks only when on the HKEX list (bundled copy first,
+   * then the engine's database); they're zero-padded (700 → 0700.HK).
+   * Anything with letters is a non-HK ticker and is sent as typed.
+   */
+  const resolveTicker = async (): Promise<string | null> => {
+    const kind = classifyTicker(config.ticker, stockNames);
+    if (kind.kind === "empty") return null;
+    if (kind.kind === "other" || kind.kind === "hk") {
+      setTickerError(null);
+      return kind.ticker;
+    }
+    setCheckingTicker(true);
+    const listed = unlistedCodes.has(kind.code) ? false : await lookupHkCode(kind.code);
+    setCheckingTicker(false);
+    if (!listed) {
+      setTickerError(fill(t("form.notHkStock"), { code: kind.code }));
       return null;
     }
     setTickerError(null);
-    return `${digits.padStart(4, "0")}.HK`;
+    return `${kind.code}.HK`;
   };
 
   const update = <K extends keyof RunConfig>(key: K, value: RunConfig[K]) => {
@@ -185,9 +195,10 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   return (
     <form
       className="panel overflow-hidden"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        const ticker = resolveTicker();
+        if (checkingTicker) return;
+        const ticker = await resolveTicker();
         if (!ticker) return;
         const submitted = { ...config, ticker };
         setConfig(submitted);
@@ -216,41 +227,27 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
             <Label htmlFor="ticker" className="label-caps">
               {t("form.ticker")}
             </Label>
-            <div className="flex min-w-0 gap-2">
-              <Input
-                id="ticker"
-                value={config.ticker}
-                onChange={(e) => {
-                  update("ticker", e.target.value.toUpperCase());
-                  setTickerError(null);
-                  setSuggestionDismissed(false);
-                  setPickedCode(null);
-                }}
-                onBlur={() => setSuggestionDismissed(true)}
-                placeholder="eg. 700"
-                required
-                aria-invalid={!!tickerError}
-                className="font-mono placeholder:text-xs"
-
-              />
-              <Select
-                value={market}
-                onValueChange={(v) => {
-                  setMarket(v as "HK" | "Other");
-                  setTickerError(null);
-                }}
-              >
-                <SelectTrigger className="w-24 shrink-0" aria-label={t("form.market")}>
-                  <SelectValue>{market === "HK" ? t("form.marketHK") : t("form.marketOther")}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="HK">{t("form.marketHK")}</SelectItem>
-                  <SelectItem value="Other">{t("form.marketOther")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Input
+              id="ticker"
+              value={config.ticker}
+              onChange={(e) => {
+                update("ticker", e.target.value.toUpperCase());
+                setTickerError(null);
+                setSuggestionDismissed(false);
+                setPickedCode(null);
+              }}
+              onBlur={() => setSuggestionDismissed(true)}
+              placeholder="eg. 700"
+              required
+              aria-invalid={!!tickerError}
+              className="font-mono placeholder:text-xs"
+            />
             {tickerError && <p className="text-xs text-bear">{tickerError}</p>}
+            {!tickerError && tickerKind.kind === "unlisted" && unlistedCodes.has(tickerKind.code) && (
+              <p className="text-xs text-bear">{fill(t("form.notHkStock"), { code: tickerKind.code })}</p>
+            )}
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
+            {tickerKind.kind === "other" && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
                 {suggestions.map(([code, names]) => (
