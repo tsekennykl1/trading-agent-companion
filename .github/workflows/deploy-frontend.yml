@@ -84,19 +84,52 @@ jobs:
 
           echo "SSM command: $COMMAND_ID"
 
-          aws ssm wait command-executed \
-            --region "$AWS_REGION" \
-            --command-id "$COMMAND_ID" \
-            --instance-id "$EC2_INSTANCE_ID" || true
+          OUTPUT=""
+          STATUS="Pending"
+          SUCCESS="false"
+          READ_STATUS="false"
+          MAX_ATTEMPTS=120
+          POLL_SECONDS=5
 
-          OUTPUT=$(aws ssm get-command-invocation \
-            --region "$AWS_REGION" \
-            --command-id "$COMMAND_ID" \
-            --instance-id "$EC2_INSTANCE_ID")
+          for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
+            if ! OUTPUT=$(aws ssm get-command-invocation \
+              --region "$AWS_REGION" \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$EC2_INSTANCE_ID" 2>/dev/null); then
+              echo "SSM command status unavailable (attempt $attempt/$MAX_ATTEMPTS)"
+              sleep "$POLL_SECONDS"
+              continue
+            fi
 
-          echo "$OUTPUT" | jq .
-          STATUS=$(echo "$OUTPUT" | jq -r .Status)
-          if [ "$STATUS" != "Success" ]; then
-            echo "::error::SSM command failed with status: $STATUS"
-            exit 1
+            STATUS=$(echo "$OUTPUT" | jq -r .Status)
+            READ_STATUS="true"
+
+            if [ "$STATUS" = "Success" ]; then
+              echo "$OUTPUT" | jq .
+              SUCCESS="true"
+              break
+            fi
+
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "DeliveryTimedOut" ]; then
+              echo "$OUTPUT" | jq .
+              echo "::error::SSM command failed with status: $STATUS"
+              exit 1
+            fi
+
+            echo "SSM command status: $STATUS (attempt $attempt/$MAX_ATTEMPTS)"
+            sleep "$POLL_SECONDS"
+          done
+
+          if [ "$SUCCESS" != "true" ]; then
+            if [ "$READ_STATUS" != "true" ]; then
+              echo "::error::Unable to read SSM command status within 10 minutes"
+              exit 1
+            else
+              if [ -n "$OUTPUT" ]; then
+                echo "$OUTPUT" | jq .
+              fi
+              echo "Last known status: $STATUS"
+              echo "::error::SSM command did not finish within 10 minutes"
+              exit 1
+            fi
           fi
