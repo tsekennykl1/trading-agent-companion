@@ -87,6 +87,7 @@ jobs:
           OUTPUT=""
           STATUS="Pending"
           SUCCESS="false"
+          READ_STATUS="false"
 
           for attempt in $(seq 1 120); do
             if ! OUTPUT=$(aws ssm get-command-invocation \
@@ -99,6 +100,7 @@ jobs:
             fi
 
             STATUS=$(echo "$OUTPUT" | jq -r .Status)
+            READ_STATUS="true"
 
             if [ "$STATUS" = "Success" ]; then
               echo "$OUTPUT" | jq .
@@ -117,6 +119,10 @@ jobs:
           done
 
           if [ "$SUCCESS" != "true" ]; then
+            if [ "$READ_STATUS" != "true" ]; then
+              echo "::error::Unable to read SSM command status within 10 minutes"
+              exit 1
+            fi
             if [ -n "$OUTPUT" ]; then
               echo "$OUTPUT" | jq .
             fi
