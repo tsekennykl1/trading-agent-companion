@@ -43,42 +43,47 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
     language: defaultConfig.language || "English",
     stages: defaultConfig.stages ?? DEFAULT_STAGES,
   });
-  // Derive the market from the ticker so a saved non-HK ticker (e.g. AAPL)
-  // keeps "Other" selected across remounts instead of snapping back to HK.
-  const marketFor = (ticker: string): "HK" | "Other" => {
-    const raw = ticker.trim();
-    if (!raw) return "HK";
-    return /\.HK$/i.test(raw) || /^\d{1,5}$/.test(raw) ? "HK" : "Other";
-  };
-  const [market, setMarket] = useState<"HK" | "Other">(() => marketFor(defaultConfig.ticker));
   const [tickerError, setTickerError] = useState<string | null>(null);
+  // Numeric codes the engine's HKEX list confirmed are not listed.
+  const [unlistedCodes, setUnlistedCodes] = useState<Set<string>>(() => new Set());
+  const [checkingTicker, setCheckingTicker] = useState(false);
   // Set when a suggestion is picked (or the field is cleared) so the list hides.
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   // Remembers the picked code so later unrelated edits (e.g. the analysis
   // date round-tripping through the saved form) can't revive the list.
   const [pickedCode, setPickedCode] = useState<string | null>(null);
-  const digits = config.ticker.trim().replace(/\.HK$/i, "");
-  const stockCode = /^\d{1,5}$/.test(digits) ? digits.padStart(4, "0") : "";
-  const matchedNames = market === "HK" && stockCode ? stockNames[stockCode] : undefined;
+  const digits = config.ticker.trim().toUpperCase().replace(/\.HK$/, "");
+  const stockCode = numericHkCode(config.ticker) ?? "";
+  const tickerKind = classifyTicker(config.ticker, stockNames);
+  const matchedNames = tickerKind.kind === "hk" ? stockNames[tickerKind.code] : undefined;
   // Re-filter the bundled HKEX directory on every keypress while the user types.
   // Hidden once a complete code (4+ digits) resolves to a known stock, so
   // unrelated edits (e.g. picking the analysis date) don't bring the list back.
   const resolved = digits.length >= 4 && matchedNames;
-  const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && market === "HK" && /^\d{1,5}$/.test(digits)
+  const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && stockCode
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
+
+  /** Ask the engine's HKEX list about a code missing from the bundled copy. */
+  const lookupHkCode = async (code: string): Promise<boolean> => {
+    try {
+      const row = await api.hkSecurity(`${code}.HK`);
+      if (row.available) {
+        setStockNames((current) => ({ ...current, [code]: [row.name_en ?? "", row.name_zh ?? row.name_en ?? ""] }));
+        return true;
+      }
+      setUnlistedCodes((current) => new Set(current).add(code));
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
-    if (market !== "HK" || !stockCode || stockNames[stockCode]) return;
-    let active = true;
-    const timer = window.setTimeout(() => {
-      void api.hkSecurity(`${stockCode}.HK`).then((row) => {
-        if (active && row.available && row.name_en && row.name_zh) {
-          setStockNames((current) => ({ ...current, [stockCode]: [row.name_en ?? "", row.name_zh ?? ""] }));
-        }
-      }).catch(() => {});
-    }, 180);
-    return () => { active = false; window.clearTimeout(timer); };
-  }, [market, stockCode, stockNames]);
+    if (!stockCode || stockNames[stockCode] || unlistedCodes.has(stockCode)) return;
+    const timer = window.setTimeout(() => void lookupHkCode(stockCode), 180);
+    return () => window.clearTimeout(timer);
+  }, [stockCode, stockNames, unlistedCodes]);
   const providersQuery = useQuery({
     queryKey: ["configured-providers"],
     queryFn: api.providers,
