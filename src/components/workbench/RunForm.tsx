@@ -150,12 +150,13 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   /**
    * Numeric codes are HK stocks only when on the HKEX list (bundled copy first,
    * then the engine's database); they're zero-padded (700 → 0700.HK).
-   * Anything with letters is a non-HK ticker and is sent as typed.
+   * Letter codes on the US list use its form (BRK.B → BRK-B); any other
+   * letter code is sent as typed.
    */
   const resolveTicker = async (): Promise<string | null> => {
-    const kind = classifyTicker(config.ticker, stockNames);
+    const kind = classifyTicker(config.ticker, stockNames, usList);
     if (kind.kind === "empty") return null;
-    if (kind.kind === "other" || kind.kind === "hk") {
+    if (kind.kind === "other" || kind.kind === "hk" || kind.kind === "us") {
       setTickerError(null);
       return kind.ticker;
     }
@@ -257,6 +258,12 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               <p className="text-xs text-bear">{fill(t("form.notHkStock"), { code: tickerKind.code })}</p>
             )}
             {matchedNames && <p role="status" className="text-xs font-medium text-primary">{lang === "zh" ? matchedNames[1] : matchedNames[0]}</p>}
+            {matchedUs && (
+              <p role="status" className="text-xs font-medium text-primary">
+                {(lang === "zh" && matchedUs[1]) || matchedUs[0]}
+                {matchedUs[2] && <span className="text-muted-foreground"> · {matchedUs[2]}</span>}
+              </p>
+            )}
             {tickerKind.kind === "other" && <p role="status" className="text-xs text-muted-foreground">{t("form.otherMarket")}</p>}
             {suggestions.length > 0 && digits.length < 4 && (
               <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
@@ -277,6 +284,28 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
                   >
                     <span className="font-mono">{code}</span>
                     <span className="truncate">{lang === "zh" ? names[1] : names[0]}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+            {usSuggestions.length > 0 && (
+              <div aria-label="Matching stocks" className="max-h-44 overflow-y-auto rounded-md border border-rule bg-surface">
+                {usSuggestions.map(([ticker, row]) => (
+                  <Button
+                    key={ticker}
+                    type="button"
+                    variant="ghost"
+                    className="flex min-h-9 w-full justify-start gap-2 truncate text-xs"
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      update("ticker", ticker);
+                      setSuggestionDismissed(true);
+                      setPickedCode(ticker);
+                    }}
+                  >
+                    <span className="font-mono">{ticker}</span>
+                    <span className="truncate">{(lang === "zh" && row[1]) || row[0]}</span>
+                    {row[2] && <span className="shrink-0 text-muted-foreground">· {row[2]}</span>}
                   </Button>
                 ))}
               </div>
