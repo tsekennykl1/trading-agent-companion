@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/trading-agents/client";
 import { INITIAL_HK_STOCK_NAMES } from "@/lib/trading-agents/hk-stock-directory";
 import { classifyTicker, numericHkCode } from "@/lib/trading-agents/ticker";
+import { suggestUsSecurities } from "@/lib/trading-agents/us-securities";
+import { useUsSecurities } from "@/hooks/useUsSecurities";
 
 interface Props {
   defaultConfig: RunConfig;
@@ -53,10 +55,12 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   // Remembers the picked code so later unrelated edits (e.g. the analysis
   // date round-tripping through the saved form) can't revive the list.
   const [pickedCode, setPickedCode] = useState<string | null>(null);
+  const usList = useUsSecurities();
   const digits = config.ticker.trim().toUpperCase().replace(/\.HK$/, "");
   const stockCode = numericHkCode(config.ticker) ?? "";
-  const tickerKind = classifyTicker(config.ticker, stockNames);
+  const tickerKind = classifyTicker(config.ticker, stockNames, usList);
   const matchedNames = tickerKind.kind === "hk" ? stockNames[tickerKind.code] : undefined;
+  const matchedUs = tickerKind.kind === "us" ? usList?.[tickerKind.ticker] : undefined;
   // Re-filter the bundled HKEX directory on every keypress while the user types.
   // Hidden once a complete code (4+ digits) resolves to a known stock, so
   // unrelated edits (e.g. picking the analysis date) don't bring the list back.
@@ -64,11 +68,17 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
   const suggestions = !suggestionDismissed && !resolved && digits !== pickedCode && stockCode
     ? Object.entries(stockNames).filter(([code]) => code.startsWith(digits) || String(Number(code)).startsWith(digits)).slice(0, 5)
     : [];
+  // Letter codes filter the preloaded US directory on every keypress.
+  const showUs = !suggestionDismissed && !stockCode && digits !== pickedCode;
+  const usSuggestions = useMemo(
+    () => (showUs ? suggestUsSecurities(config.ticker, usList) : []),
+    [showUs, config.ticker, usList],
+  );
 
   /** Ask the engine's HKEX list about a code missing from the bundled copy. */
   const lookupHkCode = async (code: string): Promise<boolean> => {
     try {
-      const row = await api.hkSecurity(`${code}.HK`);
+      const row = await api.security(`${code}.HK`);
       if (row.available) {
         setStockNames((current) => ({ ...current, [code]: [row.name_en ?? "", row.name_zh ?? row.name_en ?? ""] }));
         return true;
