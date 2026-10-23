@@ -104,7 +104,7 @@ jobs:
               exit 0
             fi
 
-            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Cancelling" ]; then
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "DeliveryTimedOut" ] || [ "$STATUS" = "Cancelling" ]; then
               echo "$OUTPUT" | jq .
               echo "::error::SSM command failed with status: $STATUS"
               exit 1
