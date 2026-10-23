@@ -16,3 +16,4 @@
 - Use `https://www.myfinance5051.com/api` as the production engine and artifact base in both browser builds and server-side MCP tools.
 - Bundle the engine's HKEX bilingual securities directory for immediate ticker suggestions, and use the engine security lookup for missing exact codes, because typing must remain responsive without network access.
 - Keep end-to-end architecture reference at `/mcp-architecture`, linked from the MCP guide and invitation, while `/mcp` remains protocol-only.
+- Infer the stock market from the typed code (numeric and on the HKEX list = HK, letters = non-HK) instead of a market picker, because the bundled/engine HKEX list is the source of truth.
