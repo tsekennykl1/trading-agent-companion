@@ -417,7 +417,7 @@ export function RunForm({ defaultConfig, running, disabled, compact = false, onR
               <Square className="size-4" /> {t("form.stop")}
             </Button>
           ) : (
-            <Button type="submit" disabled={disabled || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
+            <Button type="submit" disabled={disabled || checkingTicker || config.analysts.length === 0} className="min-h-11 gap-2 sm:min-h-9">
               <Play className="size-4" /> {t("form.run")}
             </Button>
           )}
