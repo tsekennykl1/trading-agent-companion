@@ -84,11 +84,19 @@ jobs:
 
           echo "SSM command: $COMMAND_ID"
 
+          OUTPUT=""
+          STATUS="Pending"
+
           for attempt in $(seq 1 120); do
-            OUTPUT=$(aws ssm get-command-invocation \
+            if ! OUTPUT=$(aws ssm get-command-invocation \
               --region "$AWS_REGION" \
               --command-id "$COMMAND_ID" \
-              --instance-id "$EC2_INSTANCE_ID")
+              --instance-id "$EC2_INSTANCE_ID" 2>/dev/null); then
+              echo "SSM command status unavailable (attempt $attempt/120)"
+              sleep 5
+              continue
+            fi
+
             STATUS=$(echo "$OUTPUT" | jq -r .Status)
 
             if [ "$STATUS" = "Success" ]; then
@@ -106,6 +114,9 @@ jobs:
             sleep 5
           done
 
-          echo "$OUTPUT" | jq .
+          if [ -n "$OUTPUT" ]; then
+            echo "$OUTPUT" | jq .
+          fi
+          echo "Last known status: $STATUS"
           echo "::error::SSM command did not finish within 10 minutes"
           exit 1
