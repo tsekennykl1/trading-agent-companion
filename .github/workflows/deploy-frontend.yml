@@ -116,13 +116,11 @@ jobs:
             sleep 5
           done
 
-          if [ "$SUCCESS" = "true" ]; then
-            exit 0
+          if [ "$SUCCESS" != "true" ]; then
+            if [ -n "$OUTPUT" ]; then
+              echo "$OUTPUT" | jq .
+            fi
+            echo "Last known status: $STATUS"
+            echo "::error::SSM command did not finish within 10 minutes"
+            exit 1
           fi
-
-          if [ -n "$OUTPUT" ]; then
-            echo "$OUTPUT" | jq .
-          fi
-          echo "Last known status: $STATUS"
-          echo "::error::SSM command did not finish within 10 minutes"
-          exit 1
